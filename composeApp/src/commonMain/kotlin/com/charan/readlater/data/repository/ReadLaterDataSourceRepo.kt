@@ -1,0 +1,15 @@
+package com.charan.readlater.data.repository
+
+import com.charan.readlater.ReadLaterEntity
+import kotlinx.coroutines.flow.Flow
+
+interface ReadLaterDataSourceRepo {
+
+    fun getAllItems() : Flow<List<ReadLaterEntity>>
+
+    suspend fun insertItem(item : ReadLaterEntity)
+
+    suspend fun updateItem(item : ReadLaterEntity)
+
+
+}

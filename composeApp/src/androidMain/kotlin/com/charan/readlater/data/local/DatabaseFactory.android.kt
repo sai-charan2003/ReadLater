@@ -1,0 +1,19 @@
+package com.charan.readlater.data.local
+
+import android.content.Context
+import app.cash.sqldelight.async.coroutines.synchronous
+import app.cash.sqldelight.db.SqlDriver
+import app.cash.sqldelight.driver.android.AndroidSqliteDriver
+import com.charan.readlater.ReadLaterDatabase
+
+actual class DatabaseFactory(private val context : Context) {
+    actual suspend fun createDriver(): SqlDriver {
+        return AndroidSqliteDriver(
+            schema = ReadLaterDatabase.Schema.synchronous(),
+            context = context,
+            name = "read_later.db"
+
+        )
+
+    }
+}

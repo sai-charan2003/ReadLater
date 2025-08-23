@@ -1,0 +1,80 @@
+[versions]
+agp = "8.7.3"
+android-compileSdk = "35"
+android-minSdk = "24"
+android-targetSdk = "35"
+androidDriver = "2.1.0"
+androidx-activity = "1.10.1"
+androidx-appcompat = "1.7.1"
+androidx-core = "1.16.0"
+androidx-espresso = "3.6.1"
+androidx-lifecycle = "2.9.1"
+androidx-testExt = "1.2.1"
+material3 = "1.9.0-alpha04"
+materialIconsCore = "1.7.3"
+materialKolor = "3.0.1"
+supabase = "3.2.2"
+composeHotReload ="1.0.0-beta05"
+composeMultiplatform = "1.9.0-beta01"
+firebaseAuth = "2.2.0"
+firebaseConfig = "23.0.0"
+junit = "4.13.2"
+kotlin = "2.2.0"
+kotlinx-coroutines = "1.10.2"
+koin = "4.1.0"
+googleServices = "4.4.3"
+buildKonfig = "0.15.2"
+ktor = "3.2.3"
+ktorClientApache5 = "3.2.3"
+ktorClientCio = "3.2.3"
+
+
+[libraries]
+android-driver = { module = "app.cash.sqldelight:android-driver", version.ref = "androidDriver" }
+auth-kt = { module = "io.github.jan-tennert.supabase:auth-kt",version.ref = "supabase" }
+coroutines-extensions = { module = "app.cash.sqldelight:coroutines-extensions", version.ref = "androidDriver" }
+firebase-auth = { module = "dev.gitlive:firebase-auth", version.ref = "firebaseAuth" }
+firebase-config = { module = "com.google.firebase:firebase-config", version.ref = "firebaseConfig" }
+firebase-firestore = { module = "dev.gitlive:firebase-firestore", version.ref = "firebaseAuth" }
+kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
+kotlin-testJunit = { module = "org.jetbrains.kotlin:kotlin-test-junit", version.ref = "kotlin" }
+junit = { module = "junit:junit", version.ref = "junit" }
+androidx-core-ktx = { module = "androidx.core:core-ktx", version.ref = "androidx-core" }
+androidx-testExt-junit = { module = "androidx.test.ext:junit", version.ref = "androidx-testExt" }
+androidx-espresso-core = { module = "androidx.test.espresso:espresso-core", version.ref = "androidx-espresso" }
+androidx-appcompat = { module = "androidx.appcompat:appcompat", version.ref = "androidx-appcompat" }
+androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "androidx-activity" }
+androidx-lifecycle-viewmodelCompose = { module = "org.jetbrains.androidx.lifecycle:lifecycle-viewmodel-compose", version.ref = "androidx-lifecycle" }
+androidx-lifecycle-runtimeCompose = { module = "org.jetbrains.androidx.lifecycle:lifecycle-runtime-compose", version.ref = "androidx-lifecycle" }
+kotlinx-coroutinesSwing = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-swing", version.ref = "kotlinx-coroutines" }
+koin-core = { group = "io.insert-koin", name = "koin-core", version.ref = "koin" }
+koin-android = { group = "io.insert-koin", name = "koin-android", version.ref = "koin" }
+koin-compose = { group = "io.insert-koin", name = "koin-androidx-compose", version.ref = "koin" }
+koin-compose-viewModel = { module = "io.insert-koin:koin-compose-viewmodel", version.ref = "koin" }
+ktor-client-apache5 = { module = "io.ktor:ktor-client-apache5", version.ref = "ktorClientApache5" }
+ktor-client-cio = { module = "io.ktor:ktor-client-cio", version.ref = "ktorClientCio" }
+material-icons-core = { module = "org.jetbrains.compose.material:material-icons-core", version.ref = "materialIconsCore" }
+material-kolor = { module = "com.materialkolor:material-kolor", version.ref = "materialKolor" }
+material3 = { module = "org.jetbrains.compose.material3:material3", version.ref = "material3" }
+native-driver = { module = "app.cash.sqldelight:native-driver", version.ref = "androidDriver" }
+postgrest-kt = { module = "io.github.jan-tennert.supabase:postgrest-kt",version.ref = "supabase" }
+compose-auth-kt = { module = "io.github.jan-tennert.supabase:compose-auth",version.ref = "supabase" }
+sqlite-driver = { module = "app.cash.sqldelight:sqlite-driver", version.ref = "androidDriver" }
+web-worker-driver = { module = "app.cash.sqldelight:web-worker-driver", version.ref = "androidDriver" }
+ktor-client-core = { module = "io.ktor:ktor-client-core", version.ref = "ktor" }
+ktor-client-okhttp = { module = "io.ktor:ktor-client-okhttp", version.ref = "ktor" }
+ktor-client-darwin = { module = "io.ktor:ktor-client-darwin", version.ref = "ktor" }
+ktor-serialization-kotlinx-json = { module = "io.ktor:ktor-serialization-kotlinx-json", version.ref = "ktor" }
+
+
+[plugins]
+androidApplication = { id = "com.android.application", version.ref = "agp" }
+androidLibrary = { id = "com.android.library", version.ref = "agp" }
+composeHotReload = { id = "org.jetbrains.compose.hot-reload", version.ref = "composeHotReload" }
+composeMultiplatform = { id = "org.jetbrains.compose", version.ref = "composeMultiplatform" }
+composeCompiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
+kotlinMultiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
+sqlDelight = { id = "app.cash.sqldelight", version = "2.1.0" }
+googleServices = {id = "com.google.gms.google-services",version.ref = "googleServices" }
+buildKonfig = { id = "com.codingfeline.buildkonfig", version.ref = "buildKonfig" }
+kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
