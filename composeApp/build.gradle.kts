@@ -112,6 +112,11 @@ kotlin {
             implementation("io.github.mirzemehdi:kmpauth-uihelper:2.4.0-alpha03")
             implementation("androidx.datastore:datastore:1.1.7")
             implementation("androidx.datastore:datastore-preferences:1.1.7")
+            implementation("com.fleeksoft.ksoup:ksoup:0.2.5")
+            implementation("com.fleeksoft.ksoup:ksoup-network:0.2.5")
+            implementation("io.coil-kt.coil3:coil-compose:3.3.0")
+            implementation("io.coil-kt.coil3:coil-network-okhttp:3.3.0")
+
 
 
         }

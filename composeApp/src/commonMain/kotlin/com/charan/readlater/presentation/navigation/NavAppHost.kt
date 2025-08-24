@@ -4,7 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import com.charan.readlater.presentation.Home.HomeScreen
+import com.charan.readlater.presentation.home.HomeScreen
 import com.charan.readlater.presentation.authentication.AuthenticationScreen
 
 @Composable

@@ -1,0 +1,23 @@
+package com.charan.readlater.presentation.home
+
+data class HomeScreenState (
+    val isFetchingData : Boolean = false,
+    val readLaterUiItem: List<ReadLaterUiItem> = emptyList(),
+    val showAddURLBottomSheet : Boolean = false,
+    val savingNewUrl : Boolean = false,
+    val newUrlState: NewUrlState = NewUrlState()
+)
+
+data class NewUrlState(
+    val url: String = "",
+    val isDue: Boolean = false
+)
+
+data class ReadLaterUiItem(
+    val id : String = "",
+    val title : String = "",
+    val description : String = "",
+    val imageUrl : String = "",
+    val url : String = "",
+    val isDue : Boolean = false
+)

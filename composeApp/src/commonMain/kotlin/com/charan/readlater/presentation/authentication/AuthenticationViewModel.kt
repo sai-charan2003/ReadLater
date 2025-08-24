@@ -2,7 +2,7 @@ package com.charan.readlater.presentation.authentication
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.charan.readlater.data.model.LoginTypeEnum
+import com.charan.readlater.data.local.enums.LoginTypeEnum
 import com.charan.readlater.data.remote.ReadLaterSupabaseClient
 import com.charan.readlater.data.repository.SettingsDataStoreRepo
 import com.charan.readlater.data.repository.SupabaseRepo
@@ -62,7 +62,9 @@ class AuthenticationViewModel(
         when(event){
             is AuthenticationEvent.OnGoogleSignInKey -> {
                 authorizeUser(event.token)
-
+            }
+            AuthenticationEvent.OnNoAccountLogin -> {
+                noAccountLogin()
 
             }
         }
@@ -108,6 +110,17 @@ class AuthenticationViewModel(
         }
         _authenticationScreenEffect.emit(AuthenticationScreenEffect.NavigateToHome)
         settingsDataStoreRepo.updateLoginType(LoginTypeEnum.GOOGLE)
+    }
+
+    private fun noAccountLogin() = viewModelScope.launch {
+        _userAuthenticationStatus.update {
+            it.copy(
+                isAuthenticating = false,
+                isAuthenticated = true
+            )
+        }
+        _authenticationScreenEffect.emit(AuthenticationScreenEffect.NavigateToHome)
+        settingsDataStoreRepo.updateLoginType(LoginTypeEnum.NO_ACCOUNT)
     }
 
 

@@ -3,7 +3,7 @@ package com.charan.readlater.data.repository.impl
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.stringPreferencesKey
-import com.charan.readlater.data.model.LoginTypeEnum
+import com.charan.readlater.data.local.enums.LoginTypeEnum
 import com.charan.readlater.data.repository.SettingsDataStoreRepo
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map

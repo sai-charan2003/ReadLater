@@ -21,12 +21,13 @@ class ReadLaterDataSourceImpl(
 
     override suspend fun insertItem(item: ReadLaterEntity) {
         queries.insertReadLaterItem(
-            id = item.id,
             title = item.title,
             url = item.url,
             description = item.description,
             created_at = item.created_at,
             is_due = item.is_due,
+            image_url = item.image_url,
+            isSynced = item.isSynced
         )
 
     }

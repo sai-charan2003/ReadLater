@@ -118,7 +118,9 @@ fun AuthenticationScreen(
 
 
             FilledTonalButton(
-                onClick = {},
+                onClick = {
+                    viewModel.onEvent(AuthenticationEvent.OnNoAccountLogin)
+                },
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text("Continue without account")
