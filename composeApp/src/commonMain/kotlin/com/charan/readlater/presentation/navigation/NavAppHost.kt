@@ -9,11 +9,12 @@ import com.charan.readlater.presentation.authentication.AuthenticationScreen
 
 @Composable
 fun NavAppHost(
-    navHostController: NavHostController
+    navHostController: NavHostController,
+    isLoggedIn: Boolean = true
 ) {
     NavHost(
         navController = navHostController,
-        startDestination = AuthenticationScreenNav
+        startDestination = if(isLoggedIn) HomeScreenNav else AuthenticationScreenNav
 
     ) {
         composable <AuthenticationScreenNav>{
@@ -25,7 +26,11 @@ fun NavAppHost(
         }
 
         composable <HomeScreenNav>{
-            HomeScreen()
+            HomeScreen(
+                navigateToSettings = {
+
+                }
+            )
         }
     }
 

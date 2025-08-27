@@ -4,13 +4,18 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.rounded.MoreVert
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.FabPosition
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.LargeTopAppBar
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -25,10 +30,13 @@ import org.koin.compose.viewmodel.koinViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HomeScreen() {
+fun HomeScreen(
+    navigateToSettings : () -> Unit
+) {
     val viewModel = koinViewModel <HomeScreenViewModel>()
     val state by viewModel.state.collectAsStateWithLifecycle()
     val addBookmarkModelSheet = rememberModalBottomSheetState()
+    val scrollSate = TopAppBarDefaults.enterAlwaysScrollBehavior()
     val uriHandler = LocalUriHandler.current
 
     LaunchedEffect(Unit){
@@ -40,6 +48,10 @@ fun HomeScreen() {
                 }
                 is HomeScreenEffect.ShowError -> {
 
+                }
+
+                HomeScreenEffect.NavigateToSettings -> {
+                    navigateToSettings()
                 }
             }
         }
@@ -56,19 +68,48 @@ fun HomeScreen() {
             onSaveClick = {
                 viewModel.onEvent(HomeScreenEvent.OnSaveURLClick)
             },
-            savingURL = state.savingNewUrl,
+            savingURL = state.newUrlState.isSaving,
             url = state.newUrlState.url,
             isDue = state.newUrlState.isDue,
             onDueChange = {
                 viewModel.onEvent(HomeScreenEvent.OnDueChange(it))
-            }
+            },
+            error = state.newUrlState.error
 
         )
     }
     Scaffold(
         topBar = {
             LargeTopAppBar(
-                title = { Text("Read Later") }
+                title = { Text("Read Later") },
+                scrollBehavior = scrollSate,
+                actions = {
+                    IconButton(
+                        onClick = {
+                            viewModel.onEvent(HomeScreenEvent.OnDropDownClick)
+
+                        }
+                    ) {
+                        Icon(Icons.Rounded.MoreVert,null)
+                    }
+                    DropdownMenu(
+                        expanded = state.isDropDownVisible,
+                        onDismissRequest = {
+                            viewModel.onEvent(HomeScreenEvent.OnDropDownClick)
+                        }
+
+                    ) {
+                        DropdownMenuItem(
+                            text = {
+                                Text("Settings")
+                            },
+                            onClick = {
+
+                            }
+                        )
+
+                    }
+                }
             )
         },
         floatingActionButton = {
@@ -81,11 +122,13 @@ fun HomeScreen() {
             )
 
         },
+
         floatingActionButtonPosition = FabPosition.End,
 
     ) {
         LazyColumn(
-            modifier = Modifier.padding(it)
+            modifier = Modifier
+                .padding(it)
         ) {
             items(
                 state.readLaterUiItem.size,

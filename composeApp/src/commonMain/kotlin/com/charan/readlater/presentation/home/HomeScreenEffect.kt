@@ -6,6 +6,8 @@ sealed interface HomeScreenEffect {
 
     data class OpenURLInBrowser(val url : String) : HomeScreenEffect
 
+    data object NavigateToSettings : HomeScreenEffect
+
 
 
 }

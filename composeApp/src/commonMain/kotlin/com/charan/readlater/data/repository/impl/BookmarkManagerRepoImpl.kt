@@ -9,6 +9,7 @@ import com.charan.readlater.data.mappers.toReadLaterItem
 import com.charan.readlater.utils.ProcessState
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.flow
 
 class BookmarkManagerRepoImpl(
     private val readLaterDataSourceRepo: ReadLaterDataSourceRepo,
@@ -16,25 +17,17 @@ class BookmarkManagerRepoImpl(
     private val settingsDataStoreRepo: SettingsDataStoreRepo,
     private val webScrapperRepo: WebScrapperRepo
 ) : BookmarkManagerRepo {
-    override suspend fun addBookmark(url: String): Flow<ProcessState<Boolean>> {
-        val progressState = MutableStateFlow<ProcessState<Boolean>>(ProcessState.Loading)
+    override suspend fun addBookmark(url: String): Flow<ProcessState<Boolean>> =flow{
+        emit(ProcessState.Loading)
         try {
             val metaData = webScrapperRepo.getWebMetaData(url)
-            println(metaData)
             val readLaterItem = metaData.toReadLaterItem(url)
-            println(readLaterItem)
             readLaterDataSourceRepo.insertItem(readLaterItem)
-            progressState.emit(ProcessState.Success(true))
-
-
-
+            emit(ProcessState.Success(true))
         } catch (e: Exception) {
-            progressState.emit(ProcessState.Error(e.message.toString()))
+            println(e)
+            emit(ProcessState.Error(e.message.toString()))
         }
-
-        return progressState
-
-
     }
 
     override suspend fun deleteBookmark(id: String): Flow<ProcessState<Boolean>> {

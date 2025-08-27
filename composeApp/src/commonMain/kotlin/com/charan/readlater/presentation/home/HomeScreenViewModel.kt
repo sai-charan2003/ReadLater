@@ -50,6 +50,7 @@ class HomeScreenViewModel(
                         showAddURLBottomSheet = !state.showAddURLBottomSheet
                     )
                 }
+                resetNewURLState()
             }
             HomeScreenEvent.OnSaveURLClick -> {
                 val url = state.value.newUrlState.url
@@ -58,7 +59,7 @@ class HomeScreenViewModel(
             is HomeScreenEvent.OnURLChange -> {
                 _state.update { state->
                     state.copy(
-                        newUrlState = state.newUrlState.copy(url = event.url)
+                        newUrlState = state.newUrlState.copy(url = event.url, error = "")
                     )
                 }
             }
@@ -74,33 +75,60 @@ class HomeScreenViewModel(
                     )
                 }
             }
+
+            HomeScreenEvent.OnDropDownClick -> {
+                _state.update {
+                    it.copy(
+                        isDropDownVisible = !it.isDropDownVisible
+                    )
+                }
+            }
+
+            HomeScreenEvent.OnSettingsClick -> {
+                _effect.emit(HomeScreenEffect.NavigateToSettings)
+
+            }
         }
     }
 
     private fun saveNewURL(url : String) = viewModelScope.launch {
         bookmarkManagerRepo.addBookmark(url).collectLatest {
-            println(url)
+            println(it)
             when(it){
                 is ProcessState.Error -> {
+                    _state.update { state->
+                        state.copy(
+                            newUrlState = state.newUrlState.copy(isSaving = false,error =  it.exception)
+                        )
+                    }
 
                 }
                 ProcessState.Loading -> {
                     _state.update { state->
                         state.copy(
-                            savingNewUrl = true
+                            newUrlState = state.newUrlState.copy(isSaving = true)
                         )
                     }
 
                 }
                 ProcessState.NotDetermined -> {}
                 is ProcessState.Success<*> -> {
-                    _state.update {
-                        it.copy(
-                            showAddURLBottomSheet = false
+                    _state.update { state->
+                        state.copy(
+                            showAddURLBottomSheet = false,
                         )
                     }
+                    resetNewURLState()
                 }
             }
+        }
+    }
+
+    private fun resetNewURLState()= viewModelScope.launch {
+        _state.update {
+            it.copy(
+                newUrlState = NewUrlState()
+            )
         }
     }
 

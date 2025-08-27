@@ -13,6 +13,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -88,12 +89,16 @@ fun AuthenticationScreen(
                     )
                     Spacer(Modifier.padding(end = 10.dp))
                     Text("Sign in with Google")
-                    AnimatedVisibility(visible = state.isAuthenticating) {
+                    AnimatedVisibility(
+                        visible = state.isAuthenticating,
+                        modifier = Modifier.padding(start = 10.dp)
+                    ) {
                         Spacer(Modifier.weight(1f))
                         CircularProgressIndicator(
-                            strokeWidth = 2.dp,
-                            modifier = Modifier.fillMaxSize(),
-                            color = MaterialTheme.colorScheme.onPrimary
+                            modifier = Modifier
+                                .size(20.dp)
+                                .fillMaxWidth(),
+                            strokeWidth = 3.dp
                         )
 
                     }

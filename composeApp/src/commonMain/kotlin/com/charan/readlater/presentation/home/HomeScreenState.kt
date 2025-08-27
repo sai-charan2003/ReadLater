@@ -4,13 +4,15 @@ data class HomeScreenState (
     val isFetchingData : Boolean = false,
     val readLaterUiItem: List<ReadLaterUiItem> = emptyList(),
     val showAddURLBottomSheet : Boolean = false,
-    val savingNewUrl : Boolean = false,
+    val isDropDownVisible : Boolean = false,
     val newUrlState: NewUrlState = NewUrlState()
 )
 
 data class NewUrlState(
     val url: String = "",
-    val isDue: Boolean = false
+    val isDue: Boolean = false,
+    val isSaving : Boolean = false,
+    val error : String = ""
 )
 
 data class ReadLaterUiItem(

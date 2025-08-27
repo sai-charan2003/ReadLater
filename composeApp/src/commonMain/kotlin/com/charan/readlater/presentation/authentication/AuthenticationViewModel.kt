@@ -21,9 +21,6 @@ class AuthenticationViewModel(
     private val supabaseRepo: SupabaseRepo,
     private val settingsDataStoreRepo: SettingsDataStoreRepo
 ) : ViewModel() {
-    init {
-        authenticationStatus()
-    }
 
     private val _userAuthenticationStatus = MutableStateFlow(AuthenticationScreenState())
 

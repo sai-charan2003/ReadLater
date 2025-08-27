@@ -1,5 +1,6 @@
 package com.charan.readlater.presentation.home.components
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -17,8 +18,10 @@ fun AddUrlBottomSheet(
     savingURL: Boolean = false,
     url: String,
     isDue: Boolean = false,
-    onDueChange: (Boolean) -> Unit
+    onDueChange: (Boolean) -> Unit,
+    error : String
 ) {
+    println(savingURL)
     ModalBottomSheet(
         onDismissRequest = { onDismiss() },
         sheetState = bottomModelSheetState
@@ -33,7 +36,16 @@ fun AddUrlBottomSheet(
                 value = url,
                 onValueChange = onValueChange,
                 label = { Text("Enter URL") },
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
+                isError = error.isNotEmpty(),
+                supportingText = {
+                    if(error.isNotEmpty()){
+                        Text(error)
+                    } else {
+                        null
+                    }
+                }
+
             )
 
             ElevatedCard(
@@ -63,9 +75,15 @@ fun AddUrlBottomSheet(
                 enabled = !savingURL && url.isNotEmpty(),
                 modifier = Modifier
                     .fillMaxWidth()
-                
+
             ) {
                 Text("Add Bookmark")
+                AnimatedVisibility(savingURL, modifier = Modifier.padding(start = 10.dp)) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(20.dp),
+                        strokeWidth = 3.dp
+                    )
+                }
             }
         }
     }
