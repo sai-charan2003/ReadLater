@@ -7,3 +7,9 @@ data object HomeScreenNav
 
 @Serializable
 data object AuthenticationScreenNav
+
+@Serializable
+data object SettingsScreenNav
+
+@Serializable
+data object AccountScreenNav

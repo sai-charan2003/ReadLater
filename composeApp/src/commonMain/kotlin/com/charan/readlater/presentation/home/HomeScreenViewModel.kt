@@ -85,6 +85,7 @@ class HomeScreenViewModel(
             }
 
             HomeScreenEvent.OnSettingsClick -> {
+                println("hi")
                 _effect.emit(HomeScreenEffect.NavigateToSettings)
 
             }

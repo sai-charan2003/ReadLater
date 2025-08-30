@@ -6,6 +6,8 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.charan.readlater.presentation.home.HomeScreen
 import com.charan.readlater.presentation.authentication.AuthenticationScreen
+import com.charan.readlater.presentation.settings.SettingsScreen
+import com.charan.readlater.presentation.settings.account.AccountScreen
 
 @Composable
 fun NavAppHost(
@@ -28,7 +30,27 @@ fun NavAppHost(
         composable <HomeScreenNav>{
             HomeScreen(
                 navigateToSettings = {
+                    navHostController.navigate(SettingsScreenNav)
 
+                }
+            )
+        }
+
+        composable <SettingsScreenNav>{
+            SettingsScreen(
+                onPop = {
+                    navHostController.popBackStack()
+                },
+                onAccountScreenOpen = {
+                    navHostController.navigate(AccountScreenNav)
+                }
+            )
+        }
+
+        composable <AccountScreenNav>{
+            AccountScreen(
+                onPop = {
+                    navHostController.popBackStack()
                 }
             )
         }

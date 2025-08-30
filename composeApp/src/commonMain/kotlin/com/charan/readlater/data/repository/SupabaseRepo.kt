@@ -1,5 +1,6 @@
 package com.charan.readlater.data.repository
 
+import com.charan.readlater.data.remote.model.UserDetails
 import com.charan.readlater.utils.ProcessState
 import kotlinx.coroutines.flow.Flow
 
@@ -12,5 +13,7 @@ interface SupabaseRepo {
     suspend fun deleteData(): Flow<ProcessState<Boolean>>
 
     suspend fun authenticationStatus(): Flow<ProcessState<Boolean>>
+
+    suspend fun getAuthorizedUserDetails() : Flow<ProcessState<UserDetails>>
 
 }

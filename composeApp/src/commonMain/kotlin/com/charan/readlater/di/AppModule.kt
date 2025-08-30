@@ -16,6 +16,7 @@ import com.charan.readlater.data.repository.impl.SupabaseRepoImpl
 import com.charan.readlater.data.repository.impl.WebScrapperRepoImpl
 import com.charan.readlater.presentation.home.HomeScreenViewModel
 import com.charan.readlater.presentation.authentication.AuthenticationViewModel
+import com.charan.readlater.presentation.settings.SettingsScreenViewModel
 import io.github.jan.supabase.SupabaseClient
 import org.koin.core.context.startKoin
 import org.koin.core.module.dsl.viewModel
@@ -42,6 +43,7 @@ val appModule = module {
     single <BookmarkManagerRepo>{ BookmarkManagerRepoImpl(get(),get(),get(),get()) }
     viewModel { AuthenticationViewModel(get(),get ()) }
     viewModel { HomeScreenViewModel(get(),get()) }
+    viewModel { SettingsScreenViewModel(get()) }
 }
 fun initKoin(appDeclaration: KoinAppDeclaration = {}) = startKoin {
     appDeclaration()

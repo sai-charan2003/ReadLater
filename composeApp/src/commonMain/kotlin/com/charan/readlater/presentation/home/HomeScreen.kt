@@ -41,6 +41,7 @@ fun HomeScreen(
 
     LaunchedEffect(Unit){
         viewModel.effect.collectLatest { effect ->
+            println(effect)
             when(effect){
                 is HomeScreenEffect.OpenURLInBrowser -> {
                     uriHandler.openUri(effect.url)
@@ -51,6 +52,7 @@ fun HomeScreen(
                 }
 
                 HomeScreenEffect.NavigateToSettings -> {
+
                     navigateToSettings()
                 }
             }
@@ -104,6 +106,7 @@ fun HomeScreen(
                                 Text("Settings")
                             },
                             onClick = {
+                                viewModel.onEvent(HomeScreenEvent.OnSettingsClick)
 
                             }
                         )

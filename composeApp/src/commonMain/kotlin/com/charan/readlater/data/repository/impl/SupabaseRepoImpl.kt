@@ -1,6 +1,7 @@
 package com.charan.readlater.data.repository.impl
 
 import com.charan.readlater.data.remote.ReadLaterSupabaseClient
+import com.charan.readlater.data.remote.model.UserDetails
 import com.charan.readlater.data.repository.SupabaseRepo
 import com.charan.readlater.utils.ProcessState
 import io.github.jan.supabase.SupabaseClient
@@ -80,6 +81,28 @@ class SupabaseRepoImpl(
             .catch { e ->
                 emit(ProcessState.Error(e.message.toString()))
             }
+
+    }
+
+    override suspend fun getAuthorizedUserDetails(): Flow<ProcessState<UserDetails>> = flow{
+        emit(ProcessState.Loading)
+        try {
+            val currentSession = readLaterSupabaseClient.auth.currentUserOrNull()
+            val userAvatar = currentSession?.identities?.get(0)?.identityData?.get("avatar_url").toString().substringAfter("\"").substringBefore("\"")
+            val userName = currentSession?.identities?.get(0)?.identityData?.get("full_name").toString().substringAfter("\"").substringBefore("\"")
+            val userEmail = currentSession?.email
+            emit(
+                ProcessState.Success(
+                    UserDetails(
+                        userName = userName,
+                        userEmail = userEmail ?: "",
+                        imageURL = userAvatar,
+                    )
+                )
+            )
+        } catch (e: Exception){
+            emit(ProcessState.Error(e.message.toString()))
+        }
 
     }
 }
