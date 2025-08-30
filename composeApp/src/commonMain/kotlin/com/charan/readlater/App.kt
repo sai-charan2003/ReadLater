@@ -2,6 +2,7 @@ package com.charan.readlater
 
 
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Surface
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.navigation.compose.rememberNavController
@@ -31,10 +32,12 @@ fun App(
     }
     GoogleAuthProvider.create(credentials = GoogleAuthCredentials(serverId = BuildKonfig.GOOGLE_SERVER_ID))
     ReadLaterTheme{
-        NavAppHost(
-            navHostController = rememberNavController(),
-            isLoggedIn = isLoggedIn
-        )
+        Surface {
+            NavAppHost(
+                navHostController = rememberNavController(),
+                isLoggedIn = isLoggedIn
+            )
+        }
 
     }
 }

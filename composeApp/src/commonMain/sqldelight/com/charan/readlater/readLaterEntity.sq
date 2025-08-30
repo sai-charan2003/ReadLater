@@ -26,3 +26,7 @@ VALUES (?, ?, ?, ?, ?, ?,?);
 
 getAllReadLaterItems:
 SELECT * FROM readLaterEntity;
+
+
+getAllPendingSyncItems:
+SELECT * FROM readLaterEntity WHERE isSynced = 0;

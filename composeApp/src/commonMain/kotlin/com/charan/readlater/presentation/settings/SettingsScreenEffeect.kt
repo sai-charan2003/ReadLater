@@ -4,4 +4,5 @@ sealed class SettingsScreenEffeect {
     data class ShowError(val message: String) : SettingsScreenEffeect()
     object NavigateToAccountScreen : SettingsScreenEffeect()
     object NavigateBack : SettingsScreenEffeect()
+    object NavigateToLoginScreen : SettingsScreenEffeect()
 }

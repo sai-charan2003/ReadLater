@@ -1,5 +1,10 @@
 package com.charan.readlater.presentation.navigation
 
+import androidx.compose.animation.AnimatedContentTransitionScope
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -16,14 +21,49 @@ fun NavAppHost(
 ) {
     NavHost(
         navController = navHostController,
-        startDestination = if(isLoggedIn) HomeScreenNav else AuthenticationScreenNav
+        startDestination = if(isLoggedIn) HomeScreenNav else AuthenticationScreenNav,
+        enterTransition = {
+            fadeIn() + slideIntoContainer(
+                AnimatedContentTransitionScope.SlideDirection.Start,
+                initialOffset = { 100 },
+                animationSpec = (tween(easing = LinearEasing, durationMillis = 200))
+            )
+        },
+        exitTransition = {
+            fadeOut() + slideOutOfContainer(
+                AnimatedContentTransitionScope.SlideDirection.Start,
+                targetOffset = { -100 },
+                animationSpec = (tween(easing = LinearEasing, durationMillis = 200))
+            )
+        },
+        popEnterTransition = {
+            fadeIn() + slideIntoContainer(
+                AnimatedContentTransitionScope.SlideDirection.End,
+                initialOffset = { -100 },
+                animationSpec = (tween(easing = LinearEasing, durationMillis = 200))
+            )
+        },
+        popExitTransition = {
+            fadeOut() + slideOutOfContainer(
+                AnimatedContentTransitionScope.SlideDirection.End,
+                targetOffset = { 100 },
+                animationSpec = (tween(easing = LinearEasing, durationMillis = 200))
+            )
+        },
 
     ) {
         composable <AuthenticationScreenNav>{
             AuthenticationScreen(
                 navigateToHome = {
-                    navHostController.navigate(HomeScreenNav)
-                }
+                    navHostController.navigate(HomeScreenNav){
+                        popUpTo(0) { inclusive = true }
+                        launchSingleTop = true
+                    }
+                },
+                navigateToBack = {
+                    navHostController.popBackStack()
+                },
+                hasBackStack = navHostController.previousBackStackEntry != null
             )
         }
 
@@ -51,6 +91,9 @@ fun NavAppHost(
             AccountScreen(
                 onPop = {
                     navHostController.popBackStack()
+                },
+                navigateToSignIn = {
+                    navHostController.navigate(AuthenticationScreenNav)
                 }
             )
         }

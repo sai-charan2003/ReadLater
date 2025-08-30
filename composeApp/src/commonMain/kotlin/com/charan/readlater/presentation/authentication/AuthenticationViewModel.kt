@@ -14,6 +14,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
@@ -21,6 +22,9 @@ class AuthenticationViewModel(
     private val supabaseRepo: SupabaseRepo,
     private val settingsDataStoreRepo: SettingsDataStoreRepo
 ) : ViewModel() {
+    init {
+        shouldShowLoginWithNoAccount()
+    }
 
     private val _userAuthenticationStatus = MutableStateFlow(AuthenticationScreenState())
 
@@ -63,6 +67,10 @@ class AuthenticationViewModel(
             AuthenticationEvent.OnNoAccountLogin -> {
                 noAccountLogin()
 
+            }
+
+            AuthenticationEvent.OnBackPressed -> {
+                _authenticationScreenEffect.emit(AuthenticationScreenEffect.NavigateBack)
             }
         }
     }
@@ -118,6 +126,15 @@ class AuthenticationViewModel(
         }
         _authenticationScreenEffect.emit(AuthenticationScreenEffect.NavigateToHome)
         settingsDataStoreRepo.updateLoginType(LoginTypeEnum.NO_ACCOUNT)
+    }
+
+    private fun shouldShowLoginWithNoAccount() = viewModelScope.launch {
+        val login = settingsDataStoreRepo.getLoginType().first()
+        _userAuthenticationStatus.update {
+            it.copy(
+                showLoginWithNoAccount = login != LoginTypeEnum.NO_ACCOUNT
+            )
+        }
     }
 
 

@@ -85,7 +85,11 @@ class HomeScreenViewModel(
             }
 
             HomeScreenEvent.OnSettingsClick -> {
-                println("hi")
+                _state.update {
+                    it.copy(
+                        isDropDownVisible = false
+                    )
+                }
                 _effect.emit(HomeScreenEffect.NavigateToSettings)
 
             }

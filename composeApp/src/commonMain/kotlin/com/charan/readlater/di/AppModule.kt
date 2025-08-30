@@ -43,7 +43,7 @@ val appModule = module {
     single <BookmarkManagerRepo>{ BookmarkManagerRepoImpl(get(),get(),get(),get()) }
     viewModel { AuthenticationViewModel(get(),get ()) }
     viewModel { HomeScreenViewModel(get(),get()) }
-    viewModel { SettingsScreenViewModel(get()) }
+    viewModel { SettingsScreenViewModel(get(),get()) }
 }
 fun initKoin(appDeclaration: KoinAppDeclaration = {}) = startKoin {
     appDeclaration()

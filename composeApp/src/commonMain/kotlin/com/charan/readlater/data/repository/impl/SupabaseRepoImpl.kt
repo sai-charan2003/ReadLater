@@ -41,6 +41,13 @@ class SupabaseRepoImpl(
     }
 
     override suspend fun signOutUser(): Flow<ProcessState<Boolean>> = flow{
+        emit(ProcessState.Loading)
+        try {
+            readLaterSupabaseClient.auth.signOut()
+            emit(ProcessState.Success(true))
+        } catch (e: Exception){
+            emit(ProcessState.Error(e.message.toString()))
+        }
 
     }
 

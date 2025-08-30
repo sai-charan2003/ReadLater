@@ -1,6 +1,8 @@
 package com.charan.readlater.presentation.settings.components
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItem
@@ -9,6 +11,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.unit.dp
 
 @Composable
 fun SettingsItem(
@@ -35,9 +38,10 @@ fun SettingsItem(
                 Text(subHeading)
             }
         },
-        modifier = Modifier.clickable(isClickable){
+        modifier = Modifier.fillMaxWidth().clickable(isClickable){
             onClick()
-        }
+        },
+
     )
 
 }

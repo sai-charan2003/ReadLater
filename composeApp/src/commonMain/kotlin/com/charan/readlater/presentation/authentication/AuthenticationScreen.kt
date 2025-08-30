@@ -5,6 +5,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -29,9 +30,12 @@ import org.koin.compose.viewmodel.koinViewModel
 import readlater.composeapp.generated.resources.Res
 import readlater.composeapp.generated.resources.google_signin
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AuthenticationScreen(
     navigateToHome: () -> Unit,
+    hasBackStack : Boolean = false,
+    navigateToBack : () -> Unit
 
 ) {
     val viewModel = koinViewModel<AuthenticationViewModel>()
@@ -46,11 +50,34 @@ fun AuthenticationScreen(
                 is AuthenticationScreenEffect.ShowError -> {
 
                 }
+
+                AuthenticationScreenEffect.NavigateBack -> {
+                    navigateToBack()
+
+                }
             }
         }
     }
 
-    Scaffold { innerPadding ->
+    Scaffold(
+        topBar = {
+            if(hasBackStack) {
+                TopAppBar(
+                    title = {},
+                    navigationIcon = {
+                        IconButton(onClick = {
+                            viewModel.onEvent(AuthenticationEvent.OnBackPressed)
+
+                        }
+                        ) {
+                            Icon(Icons.AutoMirrored.Rounded.ArrowBack,null)
+
+                        }
+                    }
+                )
+            }
+        }
+    ) { innerPadding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -106,29 +133,31 @@ fun AuthenticationScreen(
                 }
 
             }
+            if(state.showLoginWithNoAccount) {
 
 
-            Spacer(modifier = Modifier.height(24.dp))
+                Spacer(modifier = Modifier.height(24.dp))
 
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                HorizontalDivider(modifier = Modifier.weight(1f))
-                Text("  OR  ", color = MaterialTheme.colorScheme.onSurfaceVariant)
-                HorizontalDivider(modifier = Modifier.weight(1f))
-            }
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    HorizontalDivider(modifier = Modifier.weight(1f))
+                    Text("  OR  ", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    HorizontalDivider(modifier = Modifier.weight(1f))
+                }
 
-            Spacer(modifier = Modifier.height(24.dp))
+                Spacer(modifier = Modifier.height(24.dp))
 
 
-            FilledTonalButton(
-                onClick = {
-                    viewModel.onEvent(AuthenticationEvent.OnNoAccountLogin)
-                },
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text("Continue without account")
+                FilledTonalButton(
+                    onClick = {
+                        viewModel.onEvent(AuthenticationEvent.OnNoAccountLogin)
+                    },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text("Continue without account")
+                }
             }
         }
     }
