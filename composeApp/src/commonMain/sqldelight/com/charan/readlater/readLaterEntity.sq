@@ -9,7 +9,9 @@ CREATE TABLE readLaterEntity (
     created_at TEXT NOT NULL,
     image_url TEXT,
     is_due INTEGER AS Boolean NOT NULL DEFAULT 0,
-    isSynced INTEGER AS Boolean NOT NULL DEFAULT 0
+    isSynced INTEGER AS Boolean NOT NULL DEFAULT 0,
+    isDeleted INTEGER AS Boolean NOT NULL DEFAULT 0,
+    uuid TEXT NOT NULL UNIQUE
     );
 
 
@@ -21,8 +23,10 @@ INSERT INTO readLaterEntity (
     created_at,
     image_url,
     is_due,
-    isSynced)
-VALUES (?, ?, ?, ?, ?, ?,?);
+    isSynced,
+    uuid,
+    isDeleted)
+VALUES (?, ?, ?, ?, ?, ?,?,?,?);
 
 getAllReadLaterItems:
 SELECT * FROM readLaterEntity;

@@ -1,14 +1,19 @@
 package com.charan.readlater.data.repository.impl
 
+import com.charan.readlater.ReadLaterDatabase
 import com.charan.readlater.data.remote.ReadLaterSupabaseClient
+import com.charan.readlater.data.remote.model.ReadLaterDTO
 import com.charan.readlater.data.remote.model.UserDetails
+import com.charan.readlater.data.repository.ReadLaterDataSourceRepo
 import com.charan.readlater.data.repository.SupabaseRepo
 import com.charan.readlater.utils.ProcessState
+import com.charan.readlater.utils.SupabaseAppConstatnts
 import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.auth.auth
 import io.github.jan.supabase.auth.providers.Google
 import io.github.jan.supabase.auth.providers.builtin.IDToken
 import io.github.jan.supabase.auth.status.SessionStatus
+import io.github.jan.supabase.postgrest.from
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.catch
@@ -18,7 +23,7 @@ import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 
 class SupabaseRepoImpl(
-    private val readLaterSupabaseClient: SupabaseClient
+    private val readLaterSupabaseClient: SupabaseClient,
 ) : SupabaseRepo {
 
     @OptIn(ExperimentalUuidApi::class)
@@ -51,17 +56,6 @@ class SupabaseRepoImpl(
 
     }
 
-    override suspend fun insertData(): Flow<ProcessState<Boolean>> = flow{
-
-    }
-
-    override suspend fun updateData(): Flow<ProcessState<Boolean>> =flow{
-
-    }
-
-    override suspend fun deleteData(): Flow<ProcessState<Boolean>> =flow{
-
-    }
 
     override suspend fun authenticationStatus(): Flow<ProcessState<Boolean>> {
         return readLaterSupabaseClient.auth.sessionStatus
@@ -97,7 +91,7 @@ class SupabaseRepoImpl(
             val currentSession = readLaterSupabaseClient.auth.currentUserOrNull()
             val userAvatar = currentSession?.identities?.get(0)?.identityData?.get("avatar_url").toString().substringAfter("\"").substringBefore("\"")
             val userName = currentSession?.identities?.get(0)?.identityData?.get("full_name").toString().substringAfter("\"").substringBefore("\"")
-            val userEmail = currentSession?.email
+            val userEmail = getEmailId()
             emit(
                 ProcessState.Success(
                     UserDetails(
@@ -107,6 +101,38 @@ class SupabaseRepoImpl(
                     )
                 )
             )
+        } catch (e: Exception){
+            emit(ProcessState.Error(e.message.toString()))
+        }
+
+    }
+
+    override suspend fun syncData(syncItems: List<ReadLaterDTO>): Flow<ProcessState<Boolean>> =flow{
+        emit(ProcessState.Loading)
+        try {
+            readLaterSupabaseClient.from(SupabaseAppConstatnts.READ_LATER_TABLE_NAME).insert(syncItems)
+            emit(ProcessState.Success(true))
+        } catch (e: Exception){
+            emit(ProcessState.Error(e.message.toString()))
+        }
+
+    }
+
+    override suspend fun getEmailId(): String? {
+        return readLaterSupabaseClient.auth.currentUserOrNull()?.email
+    }
+
+    override suspend fun getAllBookmarks(): Flow<ProcessState<List<ReadLaterDTO>>> =flow{
+        emit(ProcessState.Loading)
+        try {
+            val emailId = getEmailId()
+            if(emailId != null){
+                val bookmarks = readLaterSupabaseClient.from(SupabaseAppConstatnts.READ_LATER_TABLE_NAME)
+                    .select().decodeList<ReadLaterDTO>()
+                emit(ProcessState.Success(bookmarks.ifEmpty { emptyList() }))
+            } else {
+                emit(ProcessState.Error("User not logged in"))
+            }
         } catch (e: Exception){
             emit(ProcessState.Error(e.message.toString()))
         }

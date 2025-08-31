@@ -1,5 +1,7 @@
 package com.charan.readlater.presentation.home
 
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
@@ -18,6 +20,8 @@ import androidx.compose.material3.LargeTopAppBar
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -39,6 +43,7 @@ fun HomeScreen(
     val state by viewModel.state.collectAsStateWithLifecycle()
     val addBookmarkModelSheet = rememberModalBottomSheetState()
     val scrollSate = TopAppBarDefaults.enterAlwaysScrollBehavior()
+    val pullToRefreshState = rememberPullToRefreshState()
     val uriHandler = LocalUriHandler.current
 
     LaunchedEffect(Unit){
@@ -131,27 +136,36 @@ fun HomeScreen(
         floatingActionButtonPosition = FabPosition.End,
 
     ) {
-        LazyColumn(
-            modifier = Modifier
-                .padding(it)
+        PullToRefreshBox(
+            isRefreshing = state.isFetchingData,
+            onRefresh = {
+                viewModel.onEvent(HomeScreenEvent.OnRefresh)
+            },
+            state = pullToRefreshState,
+            modifier = Modifier.padding(it)
         ) {
-            items(
-                state.readLaterUiItem.size,
-                key = { state.readLaterUiItem[it].id }
+            LazyColumn(
+                modifier = Modifier.fillMaxSize()
+
             ) {
-                val item = state.readLaterUiItem[it]
-                BookmarkItem(
-                    title = item.title,
-                    description = item.description,
-                    imageUrl = item.imageUrl,
-                    onClick = {
-                        viewModel.onEvent(HomeScreenEvent.OnURLOpen(item.url))
+                items(
+                    state.readLaterUiItem.size,
+                    key = { state.readLaterUiItem[it].id }
+                ) {
+                    val item = state.readLaterUiItem[it]
+                    BookmarkItem(
+                        title = item.title,
+                        description = item.description,
+                        imageUrl = item.imageUrl,
+                        onClick = {
+                            viewModel.onEvent(HomeScreenEvent.OnURLOpen(item.url))
 
-                    }
+                        }
 
-                )
+                    )
+                }
+
             }
-
         }
     }
 

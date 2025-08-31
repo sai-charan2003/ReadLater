@@ -9,7 +9,11 @@ interface ReadLaterDataSourceRepo {
 
     suspend fun insertItem(item : ReadLaterEntity)
 
+    suspend fun insertItems(items : List<ReadLaterEntity>)
+
     suspend fun updateItem(item : ReadLaterEntity)
+
+    suspend fun getUnSyncedItems() : List<ReadLaterEntity>
 
 
 }

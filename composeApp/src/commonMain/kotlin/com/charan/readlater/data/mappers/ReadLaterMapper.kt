@@ -5,8 +5,10 @@ import com.charan.readlater.data.local.model.WebMetaData
 import com.charan.readlater.presentation.home.ReadLaterUiItem
 import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
+import kotlin.uuid.ExperimentalUuidApi
+import kotlin.uuid.Uuid
 
-@OptIn(ExperimentalTime::class)
+@OptIn(ExperimentalTime::class, ExperimentalUuidApi::class)
 fun WebMetaData.toReadLaterItem(url : String) : ReadLaterEntity {
     return ReadLaterEntity(
         id = 0,
@@ -16,7 +18,9 @@ fun WebMetaData.toReadLaterItem(url : String) : ReadLaterEntity {
         created_at = Clock.System.now().toString(),
         is_due =  false ,
         isSynced = false,
-        image_url = this.imageUrl
+        image_url = this.imageUrl,
+        uuid = Uuid.random().toString(),
+        isDeleted = false
     )
 }
 

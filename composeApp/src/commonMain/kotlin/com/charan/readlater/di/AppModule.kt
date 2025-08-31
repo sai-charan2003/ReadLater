@@ -8,11 +8,13 @@ import com.charan.readlater.data.repository.BookmarkManagerRepo
 import com.charan.readlater.data.repository.ReadLaterDataSourceRepo
 import com.charan.readlater.data.repository.SettingsDataStoreRepo
 import com.charan.readlater.data.repository.SupabaseRepo
+import com.charan.readlater.data.repository.SyncManager
 import com.charan.readlater.data.repository.WebScrapperRepo
 import com.charan.readlater.data.repository.impl.BookmarkManagerRepoImpl
 import com.charan.readlater.data.repository.impl.ReadLaterDataSourceImpl
 import com.charan.readlater.data.repository.impl.SettingsDataStoreRepoImpl
 import com.charan.readlater.data.repository.impl.SupabaseRepoImpl
+import com.charan.readlater.data.repository.impl.SyncManagerImpl
 import com.charan.readlater.data.repository.impl.WebScrapperRepoImpl
 import com.charan.readlater.presentation.home.HomeScreenViewModel
 import com.charan.readlater.presentation.authentication.AuthenticationViewModel
@@ -40,9 +42,10 @@ val appModule = module {
     single <WebScrapperRepo>{ WebScrapperRepoImpl() }
 
     single <SettingsDataStoreRepo>{ SettingsDataStoreRepoImpl(get()) }
-    single <BookmarkManagerRepo>{ BookmarkManagerRepoImpl(get(),get(),get(),get()) }
+    single <BookmarkManagerRepo>{ BookmarkManagerRepoImpl(get(),get(),get(),get(),get()) }
+    single <SyncManager>{ SyncManagerImpl(get(),get(),get()) }
     viewModel { AuthenticationViewModel(get(),get ()) }
-    viewModel { HomeScreenViewModel(get(),get()) }
+    viewModel { HomeScreenViewModel(get(),get(),get(),get()) }
     viewModel { SettingsScreenViewModel(get(),get()) }
 }
 fun initKoin(appDeclaration: KoinAppDeclaration = {}) = startKoin {

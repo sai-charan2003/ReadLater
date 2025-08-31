@@ -5,6 +5,9 @@ import androidx.lifecycle.viewModelScope
 import com.charan.readlater.data.mappers.toReadLaterUiItem
 import com.charan.readlater.data.repository.BookmarkManagerRepo
 import com.charan.readlater.data.repository.ReadLaterDataSourceRepo
+import com.charan.readlater.data.repository.SupabaseRepo
+import com.charan.readlater.data.repository.SyncManager
+import com.charan.readlater.data.repository.impl.SupabaseRepoImpl
 import com.charan.readlater.presentation.home.HomeScreenEffect.*
 import com.charan.readlater.utils.ProcessState
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -17,8 +20,13 @@ import kotlinx.coroutines.launch
 
 class HomeScreenViewModel(
     private val readLaterDataSourceRepo: ReadLaterDataSourceRepo,
-    private val bookmarkManagerRepo: BookmarkManagerRepo
+    private val supabaseRepoImpl: SupabaseRepo,
+    private val bookmarkManagerRepo: BookmarkManagerRepo,
+    private val syncManager: SyncManager
 ) : ViewModel() {
+//    init {
+//        fetchData()
+//    }
 
     private val _state = MutableStateFlow(HomeScreenState())
     val state = _state.asStateFlow()
@@ -90,8 +98,12 @@ class HomeScreenViewModel(
                         isDropDownVisible = false
                     )
                 }
-                _effect.emit(HomeScreenEffect.NavigateToSettings)
+                _effect.emit(NavigateToSettings)
 
+            }
+
+            HomeScreenEvent.OnRefresh -> {
+                fetchData()
             }
         }
     }
@@ -135,6 +147,57 @@ class HomeScreenViewModel(
                 newUrlState = NewUrlState()
             )
         }
+    }
+
+    private fun fetchData() = viewModelScope.launch {
+        supabaseRepoImpl.authenticationStatus().collectLatest { authenticationStatus->
+            when(authenticationStatus){
+                is ProcessState.Error -> {
+                    _effect.emit(ShowError(authenticationStatus.exception))
+                }
+                ProcessState.Loading -> {
+                    _state.update { state->
+                        state.copy(
+                            isFetchingData = true,
+                        )
+                    }
+                }
+                ProcessState.NotDetermined -> {
+
+                }
+                is ProcessState.Success<*> -> {
+                    syncManager.fetchAndUpdate().collectLatest {
+                        when(it){
+                            is ProcessState.Error -> {
+                                _state.update { state->
+                                    state.copy(
+                                        isFetchingData = false,
+                                    )
+                                }
+                                _effect.emit(ShowError(it.exception))
+                            }
+                            ProcessState.Loading -> {
+                                _state.update { state->
+                                    state.copy(
+                                        isFetchingData = true,
+                                    )
+                                }
+                            }
+                            ProcessState.NotDetermined -> {}
+                            is ProcessState.Success<*> -> {
+                                _state.update { state->
+                                    state.copy(
+                                        isFetchingData = false
+                                    )
+                                }
+                            }
+                        }
+                    }
+
+                }
+            }
+        }
+
     }
 
 }

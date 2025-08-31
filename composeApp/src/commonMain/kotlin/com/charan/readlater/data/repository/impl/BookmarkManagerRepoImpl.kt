@@ -6,6 +6,7 @@ import com.charan.readlater.data.repository.SettingsDataStoreRepo
 import com.charan.readlater.data.repository.SupabaseRepo
 import com.charan.readlater.data.repository.WebScrapperRepo
 import com.charan.readlater.data.mappers.toReadLaterItem
+import com.charan.readlater.data.repository.SyncManager
 import com.charan.readlater.utils.ProcessState
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -15,6 +16,7 @@ class BookmarkManagerRepoImpl(
     private val readLaterDataSourceRepo: ReadLaterDataSourceRepo,
     private val readLaterSupabaseRepo: SupabaseRepo,
     private val settingsDataStoreRepo: SettingsDataStoreRepo,
+    private val syncManager: SyncManager,
     private val webScrapperRepo: WebScrapperRepo
 ) : BookmarkManagerRepo {
     override suspend fun addBookmark(url: String): Flow<ProcessState<Boolean>> =flow{
@@ -24,6 +26,7 @@ class BookmarkManagerRepoImpl(
             val readLaterItem = metaData.toReadLaterItem(url)
             readLaterDataSourceRepo.insertItem(readLaterItem)
             emit(ProcessState.Success(true))
+            syncManager.sync()
         } catch (e: Exception) {
             println(e)
             emit(ProcessState.Error(e.message.toString()))

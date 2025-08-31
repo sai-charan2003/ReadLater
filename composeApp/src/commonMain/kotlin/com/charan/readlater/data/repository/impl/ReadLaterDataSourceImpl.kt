@@ -9,6 +9,7 @@ import com.charan.readlater.data.repository.ReadLaterDataSourceRepo
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
 
 class ReadLaterDataSourceImpl(
     private val db : ReadLaterDatabase
@@ -27,13 +28,40 @@ class ReadLaterDataSourceImpl(
             created_at = item.created_at,
             is_due = item.is_due,
             image_url = item.image_url,
-            isSynced = item.isSynced
+            isSynced = item.isSynced,
+            uuid = item.uuid,
+            isDeleted = item.isDeleted
         )
+
+    }
+
+    override suspend fun insertItems(items: List<ReadLaterEntity>) {
+        db.transaction {
+            items.forEach { item ->
+                queries.insertReadLaterItem(
+                    title = item.title,
+                    url = item.url,
+                    description = item.description,
+                    created_at = item.created_at,
+                    is_due = item.is_due,
+                    image_url = item.image_url,
+                    isSynced = item.isSynced,
+                    uuid = item.uuid,
+                    isDeleted = item.isDeleted
+                )
+            }
+        }
 
     }
 
     override suspend fun updateItem(item: ReadLaterEntity) {
 
     }
+
+    override suspend fun getUnSyncedItems(): List<ReadLaterEntity> {
+        return queries.getAllPendingSyncItems().asFlow().mapToList(Dispatchers.IO).first()
+    }
+
+
 
 }

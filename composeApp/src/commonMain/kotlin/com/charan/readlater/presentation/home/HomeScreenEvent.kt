@@ -10,4 +10,6 @@ sealed interface HomeScreenEvent {
     data class  OnDueChange(val isDue : Boolean) : HomeScreenEvent
     data object OnDropDownClick : HomeScreenEvent
     data object OnSettingsClick : HomeScreenEvent
+
+    data object OnRefresh : HomeScreenEvent
 }
