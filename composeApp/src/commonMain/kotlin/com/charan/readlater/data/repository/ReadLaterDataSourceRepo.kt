@@ -15,5 +15,7 @@ interface ReadLaterDataSourceRepo {
 
     suspend fun getUnSyncedItems() : List<ReadLaterEntity>
 
+    suspend fun clearAllData()
+
 
 }

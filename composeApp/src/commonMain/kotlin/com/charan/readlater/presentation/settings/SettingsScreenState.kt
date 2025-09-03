@@ -7,4 +7,5 @@ data class SettingsScreenState(
     val userDetails : UserDetails = UserDetails(),
     val isLoggedIn: Boolean = false,
     val isSignOutLoading : Boolean = false,
+    val showLogoutDialog : Boolean = false
 )

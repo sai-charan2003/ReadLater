@@ -7,6 +7,8 @@ import kotlinx.coroutines.flow.Flow
 
 interface SupabaseRepo {
 
+    suspend fun loadSession()
+
     suspend fun authorizeUser(token : String) : Flow<ProcessState<Boolean>>
     suspend fun signOutUser() : Flow<ProcessState<Boolean>>
 

@@ -5,4 +5,6 @@ sealed class SettingsScreenEvents {
     object OnAccountScreenClick : SettingsScreenEvents()
     object OnSignOutClick : SettingsScreenEvents()
     object OnSignInClick : SettingsScreenEvents()
+
+    object OnConfirmSignOutClick : SettingsScreenEvents()
 }

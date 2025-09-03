@@ -62,6 +62,7 @@ class ReadLaterDataSourceImpl(
         return queries.getAllPendingSyncItems().asFlow().mapToList(Dispatchers.IO).first()
     }
 
-
-
+    override suspend fun clearAllData() {
+        queries.delteAllReadLaterItems()
+    }
 }

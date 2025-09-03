@@ -26,6 +26,10 @@ class SupabaseRepoImpl(
     private val readLaterSupabaseClient: SupabaseClient,
 ) : SupabaseRepo {
 
+    override suspend fun loadSession() {
+        readLaterSupabaseClient.auth.loadFromStorage()
+    }
+
     @OptIn(ExperimentalUuidApi::class)
     override suspend fun authorizeUser(token : String): Flow<ProcessState<Boolean>> {
         val authenticationProcessState = MutableStateFlow<ProcessState<Boolean>>(ProcessState.Loading)
@@ -134,6 +138,7 @@ class SupabaseRepoImpl(
                 emit(ProcessState.Error("User not logged in"))
             }
         } catch (e: Exception){
+            println("e: $e")
             emit(ProcessState.Error(e.message.toString()))
         }
 

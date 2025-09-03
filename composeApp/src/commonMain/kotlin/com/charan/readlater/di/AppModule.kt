@@ -46,7 +46,7 @@ val appModule = module {
     single <SyncManager>{ SyncManagerImpl(get(),get(),get()) }
     viewModel { AuthenticationViewModel(get(),get ()) }
     viewModel { HomeScreenViewModel(get(),get(),get(),get()) }
-    viewModel { SettingsScreenViewModel(get(),get()) }
+    viewModel { SettingsScreenViewModel(get(),get(),get()) }
 }
 fun initKoin(appDeclaration: KoinAppDeclaration = {}) = startKoin {
     appDeclaration()

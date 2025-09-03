@@ -20,6 +20,7 @@ import coil3.compose.AsyncImage
 import com.charan.readlater.presentation.settings.SettingsScreenEffeect
 import com.charan.readlater.presentation.settings.SettingsScreenEvents
 import com.charan.readlater.presentation.settings.SettingsScreenViewModel
+import com.charan.readlater.presentation.settings.components.LogoutAlertDialog
 import org.koin.compose.viewmodel.koinViewModel
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
@@ -40,6 +41,16 @@ fun AccountScreen(
 
             }
         }
+    }
+    if(state.showLogoutDialog){
+        LogoutAlertDialog(
+            onConfirmClick = {
+                viewModel.onEvent(SettingsScreenEvents.OnConfirmSignOutClick)
+            },
+            onDismiss = {
+                viewModel.onEvent(SettingsScreenEvents.OnSignOutClick)
+            }
+        )
     }
 
     Scaffold(

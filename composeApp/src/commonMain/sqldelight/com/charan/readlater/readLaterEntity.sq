@@ -16,7 +16,7 @@ CREATE TABLE readLaterEntity (
 
 
 insertReadLaterItem:
-INSERT INTO readLaterEntity (
+INSERT OR REPLACE INTO readLaterEntity (
     url,
     title,
     description,
@@ -34,3 +34,6 @@ SELECT * FROM readLaterEntity;
 
 getAllPendingSyncItems:
 SELECT * FROM readLaterEntity WHERE isSynced = 0;
+
+delteAllReadLaterItems:
+DELETE FROM readLaterEntity;

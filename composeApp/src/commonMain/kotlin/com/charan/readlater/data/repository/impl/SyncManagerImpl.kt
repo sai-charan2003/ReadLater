@@ -50,6 +50,7 @@ class SyncManagerImpl(
 
     override suspend fun fetchAndUpdate(): Flow<ProcessState<Boolean>> =
         supabaseRepo.getAllBookmarks().map { state ->
+            println(state)
             when (state) {
                 is ProcessState.Error -> {
                     ProcessState.Error(state.exception)
@@ -62,6 +63,7 @@ class SyncManagerImpl(
                 }
                 is ProcessState.Success<*> -> {
                     val data = (state.data as List<ReadLaterDTO>).toReadLaterEntity()
+                    println("Hi $data")
                     readLaterDataSourceRepo.insertItems(data)
                     ProcessState.Success(true)
                 }
