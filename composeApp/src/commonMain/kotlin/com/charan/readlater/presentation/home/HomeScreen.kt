@@ -160,7 +160,8 @@ fun HomeScreen(
                         onClick = {
                             viewModel.onEvent(HomeScreenEvent.OnURLOpen(item.url))
 
-                        }
+                        },
+                        isDue = item.isDue
 
                     )
                 }

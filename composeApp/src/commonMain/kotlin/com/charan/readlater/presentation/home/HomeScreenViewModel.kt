@@ -11,6 +11,7 @@ import com.charan.readlater.data.repository.impl.SupabaseRepoImpl
 import com.charan.readlater.presentation.home.HomeScreenEffect.*
 import com.charan.readlater.utils.ProcessState
 import io.github.jan.supabase.auth.auth
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -157,6 +158,7 @@ class HomeScreenViewModel(
         }
     }
 
+    @OptIn(ExperimentalCoroutinesApi::class)
     private fun fetchData() = viewModelScope.launch {
         supabaseRepoImpl.authenticationStatus()
             .flatMapLatest { authenticationStatus ->

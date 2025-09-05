@@ -1,6 +1,7 @@
 package com.charan.readlater.presentation.home.components
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -18,7 +19,8 @@ fun BookmarkItem(
     title : String,
     description : String,
     imageUrl : String,
-    onClick : () -> Unit
+    onClick : () -> Unit,
+    isDue : Boolean = false
 ) {
 
     ListItem(
@@ -33,11 +35,19 @@ fun BookmarkItem(
 
         },
         headlineContent = {
-            Text(title)
+            Column {
+                Text(title)
+            }
         },
         modifier = Modifier.clickable(){
             onClick()
-        }
+        },
+        supportingContent = {
+            if(isDue){
+                DueBadge()
+            }
+        },
+
 
 
 
