@@ -19,11 +19,11 @@ class BookmarkManagerRepoImpl(
     private val syncManager: SyncManager,
     private val webScrapperRepo: WebScrapperRepo
 ) : BookmarkManagerRepo {
-    override suspend fun addBookmark(url: String): Flow<ProcessState<Boolean>> =flow{
+    override suspend fun addBookmark(url: String, isDue : Boolean): Flow<ProcessState<Boolean>> =flow{
         emit(ProcessState.Loading)
         try {
             val metaData = webScrapperRepo.getWebMetaData(url)
-            val readLaterItem = metaData.toReadLaterItem(url)
+            val readLaterItem = metaData.toReadLaterItem(url,isDue)
             readLaterDataSourceRepo.insertItem(readLaterItem)
             emit(ProcessState.Success(true))
             syncManager.sync()

@@ -5,7 +5,7 @@ import kotlinx.coroutines.flow.Flow
 
 interface BookmarkManagerRepo {
 
-    suspend fun addBookmark(url : String) : Flow<ProcessState<Boolean>>
+    suspend fun addBookmark(url : String,isDue : Boolean) : Flow<ProcessState<Boolean>>
 
     suspend fun deleteBookmark(id: String) : Flow<ProcessState<Boolean>>
 }

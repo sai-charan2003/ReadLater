@@ -9,14 +9,14 @@ import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 
 @OptIn(ExperimentalTime::class, ExperimentalUuidApi::class)
-fun WebMetaData.toReadLaterItem(url : String) : ReadLaterEntity {
+fun WebMetaData.toReadLaterItem(url : String,isDue : Boolean) : ReadLaterEntity {
     return ReadLaterEntity(
         id = 0,
         url = url,
         title = this.title,
         description = this.description,
         created_at = Clock.System.now().toString(),
-        is_due =  false ,
+        is_due =  isDue ,
         isSynced = false,
         image_url = this.imageUrl,
         uuid = Uuid.random().toString(),

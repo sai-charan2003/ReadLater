@@ -115,7 +115,7 @@ kotlin {
             implementation("com.fleeksoft.ksoup:ksoup:0.2.5")
             implementation("com.fleeksoft.ksoup:ksoup-network:0.2.5")
             implementation("io.coil-kt.coil3:coil-compose:3.3.0")
-            implementation("io.coil-kt.coil3:coil-network-okhttp:3.3.0")
+            implementation("io.coil-kt.coil3:coil-network-ktor3:3.3.0")
 
 
 
@@ -182,10 +182,16 @@ compose.desktop {
     application {
         mainClass = "com.charan.readlater.MainKt"
 
+
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
             packageName = "com.charan.readlater"
             packageVersion = "1.0.0"
+            macOS {
+                packageName = "ReadLater"
+                iconFile.set(project.file("src/commonMain/composeResources/drawable/AppIcon.icns"))
+            }
+
         }
     }
 }

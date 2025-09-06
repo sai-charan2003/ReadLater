@@ -70,7 +70,7 @@ class HomeScreenViewModel(
                 resetNewURLState()
             }
             HomeScreenEvent.OnSaveURLClick -> {
-                val url = state.value.newUrlState.url
+                val url = state.value.newUrlState
                 saveNewURL(url)
             }
             is HomeScreenEvent.OnURLChange -> {
@@ -117,9 +117,8 @@ class HomeScreenViewModel(
         }
     }
 
-    private fun saveNewURL(url : String) = viewModelScope.launch {
-        bookmarkManagerRepo.addBookmark(url).collectLatest {
-            println(it)
+    private fun saveNewURL(url : NewUrlState) = viewModelScope.launch {
+        bookmarkManagerRepo.addBookmark(url.url,url.isDue).collectLatest {
             when(it){
                 is ProcessState.Error -> {
                     _state.update { state->
