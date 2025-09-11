@@ -6,6 +6,7 @@ import app.cash.sqldelight.coroutines.mapToList
 import com.charan.readlater.ReadLaterDatabase
 import com.charan.readlater.ReadLaterEntity
 import com.charan.readlater.data.repository.ReadLaterDataSourceRepo
+import com.charan.readlater.utils.ProcessState
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.flow.Flow
@@ -64,5 +65,14 @@ class ReadLaterDataSourceImpl(
 
     override suspend fun clearAllData() {
         queries.delteAllReadLaterItems()
+    }
+
+    override suspend fun getAllActiveItems(): Flow<List<ReadLaterEntity> >{
+        return queries.getActiveReadLaterItems().asFlow().mapToList(Dispatchers.IO)
+    }
+
+    override suspend fun deleteItem(id: String) {
+        queries.deleteBookmarkById(id.toLong()  )
+
     }
 }

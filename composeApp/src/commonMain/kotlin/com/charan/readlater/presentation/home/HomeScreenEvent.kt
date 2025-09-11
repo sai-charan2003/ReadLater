@@ -12,4 +12,6 @@ sealed interface HomeScreenEvent {
     data object OnSettingsClick : HomeScreenEvent
 
     data object OnRefresh : HomeScreenEvent
+
+    data class OnDeleteBookmark(val id : String) : HomeScreenEvent
 }

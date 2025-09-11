@@ -37,3 +37,9 @@ SELECT * FROM readLaterEntity WHERE isSynced = 0;
 
 delteAllReadLaterItems:
 DELETE FROM readLaterEntity;
+
+getActiveReadLaterItems:
+SELECT * FROM readLaterEntity WHERE isDeleted = 0;
+
+deleteBookmarkById:
+UPDATE readLaterEntity SET isDeleted = 1, isSynced = 0 WHERE id = ?;

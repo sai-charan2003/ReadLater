@@ -48,7 +48,7 @@ class HomeScreenViewModel(
     }
 
     private fun getAllBookmarks()= viewModelScope.launch{
-        readLaterDataSourceRepo.getAllItems().collectLatest { items->
+        readLaterDataSourceRepo.getAllActiveItems().collectLatest { items->
             _state.update { state->
                 state.copy(
                     readLaterUiItem = items.toReadLaterUiItem()
@@ -113,6 +113,11 @@ class HomeScreenViewModel(
 
             HomeScreenEvent.OnRefresh -> {
                 fetchData()
+            }
+
+            is HomeScreenEvent.OnDeleteBookmark -> {
+                deleteBookmark(event.id)
+
             }
         }
     }
@@ -195,6 +200,10 @@ class HomeScreenViewModel(
                     ProcessState.NotDetermined -> {}
                 }
             }
+    }
+
+    private fun deleteBookmark(id : String) = viewModelScope.launch {
+        bookmarkManagerRepo.deleteBookmark(id).collectLatest {  }
     }
 
 }

@@ -17,5 +17,9 @@ interface ReadLaterDataSourceRepo {
 
     suspend fun clearAllData()
 
+    suspend fun getAllActiveItems() : Flow<List<ReadLaterEntity>>
+
+    suspend fun deleteItem(id: String)
+
 
 }

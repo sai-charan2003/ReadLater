@@ -23,6 +23,7 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.material3.rememberModalBottomSheetState
+import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -45,7 +46,6 @@ fun HomeScreen(
     val scrollSate = TopAppBarDefaults.enterAlwaysScrollBehavior()
     val pullToRefreshState = rememberPullToRefreshState()
     val uriHandler = LocalUriHandler.current
-
     LaunchedEffect(Unit){
         viewModel.effect.collectLatest { effect ->
             println(effect)
@@ -161,7 +161,17 @@ fun HomeScreen(
                             viewModel.onEvent(HomeScreenEvent.OnURLOpen(item.url))
 
                         },
-                        isDue = item.isDue
+                        isDue = item.isDue,
+                        onLeftToRightSwipe = {
+
+                        },
+                        onRightToLeftSwipe = {
+                            viewModel.onEvent(HomeScreenEvent.OnDeleteBookmark(item.id))
+
+                        },
+                        onContextMenuOpen = {
+
+                        }
 
                     )
                 }

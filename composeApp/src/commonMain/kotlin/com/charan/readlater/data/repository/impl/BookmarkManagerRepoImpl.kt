@@ -33,7 +33,15 @@ class BookmarkManagerRepoImpl(
         }
     }
 
-    override suspend fun deleteBookmark(id: String): Flow<ProcessState<Boolean>> {
-        TODO("Not yet implemented")
+    override suspend fun deleteBookmark(id: String): Flow<ProcessState<Boolean>> = flow {
+        emit(ProcessState.Loading)
+        try {
+            readLaterDataSourceRepo.deleteItem(id)
+            emit(ProcessState.Success(true))
+            syncManager.sync()
+        } catch (e: Exception) {
+            emit(ProcessState.Error(e.message.toString()))
+        }
+
     }
 }
