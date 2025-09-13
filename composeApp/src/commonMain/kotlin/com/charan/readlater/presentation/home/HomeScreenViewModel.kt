@@ -7,10 +7,8 @@ import com.charan.readlater.data.repository.BookmarkManagerRepo
 import com.charan.readlater.data.repository.ReadLaterDataSourceRepo
 import com.charan.readlater.data.repository.SupabaseRepo
 import com.charan.readlater.data.repository.SyncManager
-import com.charan.readlater.data.repository.impl.SupabaseRepoImpl
 import com.charan.readlater.presentation.home.HomeScreenEffect.*
 import com.charan.readlater.utils.ProcessState
-import io.github.jan.supabase.auth.auth
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -85,7 +83,7 @@ class HomeScreenViewModel(
                 _effect.emit(OpenURLInBrowser(event.url))
             }
 
-            is HomeScreenEvent.OnDueChange -> {
+            is HomeScreenEvent.OnDueButtonClick -> {
                 _state.update { state->
                     state.copy(
                         newUrlState = state.newUrlState.copy(isDue = event.isDue)
@@ -126,6 +124,10 @@ class HomeScreenViewModel(
                         selectedTabIndex = event.index
                     )
                 }
+            }
+
+            is HomeScreenEvent.OnDueStatusChange -> {
+                updateDueStatus(event.id,!event.isDue)
             }
         }
     }
@@ -212,6 +214,10 @@ class HomeScreenViewModel(
 
     private fun deleteBookmark(id : String) = viewModelScope.launch {
         bookmarkManagerRepo.deleteBookmark(id).collectLatest {  }
+    }
+
+    private fun updateDueStatus(id : Long , isDue : Boolean) = viewModelScope.launch {
+        bookmarkManagerRepo.updateDueStatus(id, isDue).collectLatest { }
     }
 
 }

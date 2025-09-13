@@ -5,13 +5,17 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Done
+import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.SwipeToDismissBox
@@ -30,57 +34,86 @@ import androidx.compose.ui.unit.lerp
 import coil3.compose.AsyncImage
 
 @Composable
-
 fun BookmarkItem(
-    title : String,
-    description : String,
-    imageUrl : String,
-    onClick : () -> Unit,
-    isDue : Boolean = false,
-    onContextMenuOpen : () -> Unit,
-    onLeftToRightSwipe : () -> Unit,
-    onRightToLeftSwipe : () -> Unit,
+    title: String,
+    description: String,
+    imageUrl: String,
+    onClick: () -> Unit,
+    isDue: Boolean = false,
+    onContextMenuOpen: () -> Unit,
+    onLeftToRightSwipe: () -> Unit, // Mark as read / set due
+    onRightToLeftSwipe: () -> Unit, // Delete
 ) {
     val swipeToDismissBoxState = rememberSwipeToDismissBoxState(
         confirmValueChange = {
-            if(it == SwipeToDismissBoxValue.StartToEnd) {
-                onLeftToRightSwipe()
-                false
+            when (it) {
+                SwipeToDismissBoxValue.StartToEnd -> {
+                    onLeftToRightSwipe()
+                    false
+                }
+                SwipeToDismissBoxValue.EndToStart -> {
+                    onRightToLeftSwipe()
+                    false
+                }
+                else -> false
             }
-            else if(it == SwipeToDismissBoxValue.EndToStart) {
-                onRightToLeftSwipe()
-                true
-            }
-            it != SwipeToDismissBoxValue.StartToEnd
         }
     )
+
     SwipeToDismissBox(
         state = swipeToDismissBoxState,
         backgroundContent = {
             val progress = swipeToDismissBoxState.progress
             val direction = swipeToDismissBoxState.dismissDirection
 
+            // Right-to-left swipe → Delete
             if (direction == SwipeToDismissBoxValue.EndToStart) {
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
-                        .background(
-                            lerp(Color(0xFFFFEEEE), Color.Red, progress)
-                        )
-                        ,
+                        .background(lerp(Color(0xFFFFEEEE), Color.Red, progress)),
                     contentAlignment = Alignment.CenterEnd
                 ) {
-                    Icon(
-                        imageVector = Icons.Default.Delete,
-                        contentDescription = "Delete",
-                        tint = Color.White,
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier.padding(end = 24.dp)
-                    )
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Delete,
+                            contentDescription = "Delete",
+                            tint = Color.White
+                        )
+                        Text(
+                            text = "Delete",
+                            color = Color.White,
+                            modifier = Modifier.padding(start = 8.dp)
+                        )
+                    }
                 }
             }
-
             if (direction == SwipeToDismissBoxValue.StartToEnd) {
-                // you can add something else here (e.g. archive icon with green bg)
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(lerp(Color(0xFFE8F5E9), Color(0xFF4CAF50), progress)),
+                    contentAlignment = Alignment.CenterStart
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.padding(start = 24.dp)
+                    ) {
+                        Icon(
+                            imageVector = if (isDue) Icons.Default.Schedule else Icons.Default.CheckCircle,
+                            contentDescription = if (isDue) "Mark as Read" else "Set as Due",
+                            tint = Color.White
+                        )
+                        Text(
+                            text = if (isDue) "Mark as Read" else "Set as Due",
+                            color = Color.White,
+                            modifier = Modifier.padding(start = 8.dp)
+                        )
+                    }
+                }
             }
         },
         content = {
@@ -106,8 +139,4 @@ fun BookmarkItem(
             )
         }
     )
-
-
-
-
 }

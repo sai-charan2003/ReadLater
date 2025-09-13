@@ -7,7 +7,7 @@ sealed interface HomeScreenEvent {
     data object OnSaveURLClick : HomeScreenEvent
     data class OnURLOpen(val url : String) : HomeScreenEvent
 
-    data class  OnDueChange(val isDue : Boolean) : HomeScreenEvent
+    data class  OnDueButtonClick(val isDue : Boolean) : HomeScreenEvent
     data object OnDropDownClick : HomeScreenEvent
     data object OnSettingsClick : HomeScreenEvent
 
@@ -16,4 +16,6 @@ sealed interface HomeScreenEvent {
     data class OnDeleteBookmark(val id : String) : HomeScreenEvent
 
     data class OnTabChange(val index : Int) : HomeScreenEvent
+
+    data class OnDueStatusChange(val id : Long, val isDue: Boolean  ) : HomeScreenEvent
 }

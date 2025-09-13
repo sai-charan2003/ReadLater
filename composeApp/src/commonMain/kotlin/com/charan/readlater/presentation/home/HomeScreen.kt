@@ -1,6 +1,5 @@
 package com.charan.readlater.presentation.home
 
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
@@ -16,16 +15,12 @@ import androidx.compose.material3.FabPosition
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LargeFlexibleTopAppBar
-import androidx.compose.material3.LargeTopAppBar
-import androidx.compose.material3.PrimaryTabRow
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.material3.rememberModalBottomSheetState
-import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -83,7 +78,7 @@ fun HomeScreen(
             url = state.newUrlState.url,
             isDue = state.newUrlState.isDue,
             onDueChange = {
-                viewModel.onEvent(HomeScreenEvent.OnDueChange(it))
+                viewModel.onEvent(HomeScreenEvent.OnDueButtonClick(it))
             },
             error = state.newUrlState.error
 
@@ -146,24 +141,6 @@ fun HomeScreen(
             state = pullToRefreshState,
             modifier = Modifier.padding(it)
         ) {
-            PrimaryTabRow(
-                selectedTabIndex = state.selectedTabIndex,
-                tabs = {
-                    HomeScreenTabs.entries.forEachIndexed { index,tab ->
-                        Tab(
-                            selected = state.selectedTabIndex == index,
-                            onClick = {
-                                viewModel.onEvent(HomeScreenEvent.OnTabChange(index))
-                            }
-
-                        )
-
-
-                    }
-
-                },
-
-            )
                 LazyColumn(
                     modifier = Modifier.fillMaxSize()
 
@@ -183,6 +160,7 @@ fun HomeScreen(
                             },
                             isDue = item.isDue,
                             onLeftToRightSwipe = {
+                                viewModel.onEvent(HomeScreenEvent.OnDueStatusChange(item.id.toLong(),item.isDue))
 
                             },
                             onRightToLeftSwipe = {

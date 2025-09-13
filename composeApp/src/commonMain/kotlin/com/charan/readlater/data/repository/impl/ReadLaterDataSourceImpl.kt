@@ -75,4 +75,8 @@ class ReadLaterDataSourceImpl(
         queries.deleteBookmarkById(id.toLong()  )
 
     }
+
+    override suspend fun updateDueStatus(id: Long, isDue: Boolean) {
+        queries.updateDueStatus(is_due = isDue, id = id)
+    }
 }

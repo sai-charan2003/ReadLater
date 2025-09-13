@@ -44,4 +44,19 @@ class BookmarkManagerRepoImpl(
         }
 
     }
+
+    override suspend fun updateDueStatus(
+        id: Long,
+        isDue: Boolean
+    ): Flow<ProcessState<Boolean>> = flow{
+        emit(ProcessState.Loading)
+        try {
+            readLaterDataSourceRepo.updateDueStatus(id, isDue)
+            emit(ProcessState.Success(true))
+            syncManager.sync()
+        } catch (e: Exception) {
+            emit(ProcessState.Error(e.message.toString()))
+        }
+
+    }
 }

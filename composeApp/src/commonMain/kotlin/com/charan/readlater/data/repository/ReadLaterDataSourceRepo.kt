@@ -21,5 +21,7 @@ interface ReadLaterDataSourceRepo {
 
     suspend fun deleteItem(id: String)
 
+    suspend fun updateDueStatus(id: Long, isDue: Boolean)
+
 
 }
