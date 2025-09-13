@@ -5,7 +5,8 @@ data class HomeScreenState (
     val readLaterUiItem: List<ReadLaterUiItem> = emptyList(),
     val showAddURLBottomSheet : Boolean = false,
     val isDropDownVisible : Boolean = false,
-    val newUrlState: NewUrlState = NewUrlState()
+    val newUrlState: NewUrlState = NewUrlState(),
+    val selectedTabIndex : Int = 0
 )
 
 data class NewUrlState(
@@ -23,3 +24,8 @@ data class ReadLaterUiItem(
     val url : String = "",
     val isDue : Boolean = false
 )
+
+enum class HomeScreenTabs {
+    ALL,
+    DUE
+}

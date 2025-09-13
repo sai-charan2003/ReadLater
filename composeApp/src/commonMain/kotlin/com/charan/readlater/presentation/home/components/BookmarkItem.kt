@@ -3,6 +3,7 @@ package com.charan.readlater.presentation.home.components
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
@@ -18,6 +19,7 @@ import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
@@ -55,23 +57,30 @@ fun BookmarkItem(
     SwipeToDismissBox(
         state = swipeToDismissBoxState,
         backgroundContent = {
-            when(swipeToDismissBoxState.dismissDirection){
-                SwipeToDismissBoxValue.StartToEnd -> {
+            val progress = swipeToDismissBoxState.progress
+            val direction = swipeToDismissBoxState.dismissDirection
 
-                }
-
-                SwipeToDismissBoxValue.EndToStart -> {
+            if (direction == SwipeToDismissBoxValue.EndToStart) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(
+                            lerp(Color(0xFFFFEEEE), Color.Red, progress)
+                        )
+                        ,
+                    contentAlignment = Alignment.CenterEnd
+                ) {
                     Icon(
                         imageVector = Icons.Default.Delete,
-                        contentDescription = null,
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .background(lerp(Color.LightGray, Color.Red, swipeToDismissBoxState.progress))
-                            ,
-                        tint = Color.Red
+                        contentDescription = "Delete",
+                        tint = Color.White,
+                        modifier = Modifier.padding(end = 24.dp)
                     )
                 }
-                SwipeToDismissBoxValue.Settled -> {}
+            }
+
+            if (direction == SwipeToDismissBoxValue.StartToEnd) {
+                // you can add something else here (e.g. archive icon with green bg)
             }
         },
         content = {
@@ -80,44 +89,24 @@ fun BookmarkItem(
                     AsyncImage(
                         model = imageUrl,
                         contentDescription = null,
-                        modifier = Modifier.width(120.dp)
+                        modifier = Modifier
+                            .width(120.dp)
                             .height(71.dp)
                             .clip(RoundedCornerShape(10.dp))
                     )
-
                 },
-                headlineContent = {
-                    Column {
-                        Text(title)
-                    }
-                },
-                modifier = Modifier.pointerInput(Unit){
-                    detectTapGestures (
-                        onTap = {
-                            onClick()
-                        },
-                        onLongPress = { offset ->
-                            onContextMenuOpen()
-
-                        },
+                headlineContent = { Text(title) },
+                supportingContent = { if (isDue) DueBadge() },
+                modifier = Modifier.pointerInput(Unit) {
+                    detectTapGestures(
+                        onTap = { onClick() },
+                        onLongPress = { onContextMenuOpen() }
                     )
-
                 }
-                ,
-                supportingContent = {
-                    if(isDue){
-                        DueBadge()
-                    }
-                },
-
-
-
-
-                )
-
+            )
         }
-
     )
+
 
 
 

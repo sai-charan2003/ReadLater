@@ -14,4 +14,6 @@ sealed interface HomeScreenEvent {
     data object OnRefresh : HomeScreenEvent
 
     data class OnDeleteBookmark(val id : String) : HomeScreenEvent
+
+    data class OnTabChange(val index : Int) : HomeScreenEvent
 }

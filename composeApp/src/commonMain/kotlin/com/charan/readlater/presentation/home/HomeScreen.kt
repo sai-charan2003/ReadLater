@@ -17,7 +17,9 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LargeFlexibleTopAppBar
 import androidx.compose.material3.LargeTopAppBar
+import androidx.compose.material3.PrimaryTabRow
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
@@ -144,40 +146,59 @@ fun HomeScreen(
             state = pullToRefreshState,
             modifier = Modifier.padding(it)
         ) {
-            LazyColumn(
-                modifier = Modifier.fillMaxSize()
+            PrimaryTabRow(
+                selectedTabIndex = state.selectedTabIndex,
+                tabs = {
+                    HomeScreenTabs.entries.forEachIndexed { index,tab ->
+                        Tab(
+                            selected = state.selectedTabIndex == index,
+                            onClick = {
+                                viewModel.onEvent(HomeScreenEvent.OnTabChange(index))
+                            }
 
-            ) {
-                items(
-                    state.readLaterUiItem.size,
-                    key = { state.readLaterUiItem[it].id }
+                        )
+
+
+                    }
+
+                },
+
+            )
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize()
+
                 ) {
-                    val item = state.readLaterUiItem[it]
-                    BookmarkItem(
-                        title = item.title,
-                        description = item.description,
-                        imageUrl = item.imageUrl,
-                        onClick = {
-                            viewModel.onEvent(HomeScreenEvent.OnURLOpen(item.url))
+                    items(
+                        state.readLaterUiItem.size,
+                        key = { state.readLaterUiItem[it].id }
+                    ) {
+                        val item = state.readLaterUiItem[it]
+                        BookmarkItem(
+                            title = item.title,
+                            description = item.description,
+                            imageUrl = item.imageUrl,
+                            onClick = {
+                                viewModel.onEvent(HomeScreenEvent.OnURLOpen(item.url))
 
-                        },
-                        isDue = item.isDue,
-                        onLeftToRightSwipe = {
+                            },
+                            isDue = item.isDue,
+                            onLeftToRightSwipe = {
 
-                        },
-                        onRightToLeftSwipe = {
-                            viewModel.onEvent(HomeScreenEvent.OnDeleteBookmark(item.id))
+                            },
+                            onRightToLeftSwipe = {
+                                viewModel.onEvent(HomeScreenEvent.OnDeleteBookmark(item.id))
 
-                        },
-                        onContextMenuOpen = {
+                            },
+                            onContextMenuOpen = {
 
-                        }
+                            }
 
-                    )
+                        )
+                    }
+
                 }
-
             }
-        }
+
     }
 
 }

@@ -119,6 +119,14 @@ class HomeScreenViewModel(
                 deleteBookmark(event.id)
 
             }
+
+            is HomeScreenEvent.OnTabChange -> {
+                _state.update { state->
+                    state.copy(
+                        selectedTabIndex = event.index
+                    )
+                }
+            }
         }
     }
 
