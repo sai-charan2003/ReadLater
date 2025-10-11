@@ -7,4 +7,10 @@ sealed class SettingsScreenEvents {
     object OnSignInClick : SettingsScreenEvents()
 
     object OnConfirmSignOutClick : SettingsScreenEvents()
+
+    object OnImportClick : SettingsScreenEvents()
+
+    data class OnFilePickerResult(val path : String) : SettingsScreenEvents()
+
+
 }

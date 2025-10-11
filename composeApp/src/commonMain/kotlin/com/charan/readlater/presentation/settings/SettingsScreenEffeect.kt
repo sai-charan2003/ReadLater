@@ -5,4 +5,6 @@ sealed class SettingsScreenEffeect {
     object NavigateToAccountScreen : SettingsScreenEffeect()
     object NavigateBack : SettingsScreenEffeect()
     object NavigateToLoginScreen : SettingsScreenEffeect()
+
+    object OpenFilePicker : SettingsScreenEffeect()
 }

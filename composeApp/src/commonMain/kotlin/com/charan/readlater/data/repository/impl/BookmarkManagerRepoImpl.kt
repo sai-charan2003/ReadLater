@@ -1,5 +1,7 @@
 package com.charan.readlater.data.repository.impl
 
+import com.charan.readlater.data.local.model.ImportData
+import com.charan.readlater.data.local.model.WebMetaData
 import com.charan.readlater.data.repository.BookmarkManagerRepo
 import com.charan.readlater.data.repository.ReadLaterDataSourceRepo
 import com.charan.readlater.data.repository.SettingsDataStoreRepo
@@ -55,6 +57,30 @@ class BookmarkManagerRepoImpl(
             emit(ProcessState.Success(true))
             syncManager.sync()
         } catch (e: Exception) {
+            emit(ProcessState.Error(e.message.toString()))
+        }
+
+    }
+
+    override suspend fun addImportBookmark(importData: List<ImportData>): Flow<ProcessState<Boolean>> =flow{
+        emit(ProcessState.Loading)
+        try {
+            importData.forEach {
+                println(it)
+                val metaData = webScrapperRepo.getWebMetaData(it.url ?: "")
+                val item = WebMetaData(
+                    title = it.title ?: metaData.title,
+                    description = metaData.description,
+                    imageUrl = metaData.imageUrl,
+                )
+                val readLaterItem = item.toReadLaterItem(it.url ?: "",false, it.created ?: "")
+                readLaterDataSourceRepo.insertItem(readLaterItem)
+            }
+            emit(ProcessState.Success(true))
+            syncManager.sync()
+
+        } catch (e: Exception) {
+            println(e)
             emit(ProcessState.Error(e.message.toString()))
         }
 

@@ -7,6 +7,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material.icons.outlined.AccountCircle
 import androidx.compose.material.icons.rounded.AccountCircle
+import androidx.compose.material.icons.rounded.ImportExport
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
@@ -21,6 +22,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.charan.readlater.presentation.settings.components.SettingsItem
 import com.charan.readlater.presentation.settings.components.SettingsSubHeading
+import com.charan.readlater.ui.theme.inversePrimaryDarkHighContrast
+import io.github.vinceglb.filekit.dialogs.FileKitType
+import io.github.vinceglb.filekit.dialogs.compose.rememberFilePickerLauncher
 import kotlinx.coroutines.flow.collectLatest
 import org.koin.compose.viewmodel.koinViewModel
 
@@ -31,6 +35,15 @@ fun SettingsScreen(
     onAccountScreenOpen : () -> Unit
 ) {
     val viewModel = koinViewModel<SettingsScreenViewModel>()
+    val filePickerLauncher = rememberFilePickerLauncher(
+        type = FileKitType.File(extension = "csv")
+    ) { file->
+        if(file != null){
+            viewModel.onEvent(SettingsScreenEvents.OnFilePickerResult(file.toString()))
+        }
+
+
+    }
     LaunchedEffect(Unit){
         viewModel.effect.collectLatest {
             when(it){
@@ -47,6 +60,10 @@ fun SettingsScreen(
 
                 SettingsScreenEffeect.NavigateToLoginScreen -> {
 
+                }
+
+                SettingsScreenEffeect.OpenFilePicker -> {
+                    filePickerLauncher.launch()
                 }
             }
         }
@@ -90,6 +107,23 @@ fun SettingsScreen(
                 )
 
 
+            }
+
+            item {
+                SettingsSubHeading(
+                    title = "Data"
+                )
+
+                SettingsItem(
+                    text= "Import Data",
+                    icon = Icons.Rounded.ImportExport,
+                    isClickable = true,
+                    onClick =  {
+
+                        viewModel.onEvent(SettingsScreenEvents.OnImportClick)
+
+                    }
+                )
             }
         }
     }

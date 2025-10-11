@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.charan.readlater.data.local.enums.LoginTypeEnum
 import com.charan.readlater.data.remote.model.UserDetails
+import com.charan.readlater.data.repository.BackupRepo
 import com.charan.readlater.data.repository.ReadLaterDataSourceRepo
 import com.charan.readlater.data.repository.SettingsDataStoreRepo
 import com.charan.readlater.data.repository.SupabaseRepo
@@ -19,7 +20,8 @@ import kotlinx.coroutines.launch
 class SettingsScreenViewModel(
     private val supabaseRepo: SupabaseRepo,
     private val settingsDataStoreRepo: SettingsDataStoreRepo,
-    private val readLaterDataSourceRepo: ReadLaterDataSourceRepo
+    private val readLaterDataSourceRepo: ReadLaterDataSourceRepo,
+    private val backupRepo: BackupRepo
 ) : ViewModel() {
     private val _state = MutableStateFlow(SettingsScreenState())
     val state = _state.asStateFlow()
@@ -88,6 +90,17 @@ class SettingsScreenViewModel(
             SettingsScreenEvents.OnConfirmSignOutClick -> {
                 signOutUser()
                 _state.update { it.copy(showLogoutDialog = false) }
+            }
+
+            SettingsScreenEvents.OnImportClick -> {
+                _effect.emit(SettingsScreenEffeect.OpenFilePicker)
+
+            }
+
+            is SettingsScreenEvents.OnFilePickerResult -> {
+                backupRepo.importFromFile(event.path).collectLatest {  }
+
+
             }
         }
     }
