@@ -32,7 +32,7 @@ class SupabaseRepoImpl(
 
     @OptIn(ExperimentalUuidApi::class)
     override suspend fun authorizeUser(token : String): Flow<ProcessState<Boolean>> {
-        val authenticationProcessState = MutableStateFlow<ProcessState<Boolean>>(ProcessState.Loading)
+        val authenticationProcessState = MutableStateFlow<ProcessState<Boolean>>(ProcessState.Loading())
         try {
             val rowNonce = Uuid.random().toString()
             readLaterSupabaseClient.auth.signInWith(IDToken) {
@@ -50,7 +50,7 @@ class SupabaseRepoImpl(
     }
 
     override suspend fun signOutUser(): Flow<ProcessState<Boolean>> = flow{
-        emit(ProcessState.Loading)
+        emit(ProcessState.Loading())
         try {
             readLaterSupabaseClient.auth.signOut()
             emit(ProcessState.Success(true))
@@ -71,7 +71,7 @@ class SupabaseRepoImpl(
                     }
                     SessionStatus.Initializing -> {
                         println("Initializing Authentication......")
-                        ProcessState.Loading
+                        ProcessState.Loading()
                     }
                     is SessionStatus.NotAuthenticated -> {
                         println("User Not authenticated......")
@@ -90,7 +90,7 @@ class SupabaseRepoImpl(
     }
 
     override suspend fun getAuthorizedUserDetails(): Flow<ProcessState<UserDetails>> = flow{
-        emit(ProcessState.Loading)
+        emit(ProcessState.Loading())
         try {
             val currentSession = readLaterSupabaseClient.auth.currentUserOrNull()
             val userAvatar = currentSession?.identities?.get(0)?.identityData?.get("avatar_url").toString().substringAfter("\"").substringBefore("\"")
@@ -112,7 +112,7 @@ class SupabaseRepoImpl(
     }
 
     override suspend fun syncData(syncItems: List<ReadLaterDTO>): Flow<ProcessState<Boolean>> =flow{
-        emit(ProcessState.Loading)
+        emit(ProcessState.Loading())
         try {
             readLaterSupabaseClient.from(SupabaseAppConstatnts.READ_LATER_TABLE_NAME).insert(syncItems)
             emit(ProcessState.Success(true))
@@ -127,7 +127,7 @@ class SupabaseRepoImpl(
     }
 
     override suspend fun getAllBookmarks(): Flow<ProcessState<List<ReadLaterDTO>>> =flow{
-        emit(ProcessState.Loading)
+        emit(ProcessState.Loading())
         try {
             val emailId = getEmailId()
             if(emailId != null){

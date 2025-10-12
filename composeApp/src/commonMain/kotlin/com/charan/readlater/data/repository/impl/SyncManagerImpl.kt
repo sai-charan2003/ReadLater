@@ -31,7 +31,7 @@ class SyncManagerImpl(
                     is ProcessState.Error -> {
                         println("Sync Error: ${it.exception}")
                     }
-                    ProcessState.Loading -> {
+                    is ProcessState.Loading -> {
                         println("Sync Loading")
                     }
                     ProcessState.NotDetermined -> {
@@ -55,8 +55,8 @@ class SyncManagerImpl(
                 is ProcessState.Error -> {
                     ProcessState.Error(state.exception)
                 }
-                ProcessState.Loading -> {
-                    ProcessState.Loading
+                is ProcessState.Loading -> {
+                    ProcessState.Loading()
                 }
                 ProcessState.NotDetermined -> {
                     ProcessState.NotDetermined

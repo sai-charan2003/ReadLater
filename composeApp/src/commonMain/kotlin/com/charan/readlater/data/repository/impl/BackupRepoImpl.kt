@@ -24,8 +24,7 @@ class BackupRepoImpl(
 
     @OptIn(ExperimentalSerializationApi::class)
     override suspend fun importFromFile(uri: String): Flow<ProcessState<Boolean>> = flow{
-        emit(ProcessState.Loading)
-        println(uri)
+        emit(ProcessState.Loading(progress = 0f))
         try {
             val file = PlatformFile(uri)
             val content = file.readString()
@@ -35,12 +34,10 @@ class BackupRepoImpl(
                 ignoreUnknownColumns = true
             }
             val importData = csv.decodeFromString(ListSerializer(ImportData.serializer()),content)
-            println("Import data size ${importData}")
             bookmarkManagerRepo.addImportBookmark(importData).collect {
-
+                emit(it)
             }
         } catch (e: Exception){
-            println("Error while importing ${e.message}")
             emit(ProcessState.Error(e.message.toString()))
         }
 

@@ -18,8 +18,11 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.charan.readlater.presentation.settings.components.ProgressAlertDialog
 import com.charan.readlater.presentation.settings.components.SettingsItem
 import com.charan.readlater.presentation.settings.components.SettingsSubHeading
 import com.charan.readlater.ui.theme.inversePrimaryDarkHighContrast
@@ -35,6 +38,7 @@ fun SettingsScreen(
     onAccountScreenOpen : () -> Unit
 ) {
     val viewModel = koinViewModel<SettingsScreenViewModel>()
+    val state by viewModel.state.collectAsStateWithLifecycle()
     val filePickerLauncher = rememberFilePickerLauncher(
         type = FileKitType.File(extension = "csv")
     ) { file->
@@ -44,6 +48,15 @@ fun SettingsScreen(
 
 
     }
+        if(state.showProgressDialog) {
+            ProgressAlertDialog(
+                title = "Importing Data",
+                progress = state.importProgress.progress,
+                total = state.importProgress.totalItems,
+                current = state.importProgress.importedItems
+            )
+        }
+
     LaunchedEffect(Unit){
         viewModel.effect.collectLatest {
             when(it){
@@ -89,9 +102,9 @@ fun SettingsScreen(
             )
         }
     ) {
-        LazyColumn (
+        LazyColumn(
             modifier = Modifier.fillMaxSize().padding(it)
-        ){
+        ) {
             item {
                 SettingsSubHeading(
                     title = "Account"
@@ -115,10 +128,10 @@ fun SettingsScreen(
                 )
 
                 SettingsItem(
-                    text= "Import Data",
+                    text = "Import Data",
                     icon = Icons.Rounded.ImportExport,
                     isClickable = true,
-                    onClick =  {
+                    onClick = {
 
                         viewModel.onEvent(SettingsScreenEvents.OnImportClick)
 

@@ -49,7 +49,7 @@ class SettingsScreenViewModel(
             when(processState){
                 is ProcessState.Error -> {}
 
-                ProcessState.Loading -> {}
+                is ProcessState.Loading -> {}
                 ProcessState.NotDetermined -> {}
                 is ProcessState.Success<*> -> {
                     val userDetails = processState.data as UserDetails
@@ -79,8 +79,6 @@ class SettingsScreenViewModel(
             }
             SettingsScreenEvents.OnSignOutClick -> {
                 _state.update { it.copy(showLogoutDialog = !it.showLogoutDialog) }
-
-
             }
 
             SettingsScreenEvents.OnSignInClick -> {
@@ -98,11 +96,36 @@ class SettingsScreenViewModel(
             }
 
             is SettingsScreenEvents.OnFilePickerResult -> {
-                backupRepo.importFromFile(event.path).collectLatest {  }
-
-
+                    importFromFile(event.path)
             }
         }
+    }
+
+    private fun importFromFile(path : String) =viewModelScope.launch{
+
+        backupRepo.importFromFile(path).collectLatest { state->
+            when(state){
+                is ProcessState.Error -> {
+                    _state.update { it.copy(importProgress = ImportProgress(error = state.exception), showProgressDialog = false) }
+
+
+                }
+                is ProcessState.Loading -> {
+
+                    _state.update { it.copy(importProgress = ImportProgress(isImporting = true, progress = state.progress, totalItems = state.total, importedItems = state.current), showProgressDialog = true) }
+
+                }
+                is ProcessState.Success<*> -> {
+                    _state.update { it.copy(importProgress = ImportProgress(isImporting = false, progress = 1f), showProgressDialog = false) }
+                }
+
+                ProcessState.NotDetermined -> {
+
+                }
+            }
+
+        }
+
     }
 
     private fun signOutUser() = viewModelScope.launch {
@@ -112,7 +135,7 @@ class SettingsScreenViewModel(
                     _state.update { it.copy(isSignOutLoading = false) }
 
                 }
-                ProcessState.Loading -> {
+                is ProcessState.Loading -> {
                     _state.update { it.copy(isSignOutLoading = true) }
 
                 }

@@ -22,7 +22,7 @@ class BookmarkManagerRepoImpl(
     private val webScrapperRepo: WebScrapperRepo
 ) : BookmarkManagerRepo {
     override suspend fun addBookmark(url: String, isDue : Boolean): Flow<ProcessState<Boolean>> =flow{
-        emit(ProcessState.Loading)
+        emit(ProcessState.Loading())
         try {
             val metaData = webScrapperRepo.getWebMetaData(url)
             val readLaterItem = metaData.toReadLaterItem(url,isDue)
@@ -36,7 +36,7 @@ class BookmarkManagerRepoImpl(
     }
 
     override suspend fun deleteBookmark(id: String): Flow<ProcessState<Boolean>> = flow {
-        emit(ProcessState.Loading)
+        emit(ProcessState.Loading())
         try {
             readLaterDataSourceRepo.deleteItem(id)
             emit(ProcessState.Success(true))
@@ -51,7 +51,7 @@ class BookmarkManagerRepoImpl(
         id: Long,
         isDue: Boolean
     ): Flow<ProcessState<Boolean>> = flow{
-        emit(ProcessState.Loading)
+        emit(ProcessState.Loading())
         try {
             readLaterDataSourceRepo.updateDueStatus(id, isDue)
             emit(ProcessState.Success(true))
@@ -62,27 +62,25 @@ class BookmarkManagerRepoImpl(
 
     }
 
-    override suspend fun addImportBookmark(importData: List<ImportData>): Flow<ProcessState<Boolean>> =flow{
-        emit(ProcessState.Loading)
+    override suspend fun addImportBookmark(importData: List<ImportData>): Flow<ProcessState<Boolean>> = flow {
+        emit(ProcessState.Loading(progress = 0f))
         try {
-            importData.forEach {
-                println(it)
-                val metaData = webScrapperRepo.getWebMetaData(it.url ?: "")
+            importData.forEachIndexed { index, data ->
+                val metaData = webScrapperRepo.getWebMetaData(data.url ?: "")
                 val item = WebMetaData(
-                    title = it.title ?: metaData.title,
+                    title = data.title ?: metaData.title,
                     description = metaData.description,
                     imageUrl = metaData.imageUrl,
                 )
-                val readLaterItem = item.toReadLaterItem(it.url ?: "",false, it.created ?: "")
+                val readLaterItem = item.toReadLaterItem(data.url ?: "", false, data.created ?: "")
                 readLaterDataSourceRepo.insertItem(readLaterItem)
+                emit(ProcessState.Loading(progress = index/importData.size.toFloat(), total = importData.size.toLong(), current = index.toLong()))
             }
             emit(ProcessState.Success(true))
             syncManager.sync()
-
         } catch (e: Exception) {
-            println(e)
             emit(ProcessState.Error(e.message.toString()))
         }
-
     }
+
 }

@@ -39,7 +39,7 @@ class AuthenticationViewModel(
                 is ProcessState.Error -> {
                     _authenticationScreenEffect.emit(AuthenticationScreenEffect.ShowError(it.exception))
                 }
-                ProcessState.Loading -> {
+                is ProcessState.Loading -> {
                     _userAuthenticationStatus.update { state->
                         state.copy(
                             isAuthenticating = true
@@ -81,7 +81,7 @@ class AuthenticationViewModel(
                 is ProcessState.Success -> {
                     onAuthenticationSuccess()
                 }
-                ProcessState.Loading -> {
+                is ProcessState.Loading -> {
                     _userAuthenticationStatus.update { state->
                         state.copy(
                             isAuthenticating = true

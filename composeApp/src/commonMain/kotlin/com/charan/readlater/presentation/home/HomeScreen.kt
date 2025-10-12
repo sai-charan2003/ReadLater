@@ -25,6 +25,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.charan.readlater.presentation.home.components.AddUrlBottomSheet
@@ -139,7 +140,9 @@ fun HomeScreen(
                 viewModel.onEvent(HomeScreenEvent.OnRefresh)
             },
             state = pullToRefreshState,
-            modifier = Modifier.padding(it)
+            modifier = Modifier.padding(it).nestedScroll(
+                scrollSate.nestedScrollConnection
+            )
         ) {
                 LazyColumn(
                     modifier = Modifier.fillMaxSize()

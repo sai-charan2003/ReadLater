@@ -143,7 +143,7 @@ class HomeScreenViewModel(
                     }
 
                 }
-                ProcessState.Loading -> {
+                is ProcessState.Loading -> {
                     _state.update { state->
                         state.copy(
                             newUrlState = state.newUrlState.copy(isSaving = true)
@@ -182,7 +182,7 @@ class HomeScreenViewModel(
                         emptyFlow()
                     }
 
-                    ProcessState.Loading -> {
+                    is ProcessState.Loading -> {
                         _state.update { it.copy(isFetchingData = true) }
                         emptyFlow()
                     }
@@ -199,7 +199,7 @@ class HomeScreenViewModel(
                         _effect.tryEmit(ShowError(syncState.exception))
                     }
 
-                    ProcessState.Loading -> {
+                    is ProcessState.Loading -> {
                         _state.update { it.copy(isFetchingData = true) }
                     }
 
