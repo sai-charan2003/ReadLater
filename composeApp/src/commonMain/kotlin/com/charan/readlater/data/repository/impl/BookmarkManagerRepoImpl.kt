@@ -10,9 +10,17 @@ import com.charan.readlater.data.repository.WebScrapperRepo
 import com.charan.readlater.data.mappers.toReadLaterItem
 import com.charan.readlater.data.repository.SyncManager
 import com.charan.readlater.utils.ProcessState
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.IO
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.channelFlow
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.sync.Semaphore
+import kotlinx.coroutines.sync.withPermit
 
 class BookmarkManagerRepoImpl(
     private val readLaterDataSourceRepo: ReadLaterDataSourceRepo,
@@ -62,25 +70,54 @@ class BookmarkManagerRepoImpl(
 
     }
 
-    override suspend fun addImportBookmark(importData: List<ImportData>): Flow<ProcessState<Boolean>> = flow {
-        emit(ProcessState.Loading(progress = 0f))
+    override suspend fun addImportBookmark(importData: List<ImportData>): Flow<ProcessState<Boolean>> = channelFlow {
+        send(ProcessState.Loading(progress = 0f))
+
         try {
-            importData.forEachIndexed { index, data ->
-                val metaData = webScrapperRepo.getWebMetaData(data.url ?: "")
-                val item = WebMetaData(
-                    title = data.title ?: metaData.title,
-                    description = metaData.description,
-                    imageUrl = metaData.imageUrl,
-                )
-                val readLaterItem = item.toReadLaterItem(data.url ?: "", false, data.created ?: "")
-                readLaterDataSourceRepo.insertItem(readLaterItem)
-                emit(ProcessState.Loading(progress = index/importData.size.toFloat(), total = importData.size.toLong(), current = index.toLong()))
+            coroutineScope {
+                val total = importData.size.toLong()
+                var completed = 0L
+
+                val semaphore = Semaphore(5)
+
+                val jobs = importData.mapIndexed { index, data ->
+                    async {
+                        semaphore.withPermit {
+                            val metaData = webScrapperRepo.getWebMetaData(data.url ?: "")
+                            val item = WebMetaData(
+                                title = data.title ?: metaData.title,
+                                description = metaData.description,
+                                imageUrl = metaData.imageUrl,
+                            )
+                            val readLaterItem = item.toReadLaterItem(
+                                data.url ?: "",
+                                false,
+                                data.created ?: ""
+                            )
+                            readLaterDataSourceRepo.insertItem(readLaterItem)
+
+                            completed++
+                            send(
+                                ProcessState.Loading(
+                                    progress = completed / total.toFloat(),
+                                    total = total,
+                                    current = completed
+                                )
+                            )
+                        }
+                    }
+                }
+
+                jobs.awaitAll()
             }
-            emit(ProcessState.Success(true))
+
+            send(ProcessState.Success(true))
             syncManager.sync()
         } catch (e: Exception) {
-            emit(ProcessState.Error(e.message.toString()))
+            println(e)
+            send(ProcessState.Error(e.message.toString()))
         }
     }
+
 
 }

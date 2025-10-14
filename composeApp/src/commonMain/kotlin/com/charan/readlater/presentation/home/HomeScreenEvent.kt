@@ -18,4 +18,10 @@ sealed interface HomeScreenEvent {
     data class OnTabChange(val index : Int) : HomeScreenEvent
 
     data class OnDueStatusChange(val id : Long, val isDue: Boolean  ) : HomeScreenEvent
+
+    data object NavigateToLoginScreen : HomeScreenEvent
+
+    data object OnAuthenticatedPopDismiss : HomeScreenEvent
+
+    data object OnScrollToTopClick : HomeScreenEvent
 }

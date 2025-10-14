@@ -48,7 +48,7 @@ val appModule = module {
     single <BookmarkManagerRepo>{ BookmarkManagerRepoImpl(get(),get(),get(),get(),get()) }
     single <SyncManager>{ SyncManagerImpl(get(),get(),get()) }
     viewModel { AuthenticationViewModel(get(),get ()) }
-    viewModel { HomeScreenViewModel(get(),get(),get(),get()) }
+    viewModel { HomeScreenViewModel(get(),get(),get(),get(),get()) }
     viewModel { SettingsScreenViewModel(get(),get(),get(),get()) }
 }
 fun initKoin(appDeclaration: KoinAppDeclaration = {}) = startKoin {

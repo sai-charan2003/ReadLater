@@ -2,9 +2,11 @@ package com.charan.readlater.presentation.home
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.charan.readlater.data.local.enums.LoginTypeEnum
 import com.charan.readlater.data.mappers.toReadLaterUiItem
 import com.charan.readlater.data.repository.BookmarkManagerRepo
 import com.charan.readlater.data.repository.ReadLaterDataSourceRepo
+import com.charan.readlater.data.repository.SettingsDataStoreRepo
 import com.charan.readlater.data.repository.SupabaseRepo
 import com.charan.readlater.data.repository.SyncManager
 import com.charan.readlater.presentation.home.HomeScreenEffect.*
@@ -17,6 +19,7 @@ import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.emptyFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -25,11 +28,13 @@ class HomeScreenViewModel(
     private val readLaterDataSourceRepo: ReadLaterDataSourceRepo,
     private val supabaseRepoImpl: SupabaseRepo,
     private val bookmarkManagerRepo: BookmarkManagerRepo,
-    private val syncManager: SyncManager
+    private val syncManager: SyncManager,
+    private val settingsDataSourceRepo: SettingsDataStoreRepo
 ) : ViewModel() {
     init {
         loadSession()
         getAllBookmarks()
+        syncData()
     }
 
     private val _state = MutableStateFlow(HomeScreenState())
@@ -43,6 +48,9 @@ class HomeScreenViewModel(
         val session = async { supabaseRepoImpl.loadSession() }
         session.await()
         fetchData()
+    }
+    private fun syncData() = viewModelScope.launch {
+        syncManager.sync()
     }
 
     private fun getAllBookmarks()= viewModelScope.launch{
@@ -129,6 +137,30 @@ class HomeScreenViewModel(
             is HomeScreenEvent.OnDueStatusChange -> {
                 updateDueStatus(event.id,!event.isDue)
             }
+
+            HomeScreenEvent.NavigateToLoginScreen -> {
+                _state.update {
+                    it.copy(
+                        showUserNotAuthenticatedPop = false,
+                    )
+                }
+                _effect.emit(NavigateToAuthenticationScreen)
+
+            }
+
+            HomeScreenEvent.OnAuthenticatedPopDismiss -> {
+                _state.update {
+                    it.copy(
+                        showUserNotAuthenticatedPop = false
+                    )
+                }
+                settingsDataSourceRepo.updateLoginType(LoginTypeEnum.NO_ACCOUNT)
+
+            }
+
+            HomeScreenEvent.OnScrollToTopClick -> {
+                _effect.emit(ScrollToTop)
+            }
         }
     }
 
@@ -179,6 +211,9 @@ class HomeScreenViewModel(
                 when (authenticationStatus) {
                     is ProcessState.Error -> {
                         _effect.tryEmit(ShowError(authenticationStatus.exception))
+                        if(settingsDataSourceRepo.getLoginType().first() == LoginTypeEnum.GOOGLE){
+                            _state.update { it.copy(showUserNotAuthenticatedPop = true) }
+                        }
                         emptyFlow()
                     }
 

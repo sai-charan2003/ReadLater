@@ -8,6 +8,10 @@ sealed interface HomeScreenEffect {
 
     data object NavigateToSettings : HomeScreenEffect
 
+    data object NavigateToAuthenticationScreen : HomeScreenEffect
+
+    data object ScrollToTop : HomeScreenEffect
+
 
 
 }

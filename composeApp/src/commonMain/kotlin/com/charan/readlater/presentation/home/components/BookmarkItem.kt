@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -29,6 +30,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.lerp
 import coil3.compose.AsyncImage
@@ -41,8 +43,8 @@ fun BookmarkItem(
     onClick: () -> Unit,
     isDue: Boolean = false,
     onContextMenuOpen: () -> Unit,
-    onLeftToRightSwipe: () -> Unit, // Mark as read / set due
-    onRightToLeftSwipe: () -> Unit, // Delete
+    onLeftToRightSwipe: () -> Unit,
+    onRightToLeftSwipe: () -> Unit,
 ) {
     val swipeToDismissBoxState = rememberSwipeToDismissBoxState(
         confirmValueChange = {
@@ -66,7 +68,6 @@ fun BookmarkItem(
             val progress = swipeToDismissBoxState.progress
             val direction = swipeToDismissBoxState.dismissDirection
 
-            // Right-to-left swipe → Delete
             if (direction == SwipeToDismissBoxValue.EndToStart) {
                 Box(
                     modifier = Modifier
@@ -123,9 +124,10 @@ fun BookmarkItem(
                         model = imageUrl,
                         contentDescription = null,
                         modifier = Modifier
-                            .width(120.dp)
-                            .height(71.dp)
-                            .clip(RoundedCornerShape(10.dp))
+                            .width(75.dp)
+                            .height(60.dp)
+                            .clip(RoundedCornerShape(10.dp)),
+                        contentScale = ContentScale.Crop
                     )
                 },
                 headlineContent = { Text(title) },

@@ -6,7 +6,9 @@ data class HomeScreenState (
     val showAddURLBottomSheet : Boolean = false,
     val isDropDownVisible : Boolean = false,
     val newUrlState: NewUrlState = NewUrlState(),
-    val selectedTabIndex : Int = 0
+    val selectedTabIndex : Int = 0,
+
+    val showUserNotAuthenticatedPop : Boolean = false
 )
 
 data class NewUrlState(

@@ -75,7 +75,7 @@ class SupabaseRepoImpl(
                     }
                     is SessionStatus.NotAuthenticated -> {
                         println("User Not authenticated......")
-                        ProcessState.Success(false)
+                        ProcessState.Error("User Not authenticated")
                     }
                     is SessionStatus.RefreshFailure -> {
                         println("SessionStatus.RefreshFailure: ${session.cause}")

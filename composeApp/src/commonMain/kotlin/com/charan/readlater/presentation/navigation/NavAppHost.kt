@@ -72,6 +72,9 @@ fun NavAppHost(
                 navigateToSettings = {
                     navHostController.navigate(SettingsScreenNav)
 
+                },
+                navigateToLoginScreen = {
+                    navHostController.navigate(AuthenticationScreenNav)
                 }
             )
         }
