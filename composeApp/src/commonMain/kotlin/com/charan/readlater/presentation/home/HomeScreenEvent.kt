@@ -24,4 +24,6 @@ sealed interface HomeScreenEvent {
     data object OnAuthenticatedPopDismiss : HomeScreenEvent
 
     data object OnScrollToTopClick : HomeScreenEvent
+
+    data class OnSearch(val text : String) : HomeScreenEvent
 }

@@ -18,13 +18,13 @@ kotlinCsvJvm = "1.10.0"
 kotlinxSerializationFlf = "0.0.23"
 kotlinxSerializationJson = "1.7.3"
 ksoup = "0.2.5"
-material3 = "1.9.0-alpha04"
+material3 = "1.10.0-alpha02"
 materialIconsCore = "1.7.3"
 materialKolor = "3.0.1"
 navigationCompose = "2.9.0-beta05"
 supabase = "3.2.2"
 composeHotReload ="1.0.0-beta05"
-composeMultiplatform = "1.9.0-beta01"
+composeMultiplatform = "1.10.0-alpha02"
 firebaseAuth = "2.2.0"
 firebaseConfig = "23.0.0"
 junit = "4.13.2"
@@ -37,6 +37,7 @@ ktor = "3.2.3"
 ktorClientApache5 = "3.2.3"
 ktorClientCio = "3.2.3"
 csv = "1.1"
+sqliteAndroid = "3.49.0"
 
 
 [libraries]
@@ -91,6 +92,7 @@ ktor-client-okhttp = { module = "io.ktor:ktor-client-okhttp", version.ref = "kto
 ktor-client-darwin = { module = "io.ktor:ktor-client-darwin", version.ref = "ktor" }
 ktor-serialization-kotlinx-json = { module = "io.ktor:ktor-serialization-kotlinx-json", version.ref = "ktor" }
 csv = { module = "de.halfbit:csv", version.ref = "csv" }
+sqlite-android = { module = "com.github.requery:sqlite-android", version.ref = "sqliteAndroid" }
 
 
 [plugins]

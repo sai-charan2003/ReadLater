@@ -23,5 +23,7 @@ interface ReadLaterDataSourceRepo {
 
     suspend fun updateDueStatus(id: Long, isDue: Boolean)
 
+    suspend fun searchBookmarks(text : String) : Flow<List<ReadLaterEntity>>
+
 
 }

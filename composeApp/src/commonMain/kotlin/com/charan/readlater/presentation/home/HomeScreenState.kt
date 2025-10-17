@@ -7,8 +7,8 @@ data class HomeScreenState (
     val isDropDownVisible : Boolean = false,
     val newUrlState: NewUrlState = NewUrlState(),
     val selectedTabIndex : Int = 0,
-
-    val showUserNotAuthenticatedPop : Boolean = false
+    val showUserNotAuthenticatedPop : Boolean = false,
+    val searchItems : List<ReadLaterUiItem> = emptyList()
 )
 
 data class NewUrlState(

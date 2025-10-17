@@ -5,11 +5,15 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.rounded.MoreVert
+import androidx.compose.material3.AppBarWithSearch
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExpandedFullScreenSearchBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.ExtendedFloatingActionButton
@@ -20,17 +24,20 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.LargeFlexibleTopAppBar
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SearchBarDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.material3.rememberModalBottomSheetState
+import androidx.compose.material3.rememberSearchBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
@@ -39,6 +46,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.charan.readlater.presentation.home.components.AddUrlBottomSheet
 import com.charan.readlater.presentation.home.components.BookmarkItem
 import com.charan.readlater.presentation.home.components.ScrollToTop
+import com.charan.readlater.presentation.home.components.SearchInputField
 import com.charan.readlater.presentation.home.components.UserAuthenticationAlert
 import kotlinx.coroutines.flow.collectLatest
 import org.koin.compose.viewmodel.koinViewModel
@@ -53,12 +61,24 @@ fun HomeScreen(
     val state by viewModel.state.collectAsStateWithLifecycle()
     val addBookmarkModelSheet = rememberModalBottomSheetState()
     val scrollSate = TopAppBarDefaults.enterAlwaysScrollBehavior()
+    val appBarScrollBehavior = SearchBarDefaults.enterAlwaysSearchBarScrollBehavior()
+    val appBarState = rememberSearchBarState()
     val pullToRefreshState = rememberPullToRefreshState()
     val uriHandler = LocalUriHandler.current
     val listState = rememberLazyListState()
+    val searchTextFieldState = rememberTextFieldState()
+    val inputField = @Composable{
+        SearchInputField(
+            searchBarState = appBarState,
+            textFieldState = searchTextFieldState,
+            scope = rememberCoroutineScope()
+        )
+    }
+    LaunchedEffect(searchTextFieldState.text){
+        viewModel.onEvent(HomeScreenEvent.OnSearch(searchTextFieldState.text.toString()))
+    }
     LaunchedEffect(Unit){
         viewModel.effect.collectLatest { effect ->
-            println(effect)
             when(effect){
                 is HomeScreenEffect.OpenURLInBrowser -> {
                     uriHandler.openUri(effect.url)
@@ -120,9 +140,15 @@ fun HomeScreen(
     }
     Scaffold(
         topBar = {
-            LargeFlexibleTopAppBar(
-                title = { Text("Read Later") },
-                scrollBehavior = scrollSate,
+            AppBarWithSearch(
+                state = appBarState,
+                scrollBehavior = appBarScrollBehavior,
+                inputField = inputField,
+                navigationIcon = {
+                    IconButton(onClick = { }) {
+                        Icon(imageVector = Icons.Default.Menu, contentDescription = "Menu")
+                    }
+                },
                 actions = {
                     IconButton(
                         onClick = {
@@ -150,8 +176,53 @@ fun HomeScreen(
                         )
 
                     }
+
+
                 }
+
             )
+            ExpandedFullScreenSearchBar(state = appBarState, inputField = inputField){
+                LazyColumn(
+
+                ) {
+                    items(state.searchItems.size){
+                        val item = state.searchItems[it]
+                        BookmarkItem(
+                            title = item.title,
+                            description = item.description,
+                            imageUrl = item.imageUrl,
+                            onClick = {
+                                viewModel.onEvent(HomeScreenEvent.OnURLOpen(item.url))
+
+                            },
+                            isDue = item.isDue,
+                            onLeftToRightSwipe = {
+                                viewModel.onEvent(
+                                    HomeScreenEvent.OnDueStatusChange(
+                                        item.id.toLong(),
+                                        item.isDue
+                                    )
+                                )
+
+                            },
+                            onRightToLeftSwipe = {
+                                viewModel.onEvent(HomeScreenEvent.OnDeleteBookmark(item.id))
+
+                            },
+                            onContextMenuOpen = {
+
+                            }
+
+                        )
+                        HorizontalDivider(
+                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f)
+                        )
+                    }
+
+                }
+
+            }
+
         },
         floatingActionButton = {
             ExtendedFloatingActionButton(
@@ -174,9 +245,7 @@ fun HomeScreen(
                 viewModel.onEvent(HomeScreenEvent.OnRefresh)
             },
             state = pullToRefreshState,
-            modifier = Modifier.padding(it).nestedScroll(
-                scrollSate.nestedScrollConnection
-            )
+            modifier = Modifier.padding(it)
         ) {
             LazyColumn(
                 modifier = Modifier.fillMaxSize(),

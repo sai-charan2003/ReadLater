@@ -79,4 +79,8 @@ class ReadLaterDataSourceImpl(
     override suspend fun updateDueStatus(id: Long, isDue: Boolean) {
         queries.updateDueStatus(is_due = isDue, id = id)
     }
+
+    override suspend fun searchBookmarks(text: String): Flow<List<ReadLaterEntity>> {
+        return queries.searchFromReadLater(text).asFlow().mapToList(Dispatchers.IO)
+    }
 }

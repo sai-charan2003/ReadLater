@@ -161,7 +161,24 @@ class HomeScreenViewModel(
             HomeScreenEvent.OnScrollToTopClick -> {
                 _effect.emit(ScrollToTop)
             }
+
+            is HomeScreenEvent.OnSearch -> {
+                search(event.text)
+            }
         }
+    }
+
+    private fun search(text : String) = viewModelScope.launch{
+        if(text.isEmpty().not()) {
+            readLaterDataSourceRepo.searchBookmarks(text).collectLatest { items ->
+                _state.update {
+                    it.copy(searchItems = items.toReadLaterUiItem())
+                }
+
+
+            }
+        }
+
     }
 
     private fun saveNewURL(url : NewUrlState) = viewModelScope.launch {

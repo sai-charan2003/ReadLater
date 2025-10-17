@@ -14,6 +14,32 @@ CREATE TABLE readLaterEntity (
     uuid TEXT NOT NULL UNIQUE
     );
 
+CREATE VIRTUAL TABLE readLaterSearchFTS USING fts5(
+    title TEXT,
+    description TEXT,
+    url TEXT NOT NULL,
+    content='readLaterEntity',
+    content_rowid='id',
+    tokenize = 'unicode61'
+    );
+
+-- Trigger for INSERT operations
+CREATE TRIGGER readLaterEntity_ai AFTER INSERT ON readLaterEntity BEGIN
+    INSERT INTO readLaterSearchFTS(rowid, title, description, url)
+    VALUES (new.id, new.title, new.description, new.url);
+END;
+
+-- Trigger for UPDATE operations
+CREATE TRIGGER readLaterEntity_au AFTER UPDATE ON readLaterEntity BEGIN
+    DELETE FROM readLaterSearchFTS WHERE rowid = old.id;
+    INSERT INTO readLaterSearchFTS(rowid, title, description, url)
+    VALUES (new.id, new.title, new.description, new.url);
+END;
+
+-- Trigger for DELETE operations
+CREATE TRIGGER readLaterEntity_bd BEFORE DELETE ON readLaterEntity BEGIN
+    DELETE FROM readLaterSearchFTS WHERE rowid = old.id;
+END;
 
 insertReadLaterItem:
 INSERT OR REPLACE INTO readLaterEntity (
@@ -46,3 +72,9 @@ UPDATE readLaterEntity SET isDeleted = 1, isSynced = 0 WHERE id = ?;
 
 updateDueStatus :
 UPDATE readLaterEntity SET is_due = ?, isSynced = 0 WHERE id = ?;
+
+searchFromReadLater :
+SELECT r.*
+FROM readLaterEntity AS r
+JOIN readLaterSearchFTS AS fts ON r.id = fts.rowid
+WHERE readLaterSearchFTS MATCH ? AND r.isDeleted = 0;
