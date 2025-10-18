@@ -1,6 +1,8 @@
 package com.charan.readlater.ui.theme
 
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
+import androidx.compose.material3.MaterialExpressiveTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.material3.darkColorScheme
@@ -238,6 +240,7 @@ private val highContrastDarkColorScheme = darkColorScheme(
 
 
 
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun ReadLaterTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
@@ -248,9 +251,9 @@ fun ReadLaterTheme(
       else -> lightScheme
   }
 
-  MaterialTheme(
-    colorScheme = colorScheme,
-    content = content
-  )
+    MaterialExpressiveTheme(
+      colorScheme = colorScheme,
+      content = content
+    )
 }
 

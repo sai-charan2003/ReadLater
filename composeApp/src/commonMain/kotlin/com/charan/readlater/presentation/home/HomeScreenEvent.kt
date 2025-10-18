@@ -26,4 +26,8 @@ sealed interface HomeScreenEvent {
     data object OnScrollToTopClick : HomeScreenEvent
 
     data class OnSearch(val text : String) : HomeScreenEvent
+
+    data object OnNavigationDrawerClick : HomeScreenEvent
+
+    data class OnNavigationDrawerItemClick(val index : Int) : HomeScreenEvent
 }

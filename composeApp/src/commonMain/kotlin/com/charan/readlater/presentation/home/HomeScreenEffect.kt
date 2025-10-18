@@ -12,6 +12,8 @@ sealed interface HomeScreenEffect {
 
     data object ScrollToTop : HomeScreenEffect
 
+    object ToggleNavigationDrawer : HomeScreenEffect
+
 
 
 }

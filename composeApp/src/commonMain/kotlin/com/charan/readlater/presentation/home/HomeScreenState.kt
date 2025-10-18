@@ -8,7 +8,8 @@ data class HomeScreenState (
     val newUrlState: NewUrlState = NewUrlState(),
     val selectedTabIndex : Int = 0,
     val showUserNotAuthenticatedPop : Boolean = false,
-    val searchItems : List<ReadLaterUiItem> = emptyList()
+    val searchItems : List<ReadLaterUiItem> = emptyList(),
+    val navigationDrawerState: NavigationDrawerState = NavigationDrawerState(),
 )
 
 data class NewUrlState(
@@ -27,7 +28,9 @@ data class ReadLaterUiItem(
     val isDue : Boolean = false
 )
 
-enum class HomeScreenTabs {
-    ALL,
-    DUE
-}
+
+data class NavigationDrawerState(
+    val drawerItems : List<DrawerItems> = emptyList(),
+    val drawerOpen : Boolean = false,
+    val selectedItemIndex : Int = 0
+)

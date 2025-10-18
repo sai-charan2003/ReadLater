@@ -31,17 +31,18 @@ class HomeScreenViewModel(
     private val syncManager: SyncManager,
     private val settingsDataSourceRepo: SettingsDataStoreRepo
 ) : ViewModel() {
-    init {
-        loadSession()
-        getAllBookmarks()
-        syncData()
-    }
-
     private val _state = MutableStateFlow(HomeScreenState())
     val state = _state.asStateFlow()
 
     private val _effect = MutableSharedFlow<HomeScreenEffect>()
     val effect = _effect.asSharedFlow()
+
+    init {
+        loadSession()
+        getAllBookmarks()
+        syncData()
+        drawerItemsList()
+    }
 
 
     private fun loadSession() = viewModelScope.launch {
@@ -165,6 +166,22 @@ class HomeScreenViewModel(
             is HomeScreenEvent.OnSearch -> {
                 search(event.text)
             }
+
+            HomeScreenEvent.OnNavigationDrawerClick -> {
+                _effect.emit(ToggleNavigationDrawer)
+
+            }
+            is HomeScreenEvent.OnNavigationDrawerItemClick -> {
+                _state.update {
+                    it.copy(
+                        navigationDrawerState = it.navigationDrawerState.copy(
+                            selectedItemIndex = event.index
+                        )
+                    )
+                }
+                filterBookmarksByIndex(event.index)
+                _effect.emit(ToggleNavigationDrawer)
+            }
         }
     }
 
@@ -270,6 +287,44 @@ class HomeScreenViewModel(
 
     private fun updateDueStatus(id : Long , isDue : Boolean) = viewModelScope.launch {
         bookmarkManagerRepo.updateDueStatus(id, isDue).collectLatest { }
+    }
+
+    private fun drawerItemsList() {
+        _state.update {
+            it.copy(
+                navigationDrawerState = it.navigationDrawerState.copy(
+                    drawerItems = listOf(
+                        DrawerItems.AllBookMarks,
+                        DrawerItems.ReadLater
+                    )
+                )
+            )
+        }
+    }
+
+    private fun filterBookmarksByIndex(index : Int) = viewModelScope.launch {
+        when(index){
+            0 -> {
+                readLaterDataSourceRepo.getAllActiveItems().collectLatest { items->
+                    _state.update { state->
+                        state.copy(
+                            readLaterUiItem = items.toReadLaterUiItem()
+                        )
+                    }
+
+                }
+            }
+            1 -> {
+                readLaterDataSourceRepo.getDueItems().collectLatest { items->
+                    _state.update { state->
+                        state.copy(
+                            readLaterUiItem = items.toReadLaterUiItem()
+                        )
+                    }
+
+                }
+            }
+        }
     }
 
 }

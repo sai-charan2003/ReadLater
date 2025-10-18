@@ -25,5 +25,7 @@ interface ReadLaterDataSourceRepo {
 
     suspend fun searchBookmarks(text : String) : Flow<List<ReadLaterEntity>>
 
+    suspend fun getDueItems() : Flow<List<ReadLaterEntity>>
+
 
 }

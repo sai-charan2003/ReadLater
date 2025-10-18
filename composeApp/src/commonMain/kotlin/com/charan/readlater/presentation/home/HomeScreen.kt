@@ -1,5 +1,6 @@
 package com.charan.readlater.presentation.home
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
@@ -11,6 +12,7 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.rounded.MoreVert
 import androidx.compose.material3.AppBarWithSearch
+import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExpandedFullScreenSearchBar
@@ -23,12 +25,15 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LargeFlexibleTopAppBar
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalDrawerSheet
+import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SearchBarDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
+import androidx.compose.material3.rememberDrawerState
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.material3.rememberSearchBarState
 import androidx.compose.runtime.Composable
@@ -42,12 +47,16 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalUriHandler
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.charan.readlater.presentation.home.components.AddUrlBottomSheet
 import com.charan.readlater.presentation.home.components.BookmarkItem
+import com.charan.readlater.presentation.home.components.DrawerContent
 import com.charan.readlater.presentation.home.components.ScrollToTop
 import com.charan.readlater.presentation.home.components.SearchInputField
 import com.charan.readlater.presentation.home.components.UserAuthenticationAlert
+import com.charan.readlater.ui.theme.IndexItem
+import com.charan.readlater.ui.theme.roundedListItemCorners
 import kotlinx.coroutines.flow.collectLatest
 import org.koin.compose.viewmodel.koinViewModel
 
@@ -62,6 +71,7 @@ fun HomeScreen(
     val addBookmarkModelSheet = rememberModalBottomSheetState()
     val scrollSate = TopAppBarDefaults.enterAlwaysScrollBehavior()
     val appBarScrollBehavior = SearchBarDefaults.enterAlwaysSearchBarScrollBehavior()
+    val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val appBarState = rememberSearchBarState()
     val pullToRefreshState = rememberPullToRefreshState()
     val uriHandler = LocalUriHandler.current
@@ -101,6 +111,14 @@ fun HomeScreen(
                 HomeScreenEffect.ScrollToTop -> {
                     listState.animateScrollToItem(0)
                 }
+
+                HomeScreenEffect.ToggleNavigationDrawer -> {
+                    if(drawerState.isClosed){
+                        drawerState.open()
+                    }else{
+                        drawerState.close()
+                    }
+                }
             }
         }
     }
@@ -138,55 +156,154 @@ fun HomeScreen(
             }
         )
     }
-    Scaffold(
-        topBar = {
-            AppBarWithSearch(
-                state = appBarState,
-                scrollBehavior = appBarScrollBehavior,
-                inputField = inputField,
-                navigationIcon = {
-                    IconButton(onClick = { }) {
-                        Icon(imageVector = Icons.Default.Menu, contentDescription = "Menu")
-                    }
-                },
-                actions = {
-                    IconButton(
-                        onClick = {
-                            viewModel.onEvent(HomeScreenEvent.OnDropDownClick)
+    ModalNavigationDrawer(
+        drawerState = drawerState,
+        drawerContent = {
+            ModalDrawerSheet {
+                Text(
+                    "Read Later",
+                    style = MaterialTheme.typography.headlineSmall,
+                    modifier = Modifier.padding(16.dp)
+                )
+                HorizontalDivider(modifier = Modifier.padding(bottom = 10.dp))
+                DrawerContent(
+                    items = state.navigationDrawerState.drawerItems,
+                    selectedIndex = state.navigationDrawerState.selectedItemIndex,
+                    onItemClick = { _, index ->
+                        viewModel.onEvent(HomeScreenEvent.OnNavigationDrawerItemClick(index))
 
-                        }
-                    ) {
-                        Icon(Icons.Rounded.MoreVert,null)
                     }
-                    DropdownMenu(
-                        expanded = state.isDropDownVisible,
-                        onDismissRequest = {
-                            viewModel.onEvent(HomeScreenEvent.OnDropDownClick)
-                        }
 
-                    ) {
-                        DropdownMenuItem(
-                            text = {
-                                Text("Settings")
-                            },
+
+                )
+            }
+
+        }
+
+    ) {
+        Scaffold(
+            topBar = {
+                AppBarWithSearch(
+                    state = appBarState,
+                    scrollBehavior = appBarScrollBehavior,
+                    inputField = inputField,
+                    navigationIcon = {
+                        IconButton(onClick = {
+                            viewModel.onEvent(HomeScreenEvent.OnNavigationDrawerClick)
+                        }) {
+                            Icon(imageVector = Icons.Default.Menu, contentDescription = "Menu")
+                        }
+                    },
+                    actions = {
+                        IconButton(
                             onClick = {
-                                viewModel.onEvent(HomeScreenEvent.OnSettingsClick)
+                                viewModel.onEvent(HomeScreenEvent.OnDropDownClick)
 
                             }
-                        )
+                        ) {
+                            Icon(Icons.Rounded.MoreVert, null)
+                        }
+                        DropdownMenu(
+                            expanded = state.isDropDownVisible,
+                            onDismissRequest = {
+                                viewModel.onEvent(HomeScreenEvent.OnDropDownClick)
+                            }
+
+                        ) {
+                            DropdownMenuItem(
+                                text = {
+                                    Text("Settings")
+                                },
+                                onClick = {
+                                    viewModel.onEvent(HomeScreenEvent.OnSettingsClick)
+
+                                }
+                            )
+
+                        }
+
 
                     }
 
+                )
+                ExpandedFullScreenSearchBar(state = appBarState, inputField = inputField) {
+                    LazyColumn(
+
+
+                    ) {
+                        items(state.searchItems.size) {
+                            val item = state.searchItems[it]
+                            BookmarkItem(
+                                title = item.title,
+                                description = item.description,
+                                imageUrl = item.imageUrl,
+                                onClick = {
+                                    viewModel.onEvent(HomeScreenEvent.OnURLOpen(item.url))
+
+                                },
+                                isDue = item.isDue,
+                                onLeftToRightSwipe = {
+                                    viewModel.onEvent(
+                                        HomeScreenEvent.OnDueStatusChange(
+                                            item.id.toLong(),
+                                            item.isDue
+                                        )
+                                    )
+
+                                },
+                                onRightToLeftSwipe = {
+                                    viewModel.onEvent(HomeScreenEvent.OnDeleteBookmark(item.id))
+
+                                },
+                                onContextMenuOpen = {
+
+                                },
+                                indexItem = if(it == 0) IndexItem.FIRST else if (it == state.readLaterUiItem.size -1) IndexItem.LAST else IndexItem.MIDDLE
+
+                            )
+                            HorizontalDivider(
+                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f)
+                            )
+                        }
+
+                    }
 
                 }
 
-            )
-            ExpandedFullScreenSearchBar(state = appBarState, inputField = inputField){
+            },
+            floatingActionButton = {
+                ExtendedFloatingActionButton(
+                    onClick = {
+                        viewModel.onEvent(HomeScreenEvent.OnAddURLBottomSheetChangeState)
+                    },
+                    text = { Text("Add") },
+                    icon = { Icon(Icons.Filled.Add, contentDescription = "Add") },
+                    expanded = listState.isScrollingUp()
+                )
+
+            },
+
+            floatingActionButtonPosition = FabPosition.End,
+
+            ) {
+            PullToRefreshBox(
+                isRefreshing = state.isFetchingData,
+                onRefresh = {
+                    viewModel.onEvent(HomeScreenEvent.OnRefresh)
+                },
+                state = pullToRefreshState,
+                modifier = Modifier.padding(it)
+            ) {
                 LazyColumn(
+                    modifier = Modifier.fillMaxSize().nestedScroll(appBarScrollBehavior.nestedScrollConnection).padding(10.dp),
+                    state = listState
 
                 ) {
-                    items(state.searchItems.size){
-                        val item = state.searchItems[it]
+                    items(
+                        state.readLaterUiItem.size,
+                        key = { state.readLaterUiItem[it].id }
+                    ) {
+                        val item = state.readLaterUiItem[it]
                         BookmarkItem(
                             title = item.title,
                             description = item.description,
@@ -211,7 +328,9 @@ fun HomeScreen(
                             },
                             onContextMenuOpen = {
 
-                            }
+                            },
+                            indexItem = if(it == 0) IndexItem.FIRST else if (it == state.readLaterUiItem.size -1) IndexItem.LAST else IndexItem.MIDDLE,
+
 
                         )
                         HorizontalDivider(
@@ -220,78 +339,9 @@ fun HomeScreen(
                     }
 
                 }
-
             }
 
-        },
-        floatingActionButton = {
-            ExtendedFloatingActionButton(
-                onClick = {
-                    viewModel.onEvent(HomeScreenEvent.OnAddURLBottomSheetChangeState)
-                },
-                text = { Text("Add") },
-                icon = { Icon(Icons.Filled.Add, contentDescription = "Add")  },
-                expanded = listState.isScrollingUp()
-            )
-
-        },
-
-        floatingActionButtonPosition = FabPosition.End,
-
-    ) {
-        PullToRefreshBox(
-            isRefreshing = state.isFetchingData,
-            onRefresh = {
-                viewModel.onEvent(HomeScreenEvent.OnRefresh)
-            },
-            state = pullToRefreshState,
-            modifier = Modifier.padding(it)
-        ) {
-            LazyColumn(
-                modifier = Modifier.fillMaxSize(),
-                state = listState
-
-            ) {
-                items(
-                    state.readLaterUiItem.size,
-                    key = { state.readLaterUiItem[it].id }
-                ) {
-                    val item = state.readLaterUiItem[it]
-                    BookmarkItem(
-                        title = item.title,
-                        description = item.description,
-                        imageUrl = item.imageUrl,
-                        onClick = {
-                            viewModel.onEvent(HomeScreenEvent.OnURLOpen(item.url))
-
-                        },
-                        isDue = item.isDue,
-                        onLeftToRightSwipe = {
-                            viewModel.onEvent(
-                                HomeScreenEvent.OnDueStatusChange(
-                                    item.id.toLong(),
-                                    item.isDue
-                                )
-                            )
-
-                        },
-                        onRightToLeftSwipe = {
-                            viewModel.onEvent(HomeScreenEvent.OnDeleteBookmark(item.id))
-
-                        },
-                        onContextMenuOpen = {
-
-                        }
-
-                    )
-                    HorizontalDivider(
-                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f)
-                    )
-                }
-
-            }
         }
-
     }
 
 }

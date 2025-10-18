@@ -83,4 +83,8 @@ class ReadLaterDataSourceImpl(
     override suspend fun searchBookmarks(text: String): Flow<List<ReadLaterEntity>> {
         return queries.searchFromReadLater(text).asFlow().mapToList(Dispatchers.IO)
     }
+
+    override suspend fun getDueItems(): Flow<List<ReadLaterEntity>> {
+        return queries.getDueItems().asFlow().mapToList(Dispatchers.IO)
+    }
 }

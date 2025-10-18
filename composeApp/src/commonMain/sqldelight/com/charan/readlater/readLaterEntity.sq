@@ -73,6 +73,9 @@ UPDATE readLaterEntity SET isDeleted = 1, isSynced = 0 WHERE id = ?;
 updateDueStatus :
 UPDATE readLaterEntity SET is_due = ?, isSynced = 0 WHERE id = ?;
 
+getDueItems :
+SELECT * FROM readLaterEntity WHERE is_due = 1 AND isDeleted = 0;
+
 searchFromReadLater :
 SELECT r.*
 FROM readLaterEntity AS r
