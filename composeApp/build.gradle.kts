@@ -23,6 +23,9 @@ sqldelight {
         create("ReadLaterDatabase") {
             packageName.set("com.charan.readlater")
             generateAsync.set(true)
+            schemaOutputDirectory.set(file("src/commonMain/sqldelight/databases"))
+            migrationOutputDirectory.set(file("src/commonMain/sqldelight/migrations"))
+
         }
     }
 }

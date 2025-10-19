@@ -20,7 +20,8 @@ fun WebMetaData.toReadLaterItem(url : String,isDue : Boolean,createdAt : String 
         isSynced = false,
         image_url = this.imageUrl,
         uuid = Uuid.random().toString(),
-        isDeleted = false
+        isDeleted = false,
+        category_uuid = null
     )
 }
 

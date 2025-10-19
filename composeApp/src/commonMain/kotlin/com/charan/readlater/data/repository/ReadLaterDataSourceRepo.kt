@@ -1,6 +1,8 @@
 package com.charan.readlater.data.repository
 
+import com.charan.readlater.CategoryEntity
 import com.charan.readlater.ReadLaterEntity
+import com.charan.readlater.utils.ProcessState
 import kotlinx.coroutines.flow.Flow
 
 interface ReadLaterDataSourceRepo {
@@ -26,6 +28,10 @@ interface ReadLaterDataSourceRepo {
     suspend fun searchBookmarks(text : String) : Flow<List<ReadLaterEntity>>
 
     suspend fun getDueItems() : Flow<List<ReadLaterEntity>>
+
+    suspend fun createCategory(categoryEntity: CategoryEntity) : Boolean
+
+    suspend fun getAllCategories() : Flow<List<CategoryEntity>>
 
 
 }

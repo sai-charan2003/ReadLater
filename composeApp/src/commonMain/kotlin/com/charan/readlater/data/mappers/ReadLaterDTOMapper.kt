@@ -32,7 +32,8 @@ fun List<ReadLaterDTO>.toReadLaterEntity() : List<ReadLaterEntity> {
             is_due = it.is_due,
             isSynced = true,
             uuid = it.uuid,
-            isDeleted = it.is_deleted
+            isDeleted = it.is_deleted,
+            category_uuid = null
         )
     }
 }

@@ -3,6 +3,7 @@ package com.charan.readlater.data.repository.impl
 
 import app.cash.sqldelight.coroutines.asFlow
 import app.cash.sqldelight.coroutines.mapToList
+import com.charan.readlater.CategoryEntity
 import com.charan.readlater.ReadLaterDatabase
 import com.charan.readlater.ReadLaterEntity
 import com.charan.readlater.data.repository.ReadLaterDataSourceRepo
@@ -11,6 +12,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flow
 
 class ReadLaterDataSourceImpl(
     private val db : ReadLaterDatabase
@@ -86,5 +88,17 @@ class ReadLaterDataSourceImpl(
 
     override suspend fun getDueItems(): Flow<List<ReadLaterEntity>> {
         return queries.getDueItems().asFlow().mapToList(Dispatchers.IO)
+    }
+
+    override suspend fun createCategory(categoryEntity: CategoryEntity): Boolean {
+        queries.insertCategory(
+            name = categoryEntity.name,
+            uuid = categoryEntity.uuid,
+        )
+        return true
+    }
+
+    override suspend fun getAllCategories(): Flow<List<CategoryEntity>> {
+        return queries.getAllCategories().asFlow().mapToList(Dispatchers.IO)
     }
 }

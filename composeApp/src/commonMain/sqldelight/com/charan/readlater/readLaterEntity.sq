@@ -11,7 +11,8 @@ CREATE TABLE readLaterEntity (
     is_due INTEGER AS Boolean NOT NULL DEFAULT 0,
     isSynced INTEGER AS Boolean NOT NULL DEFAULT 0,
     isDeleted INTEGER AS Boolean NOT NULL DEFAULT 0,
-    uuid TEXT NOT NULL UNIQUE
+    uuid TEXT NOT NULL UNIQUE,
+    category_uuid TEXT DEFAULT NULL
     );
 
 CREATE VIRTUAL TABLE readLaterSearchFTS USING fts5(
@@ -22,6 +23,12 @@ CREATE VIRTUAL TABLE readLaterSearchFTS USING fts5(
     content_rowid='id',
     tokenize = 'unicode61'
     );
+
+CREATE TABLE categoryEntity (
+    id INTEGER  PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    uuid TEXT NOT NULL UNIQUE
+);
 
 -- Trigger for INSERT operations
 CREATE TRIGGER readLaterEntity_ai AFTER INSERT ON readLaterEntity BEGIN
@@ -81,3 +88,12 @@ SELECT r.*
 FROM readLaterEntity AS r
 JOIN readLaterSearchFTS AS fts ON r.id = fts.rowid
 WHERE readLaterSearchFTS MATCH ? AND r.isDeleted = 0;
+
+insertCategory:
+INSERT OR REPLACE INTO categoryEntity (name, uuid) VALUES (?, ?);
+
+updateCategoryId:
+UPDATE readLaterEntity SET id = ? WHERE category_uuid = ?;
+
+getAllCategories:
+SELECT * FROM categoryEntity;
