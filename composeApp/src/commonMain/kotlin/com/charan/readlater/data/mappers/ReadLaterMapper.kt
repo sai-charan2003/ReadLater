@@ -9,7 +9,7 @@ import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 
 @OptIn(ExperimentalTime::class, ExperimentalUuidApi::class)
-fun WebMetaData.toReadLaterItem(url : String,isDue : Boolean,createdAt : String = "") : ReadLaterEntity {
+fun WebMetaData.toReadLaterItem(url : String,isDue : Boolean,createdAt : String = "",categoryUUID : String = "") : ReadLaterEntity {
     return ReadLaterEntity(
         id = 0,
         url = url,
@@ -21,7 +21,7 @@ fun WebMetaData.toReadLaterItem(url : String,isDue : Boolean,createdAt : String 
         image_url = this.imageUrl,
         uuid = Uuid.random().toString(),
         isDeleted = false,
-        category_uuid = null
+        category_uuid = categoryUUID
     )
 }
 
@@ -33,7 +33,9 @@ fun List<ReadLaterEntity>.toReadLaterUiItem() : List<ReadLaterUiItem> {
             description = it.description ?: "",
             url = it.url,
             isDue = it.is_due as Boolean,
-            imageUrl = it.image_url ?: ""
+            imageUrl = it.image_url ?: "",
+            categoryUUID = it.category_uuid ?: ""
+
 
         )
     }

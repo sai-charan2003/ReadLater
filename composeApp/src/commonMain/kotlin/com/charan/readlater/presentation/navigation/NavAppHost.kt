@@ -9,6 +9,7 @@ import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import com.charan.readlater.presentation.add_url.AddURLScreen
 import com.charan.readlater.presentation.home.HomeScreen
 import com.charan.readlater.presentation.authentication.AuthenticationScreen
 import com.charan.readlater.presentation.settings.SettingsScreen
@@ -75,6 +76,9 @@ fun NavAppHost(
                 },
                 navigateToLoginScreen = {
                     navHostController.navigate(AuthenticationScreenNav)
+                },
+                navigateToAddURLScreen = {
+                    navHostController.navigate(AddURLScreenNav)
                 }
             )
         }
@@ -97,6 +101,14 @@ fun NavAppHost(
                 },
                 navigateToSignIn = {
                     navHostController.navigate(AuthenticationScreenNav)
+                }
+            )
+        }
+
+        composable <AddURLScreenNav>{
+            AddURLScreen(
+                onBackClick = {
+                    navHostController.popBackStack()
                 }
             )
         }

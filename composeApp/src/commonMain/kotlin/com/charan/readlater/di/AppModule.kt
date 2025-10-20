@@ -18,6 +18,7 @@ import com.charan.readlater.data.repository.impl.SettingsDataStoreRepoImpl
 import com.charan.readlater.data.repository.impl.SupabaseRepoImpl
 import com.charan.readlater.data.repository.impl.SyncManagerImpl
 import com.charan.readlater.data.repository.impl.WebScrapperRepoImpl
+import com.charan.readlater.presentation.add_url.AddURLViewModel
 import com.charan.readlater.presentation.home.HomeScreenViewModel
 import com.charan.readlater.presentation.authentication.AuthenticationViewModel
 import com.charan.readlater.presentation.settings.SettingsScreenViewModel
@@ -50,6 +51,7 @@ val appModule = module {
     viewModel { AuthenticationViewModel(get(),get ()) }
     viewModel { HomeScreenViewModel(get(),get(),get(),get(),get()) }
     viewModel { SettingsScreenViewModel(get(),get(),get(),get()) }
+    viewModel { AddURLViewModel(get(),get(),get(),get(),get()) }
 }
 fun initKoin(appDeclaration: KoinAppDeclaration = {}) = startKoin {
     appDeclaration()

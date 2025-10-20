@@ -64,7 +64,8 @@ import org.koin.compose.viewmodel.koinViewModel
 @Composable
 fun HomeScreen(
     navigateToSettings : () -> Unit,
-    navigateToLoginScreen : () -> Unit
+    navigateToLoginScreen : () -> Unit,
+    navigateToAddURLScreen : () -> Unit
 ) {
     val viewModel = koinViewModel <HomeScreenViewModel>()
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -119,30 +120,12 @@ fun HomeScreen(
                         drawerState.close()
                     }
                 }
+
+                HomeScreenEffect.NavigateToAddURLScreen -> {
+                    navigateToAddURLScreen()
+                }
             }
         }
-    }
-    if(state.showAddURLBottomSheet) {
-        AddUrlBottomSheet(
-            onDismiss = {
-                viewModel.onEvent(HomeScreenEvent.OnAddURLBottomSheetChangeState)
-            },
-            bottomModelSheetState = addBookmarkModelSheet,
-            onValueChange = {
-                viewModel.onEvent(HomeScreenEvent.OnURLChange(it))
-            },
-            onSaveClick = {
-                viewModel.onEvent(HomeScreenEvent.OnSaveURLClick)
-            },
-            savingURL = state.newUrlState.isSaving,
-            url = state.newUrlState.url,
-            isDue = state.newUrlState.isDue,
-            onDueChange = {
-                viewModel.onEvent(HomeScreenEvent.OnDueButtonClick(it))
-            },
-            error = state.newUrlState.error
-
-        )
     }
 
     if(state.showUserNotAuthenticatedPop){
@@ -227,10 +210,7 @@ fun HomeScreen(
 
                 )
                 ExpandedFullScreenSearchBar(state = appBarState, inputField = inputField) {
-                    LazyColumn(
-
-
-                    ) {
+                    LazyColumn{
                         items(state.searchItems.size) {
                             val item = state.searchItems[it]
                             BookmarkItem(
@@ -274,7 +254,7 @@ fun HomeScreen(
             floatingActionButton = {
                 ExtendedFloatingActionButton(
                     onClick = {
-                        viewModel.onEvent(HomeScreenEvent.OnAddURLBottomSheetChangeState)
+                        viewModel.onEvent(HomeScreenEvent.OnAddURLClick)
                     },
                     text = { Text("Add") },
                     icon = { Icon(Icons.Filled.Add, contentDescription = "Add") },

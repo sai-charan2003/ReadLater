@@ -9,7 +9,8 @@ data class HomeScreenState (
     val selectedTabIndex : Int = 0,
     val showUserNotAuthenticatedPop : Boolean = false,
     val searchItems : List<ReadLaterUiItem> = emptyList(),
-    val navigationDrawerState: NavigationDrawerState = NavigationDrawerState(),
+    val     navigationDrawerState: NavigationDrawerState = NavigationDrawerState(),
+    val categoryItems: List<CategoryItem> = emptyList()
 )
 
 data class NewUrlState(
@@ -25,7 +26,8 @@ data class ReadLaterUiItem(
     val description : String = "",
     val imageUrl : String = "",
     val url : String = "",
-    val isDue : Boolean = false
+    val isDue : Boolean = false,
+    val categoryUUID : String = ""
 )
 
 
@@ -33,4 +35,11 @@ data class NavigationDrawerState(
     val drawerItems : List<DrawerItems> = emptyList(),
     val drawerOpen : Boolean = false,
     val selectedItemIndex : Int = 0
+)
+
+data class CategoryItem(
+    val uuid : String = "",
+    val name : String = "",
+    val itemCount : Int = 0,
+    val isSelected : Boolean = false
 )

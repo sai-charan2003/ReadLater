@@ -5,6 +5,11 @@ import com.charan.readlater.ReadLaterEntity
 import com.charan.readlater.utils.ProcessState
 import kotlinx.coroutines.flow.Flow
 
+
+/**
+ * This is the repository interface for managing Read Later database operations.
+ * It defines various methods for CRUD operations on ReadLaterEntity and CategoryEntity.
+ */
 interface ReadLaterDataSourceRepo {
 
     fun getAllItems() : Flow<List<ReadLaterEntity>>
@@ -32,6 +37,10 @@ interface ReadLaterDataSourceRepo {
     suspend fun createCategory(categoryEntity: CategoryEntity) : Boolean
 
     suspend fun getAllCategories() : Flow<List<CategoryEntity>>
+
+    suspend fun getBookmarkItemsByCategoryUUID(categoryUUID : String) : Flow<List<ReadLaterEntity>>
+
+    suspend fun getUnSyncedCategories() : List<CategoryEntity>
 
 
 }

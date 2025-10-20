@@ -3,6 +3,7 @@ package com.charan.readlater.presentation.home
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.charan.readlater.data.local.enums.LoginTypeEnum
+import com.charan.readlater.data.mappers.toCategoryUIList
 import com.charan.readlater.data.mappers.toReadLaterUiItem
 import com.charan.readlater.data.repository.BookmarkManagerRepo
 import com.charan.readlater.data.repository.ReadLaterDataSourceRepo
@@ -42,6 +43,7 @@ class HomeScreenViewModel(
         getAllBookmarks()
         syncData()
         drawerItemsList()
+        getAllCategories()
     }
 
 
@@ -68,17 +70,12 @@ class HomeScreenViewModel(
     fun onEvent(event : HomeScreenEvent) = viewModelScope.launch {
         when(event){
 
-            HomeScreenEvent.OnAddURLBottomSheetChangeState -> {
-                _state.update { state->
-                    state.copy(
-                        showAddURLBottomSheet = !state.showAddURLBottomSheet
-                    )
-                }
-                resetNewURLState()
+            HomeScreenEvent.OnAddURLClick -> {
+                _effect.emit(HomeScreenEffect.NavigateToAddURLScreen)
             }
             HomeScreenEvent.OnSaveURLClick -> {
-                val url = state.value.newUrlState
-                saveNewURL(url)
+//                val url = state.value.newUrlState
+//                saveNewURL(url)
             }
             is HomeScreenEvent.OnURLChange -> {
                 _state.update { state->
@@ -198,37 +195,6 @@ class HomeScreenViewModel(
 
     }
 
-    private fun saveNewURL(url : NewUrlState) = viewModelScope.launch {
-        bookmarkManagerRepo.addBookmark(url.url,url.isDue).collectLatest {
-            when(it){
-                is ProcessState.Error -> {
-                    _state.update { state->
-                        state.copy(
-                            newUrlState = state.newUrlState.copy(isSaving = false,error =  it.exception)
-                        )
-                    }
-
-                }
-                is ProcessState.Loading -> {
-                    _state.update { state->
-                        state.copy(
-                            newUrlState = state.newUrlState.copy(isSaving = true)
-                        )
-                    }
-
-                }
-                ProcessState.NotDetermined -> {}
-                is ProcessState.Success<*> -> {
-                    _state.update { state->
-                        state.copy(
-                            showAddURLBottomSheet = false,
-                        )
-                    }
-                    resetNewURLState()
-                }
-            }
-        }
-    }
 
     private fun resetNewURLState()= viewModelScope.launch {
         _state.update {
@@ -323,6 +289,36 @@ class HomeScreenViewModel(
                     }
 
                 }
+            }
+            else ->  {
+                val category = _state.value.categoryItems.getOrNull(index-2)
+                println(category)
+                category?.let {
+                    println(it.uuid)
+                    readLaterDataSourceRepo.getBookmarkItemsByCategoryUUID(it.uuid).collectLatest { items->
+                        _state.update { state->
+                            println(items)
+                            state.copy(
+                                readLaterUiItem = items.toReadLaterUiItem()
+                            )
+                        }
+
+                    }
+                }
+            }
+        }
+    }
+
+    private fun getAllCategories() = viewModelScope.launch {
+        readLaterDataSourceRepo.getAllCategories().collectLatest { categoryEntities ->
+            _state.update {
+                it.copy(
+                   categoryItems = categoryEntities.toCategoryUIList(),
+                    navigationDrawerState = it.navigationDrawerState.copy(
+                        drawerItems = it.navigationDrawerState.drawerItems + categoryEntities.toCategoryUIList().map { DrawerItems.Category(it) }
+                    )
+
+                )
             }
         }
     }

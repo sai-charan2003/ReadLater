@@ -1,7 +1,9 @@
 package com.charan.readlater.data.repository.impl
 
+import com.charan.readlater.CategoryEntity
 import com.charan.readlater.ReadLaterDatabase
 import com.charan.readlater.data.remote.ReadLaterSupabaseClient
+import com.charan.readlater.data.remote.model.CategoryDTO
 import com.charan.readlater.data.remote.model.ReadLaterDTO
 import com.charan.readlater.data.remote.model.UserDetails
 import com.charan.readlater.data.repository.ReadLaterDataSourceRepo
@@ -111,7 +113,7 @@ class SupabaseRepoImpl(
 
     }
 
-    override suspend fun syncData(syncItems: List<ReadLaterDTO>): Flow<ProcessState<Boolean>> =flow{
+    override suspend fun syncAllBookmarks(syncItems: List<ReadLaterDTO>): Flow<ProcessState<Boolean>> =flow{
         emit(ProcessState.Loading())
         try {
             readLaterSupabaseClient.from(SupabaseAppConstatnts.READ_LATER_TABLE_NAME).insert(syncItems)
@@ -141,6 +143,20 @@ class SupabaseRepoImpl(
             println("e: $e")
             emit(ProcessState.Error(e.message.toString()))
         }
+
+    }
+
+    override suspend fun syncAllCategories(categoryList: List<CategoryDTO>): Flow<ProcessState<Boolean>> =flow{
+
+            emit(ProcessState.Loading())
+            try {
+                readLaterSupabaseClient.from(SupabaseAppConstatnts.CATEGORY_TABLE_NAME).insert(categoryList)
+                emit(ProcessState.Success(true))
+            } catch (e: Exception){
+                emit(ProcessState.Error(e.message.toString()))
+            }
+
+
 
     }
 }

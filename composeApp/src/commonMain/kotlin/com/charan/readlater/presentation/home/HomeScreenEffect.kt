@@ -14,6 +14,8 @@ sealed interface HomeScreenEffect {
 
     object ToggleNavigationDrawer : HomeScreenEffect
 
+    object NavigateToAddURLScreen : HomeScreenEffect
+
 
 
 }

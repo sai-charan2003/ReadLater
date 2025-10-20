@@ -1,5 +1,6 @@
 package com.charan.readlater.data.repository.impl
 
+import com.charan.readlater.CategoryEntity
 import com.charan.readlater.data.local.model.ImportData
 import com.charan.readlater.data.local.model.WebMetaData
 import com.charan.readlater.data.repository.BookmarkManagerRepo
@@ -9,6 +10,7 @@ import com.charan.readlater.data.repository.SupabaseRepo
 import com.charan.readlater.data.repository.WebScrapperRepo
 import com.charan.readlater.data.mappers.toReadLaterItem
 import com.charan.readlater.data.repository.SyncManager
+import com.charan.readlater.presentation.home.ReadLaterUiItem
 import com.charan.readlater.utils.ProcessState
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
@@ -21,6 +23,10 @@ import kotlinx.coroutines.flow.channelFlow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
+import kotlin.time.Clock
+import kotlin.time.ExperimentalTime
+import kotlin.uuid.ExperimentalUuidApi
+import kotlin.uuid.Uuid
 
 class BookmarkManagerRepoImpl(
     private val readLaterDataSourceRepo: ReadLaterDataSourceRepo,
@@ -29,11 +35,11 @@ class BookmarkManagerRepoImpl(
     private val syncManager: SyncManager,
     private val webScrapperRepo: WebScrapperRepo
 ) : BookmarkManagerRepo {
-    override suspend fun addBookmark(url: String, isDue : Boolean): Flow<ProcessState<Boolean>> =flow{
+    override suspend fun addBookmark(url: String, isDue : Boolean,categoryUUID: String): Flow<ProcessState<Boolean>> =flow{
         emit(ProcessState.Loading())
         try {
             val metaData = webScrapperRepo.getWebMetaData(url)
-            val readLaterItem = metaData.toReadLaterItem(url,isDue)
+            val readLaterItem = metaData.toReadLaterItem(url,isDue, categoryUUID = categoryUUID)
             readLaterDataSourceRepo.insertItem(readLaterItem)
             emit(ProcessState.Success(true))
             syncManager.sync()
@@ -119,5 +125,32 @@ class BookmarkManagerRepoImpl(
         }
     }
 
+    @OptIn(ExperimentalUuidApi::class, ExperimentalTime::class)
+    override suspend fun createCategory(name: String,uuid : String): Flow<ProcessState<Boolean>> = flow{
+        emit(ProcessState.Loading())
+        readLaterDataSourceRepo.createCategory(
+            CategoryEntity(
+                name = name,
+                uuid = uuid,
+                id = 0,
+                isSynced = false,
+                isDeleted = false,
+                createdAt = Clock.System.now().toString()
 
+            )
+        )
+
+        emit(ProcessState.Success(true))
+        syncManager.sync()
+
+
+    }
+
+    override suspend fun deleteCategory(categoryUUID: String): Flow<ProcessState<Boolean>> =flow{
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun updateCategory(name: String): Flow<ProcessState<Boolean>> =flow{
+        TODO("Not yet implemented")
+    }
 }

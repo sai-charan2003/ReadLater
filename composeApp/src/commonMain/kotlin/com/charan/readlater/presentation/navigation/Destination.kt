@@ -13,3 +13,6 @@ data object SettingsScreenNav
 
 @Serializable
 data object AccountScreenNav
+
+@Serializable
+data object AddURLScreenNav

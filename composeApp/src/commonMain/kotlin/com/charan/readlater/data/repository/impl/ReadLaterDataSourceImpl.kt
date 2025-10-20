@@ -24,6 +24,7 @@ class ReadLaterDataSourceImpl(
     }
 
     override suspend fun insertItem(item: ReadLaterEntity) {
+        println(item)
         queries.insertReadLaterItem(
             title = item.title,
             url = item.url,
@@ -33,7 +34,8 @@ class ReadLaterDataSourceImpl(
             image_url = item.image_url,
             isSynced = item.isSynced,
             uuid = item.uuid,
-            isDeleted = item.isDeleted
+            isDeleted = item.isDeleted,
+            category_uuid = item.category_uuid
         )
 
     }
@@ -50,7 +52,8 @@ class ReadLaterDataSourceImpl(
                     image_url = item.image_url,
                     isSynced = item.isSynced,
                     uuid = item.uuid,
-                    isDeleted = item.isDeleted
+                    isDeleted = item.isDeleted,
+                    category_uuid = item.category_uuid
                 )
             }
         }
@@ -100,5 +103,13 @@ class ReadLaterDataSourceImpl(
 
     override suspend fun getAllCategories(): Flow<List<CategoryEntity>> {
         return queries.getAllCategories().asFlow().mapToList(Dispatchers.IO)
+    }
+
+    override suspend fun getBookmarkItemsByCategoryUUID(categoryUUID: String): Flow<List<ReadLaterEntity>> {
+        return queries.getBookmarkItemByCategoryUUID(categoryUUID).asFlow().mapToList(Dispatchers.IO)
+    }
+
+    override suspend fun getUnSyncedCategories(): List<CategoryEntity> {
+        return queries.getUnSyncedCategories().asFlow().mapToList(Dispatchers.IO).first()
     }
 }

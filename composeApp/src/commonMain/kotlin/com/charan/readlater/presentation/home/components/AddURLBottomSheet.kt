@@ -21,7 +21,6 @@ fun AddUrlBottomSheet(
     onDueChange: (Boolean) -> Unit,
     error : String
 ) {
-    println(savingURL)
     ModalBottomSheet(
         onDismissRequest = { onDismiss() },
         sheetState = bottomModelSheetState
