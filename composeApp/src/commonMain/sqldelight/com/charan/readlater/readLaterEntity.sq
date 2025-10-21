@@ -15,12 +15,11 @@ CREATE TABLE readLaterEntity (
     category_uuid TEXT DEFAULT NULL
     );
 
-CREATE VIRTUAL TABLE readLaterSearchFTS USING fts5(
+CREATE VIRTUAL TABLE readLaterSearchFTS USING fts4(
     title TEXT,
     description TEXT,
     url TEXT NOT NULL,
     content='readLaterEntity',
-    content_rowid='id',
     tokenize = 'unicode61'
     );
 
@@ -107,3 +106,9 @@ SELECT * FROM readLaterEntity WHERE category_uuid = ? AND isDeleted = 0;
 
 getUnSyncedCategories:
 SELECT * FROM categoryEntity WHERE isSynced = 0;
+
+updateIdAndSyncStatus:
+UPDATE readLaterEntity SET isSynced = 1, id = ? WHERE uuid = ?;
+
+updateIdAndSyncStatusCategory:
+UPDATE categoryEntity SET isSynced = 1, id = ? WHERE uuid = ?;

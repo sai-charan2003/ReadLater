@@ -37,7 +37,8 @@ ktor = "3.2.3"
 ktorClientApache5 = "3.2.3"
 ktorClientCio = "3.2.3"
 csv = "1.1"
-sqliteAndroid = "3.49.0"
+sqliteAndroid = "3.45.0"
+sqliteFramework = "2.6.1"
 
 
 [libraries]
@@ -93,6 +94,7 @@ ktor-client-darwin = { module = "io.ktor:ktor-client-darwin", version.ref = "kto
 ktor-serialization-kotlinx-json = { module = "io.ktor:ktor-serialization-kotlinx-json", version.ref = "ktor" }
 csv = { module = "de.halfbit:csv", version.ref = "csv" }
 sqlite-android = { module = "com.github.requery:sqlite-android", version.ref = "sqliteAndroid" }
+androidx-sqlite-framework = { group = "androidx.sqlite", name = "sqlite-framework", version.ref = "sqliteFramework" }
 
 
 [plugins]

@@ -24,7 +24,6 @@ class ReadLaterDataSourceImpl(
     }
 
     override suspend fun insertItem(item: ReadLaterEntity) {
-        println(item)
         queries.insertReadLaterItem(
             title = item.title,
             url = item.url,

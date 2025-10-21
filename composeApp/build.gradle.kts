@@ -87,8 +87,9 @@ kotlin {
             implementation(libs.koin.compose)
             implementation(libs.firebase.config)
             implementation(libs.ktor.client.okhttp)
-            implementation("app.cash.sqldelight:android-driver:2.1.0")
             api(libs.sqlite.android)
+            implementation("androidx.sqlite:sqlite-bundled:2.6.1")
+            implementation("androidx.sqlite:sqlite-framework:2.6.1")
 
         }
         commonMain.dependencies {
