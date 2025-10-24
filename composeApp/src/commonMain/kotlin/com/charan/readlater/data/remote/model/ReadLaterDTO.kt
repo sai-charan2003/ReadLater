@@ -12,5 +12,6 @@ data class ReadLaterDTO(
     val created_at : String = "",
     val uuid : String = "",
     val description : String? = null,
-    val email : String = ""
+    val email : String = "",
+    
 )

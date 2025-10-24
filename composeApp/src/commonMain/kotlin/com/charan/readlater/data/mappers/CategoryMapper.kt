@@ -34,3 +34,16 @@ fun List<CategoryEntity>.toCategoryDTO(email : String) : List<CategoryDTO>{
         )
     }
 }
+
+fun List<CategoryDTO>.toCategoryEntityList() : List<CategoryEntity>{
+    return this.map {
+        CategoryEntity(
+            id = it.id,
+            name = it.name,
+            createdAt = it.created_at,
+            isDeleted = it.isDeleted,
+            uuid = it.uuid,
+            isSynced = true
+        )
+    }
+}

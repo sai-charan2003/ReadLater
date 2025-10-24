@@ -19,7 +19,7 @@ CREATE VIRTUAL TABLE readLaterSearchFTS USING fts4(
     title TEXT,
     description TEXT,
     url TEXT NOT NULL,
-    content='readLaterEntity',
+    content='readLaterEntity'
     tokenize = 'unicode61'
     );
 
@@ -93,7 +93,7 @@ JOIN readLaterSearchFTS AS fts ON r.id = fts.rowid
 WHERE readLaterSearchFTS MATCH ? AND r.isDeleted = 0;
 
 insertCategory:
-INSERT OR REPLACE INTO categoryEntity (name, uuid) VALUES (?, ?);
+INSERT OR REPLACE INTO categoryEntity (name, uuid,isSynced,isDeleted) VALUES (?, ?,?,?);
 
 updateCategoryId:
 UPDATE readLaterEntity SET id = ? WHERE category_uuid = ?;

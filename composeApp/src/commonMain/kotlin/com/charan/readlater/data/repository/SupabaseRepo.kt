@@ -18,12 +18,14 @@ interface SupabaseRepo {
 
     suspend fun getAuthorizedUserDetails() : Flow<ProcessState<UserDetails>>
 
-    suspend fun syncAllBookmarks(syncItems : List<ReadLaterDTO>) : Flow<ProcessState<Boolean>>
+    suspend fun syncAllBookmarks(syncItems : List<ReadLaterDTO>) : Flow<ProcessState<List<ReadLaterDTO>>>
 
     suspend fun getEmailId() : String?
 
     suspend fun getAllBookmarks() : Flow<ProcessState<List<ReadLaterDTO>>>
 
-    suspend fun syncAllCategories(categoryList: List<CategoryDTO>) : Flow<ProcessState<Boolean>>
+    suspend fun syncAllCategories(categoryList: List<CategoryDTO>) : Flow<ProcessState<List<CategoryDTO>>>
+
+    suspend fun getAllCategories() : Flow<ProcessState<List<CategoryDTO>>>
 
 }

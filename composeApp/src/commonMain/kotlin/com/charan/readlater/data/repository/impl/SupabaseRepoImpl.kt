@@ -113,11 +113,13 @@ class SupabaseRepoImpl(
 
     }
 
-    override suspend fun syncAllBookmarks(syncItems: List<ReadLaterDTO>): Flow<ProcessState<Boolean>> =flow{
+    override suspend fun syncAllBookmarks(syncItems: List<ReadLaterDTO>): Flow<ProcessState<List<ReadLaterDTO>>> =flow{
         emit(ProcessState.Loading())
         try {
-            readLaterSupabaseClient.from(SupabaseAppConstatnts.READ_LATER_TABLE_NAME).insert(syncItems)
-            emit(ProcessState.Success(true))
+            val insertedData = readLaterSupabaseClient.from(SupabaseAppConstatnts.READ_LATER_TABLE_NAME).upsert(syncItems){
+                select()
+            }.decodeList<ReadLaterDTO>()
+            emit(ProcessState.Success(insertedData))
         } catch (e: Exception){
             emit(ProcessState.Error(e.message.toString()))
         }
@@ -146,17 +148,31 @@ class SupabaseRepoImpl(
 
     }
 
-    override suspend fun syncAllCategories(categoryList: List<CategoryDTO>): Flow<ProcessState<Boolean>> =flow{
+    override suspend fun syncAllCategories(categoryList: List<CategoryDTO>): Flow<ProcessState<List<CategoryDTO>>> =flow{
 
             emit(ProcessState.Loading())
             try {
-                readLaterSupabaseClient.from(SupabaseAppConstatnts.CATEGORY_TABLE_NAME).insert(categoryList)
-                emit(ProcessState.Success(true))
+                val syncedCategories = readLaterSupabaseClient.from(SupabaseAppConstatnts.CATEGORY_TABLE_NAME).insert(categoryList){
+                    select()
+                }.decodeList<CategoryDTO>()
+                emit(ProcessState.Success(syncedCategories))
             } catch (e: Exception){
                 emit(ProcessState.Error(e.message.toString()))
             }
 
 
 
+    }
+
+
+    override suspend fun getAllCategories(): Flow<ProcessState<List<CategoryDTO>>> =flow{
+        emit(ProcessState.Loading())
+        try {
+            val allCategories = readLaterSupabaseClient.from(SupabaseAppConstatnts.CATEGORY_TABLE_NAME).select()
+                .decodeList<CategoryDTO>()
+            emit(ProcessState.Success(allCategories))
+        } catch (e: Exception){
+            emit(ProcessState.Error(e.message.toString()))
+        }
     }
 }

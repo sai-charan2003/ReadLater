@@ -42,5 +42,11 @@ interface ReadLaterDataSourceRepo {
 
     suspend fun getUnSyncedCategories() : List<CategoryEntity>
 
+    suspend fun updateSyncStatusForBookmark(id : Long, uuid : String) : Boolean
+
+    suspend fun updateSyncStatusForCategory(id : Long, uuid : String) : Boolean
+
+    suspend fun insertCategories(categories: List<CategoryEntity>) : Boolean
+
 
 }

@@ -96,6 +96,8 @@ class ReadLaterDataSourceImpl(
         queries.insertCategory(
             name = categoryEntity.name,
             uuid = categoryEntity.uuid,
+            isSynced = categoryEntity.isSynced,
+            isDeleted = categoryEntity.isDeleted
         )
         return true
     }
@@ -110,5 +112,37 @@ class ReadLaterDataSourceImpl(
 
     override suspend fun getUnSyncedCategories(): List<CategoryEntity> {
         return queries.getUnSyncedCategories().asFlow().mapToList(Dispatchers.IO).first()
+    }
+
+    override suspend fun updateSyncStatusForBookmark(
+        id: Long,
+        uuid: String
+    ): Boolean {
+        println("Sync done for bookmark $id and $uuid")
+        queries.updateIdAndSyncStatus(id, uuid)
+        return true
+    }
+
+    override suspend fun updateSyncStatusForCategory(
+        id: Long,
+        uuid: String
+    ): Boolean {
+        println("Sync done for $id and $uuid")
+        queries.updateIdAndSyncStatusCategory(id , uuid)
+        return true
+    }
+
+    override suspend fun insertCategories(categories: List<CategoryEntity>): Boolean {
+        db.transaction {
+            categories.forEach { categoryEntity ->
+                queries.insertCategory(
+                    name = categoryEntity.name,
+                    uuid = categoryEntity.uuid,
+                    isSynced = categoryEntity.isSynced,
+                    isDeleted = categoryEntity.isDeleted
+                )
+            }
+        }
+        return true
     }
 }
