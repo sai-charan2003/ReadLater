@@ -15,4 +15,4 @@ data object SettingsScreenNav
 data object AccountScreenNav
 
 @Serializable
-data object AddURLScreenNav
+data class AddURLScreenNav(val url: String = "")

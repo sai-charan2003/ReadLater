@@ -21,7 +21,8 @@ fun WebMetaData.toReadLaterItem(url : String,isDue : Boolean,createdAt : String 
         image_url = this.imageUrl,
         uuid = Uuid.random().toString(),
         isDeleted = false,
-        category_uuid = categoryUUID
+        category_uuid = categoryUUID,
+        host_url = this.hostURL
     )
 }
 
@@ -34,7 +35,8 @@ fun List<ReadLaterEntity>.toReadLaterUiItem() : List<ReadLaterUiItem> {
             url = it.url,
             isDue = it.is_due as Boolean,
             imageUrl = it.image_url ?: "",
-            categoryUUID = it.category_uuid ?: ""
+            categoryUUID = it.category_uuid ?: "",
+            hostURL = it.host_url ?: ""
 
 
         )

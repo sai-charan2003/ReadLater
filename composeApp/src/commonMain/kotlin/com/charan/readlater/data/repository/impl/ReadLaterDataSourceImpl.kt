@@ -34,7 +34,8 @@ class ReadLaterDataSourceImpl(
             isSynced = item.isSynced,
             uuid = item.uuid,
             isDeleted = item.isDeleted,
-            category_uuid = item.category_uuid
+            category_uuid = item.category_uuid,
+            host_url = item.host_url
         )
 
     }
@@ -52,7 +53,8 @@ class ReadLaterDataSourceImpl(
                     isSynced = item.isSynced,
                     uuid = item.uuid,
                     isDeleted = item.isDeleted,
-                    category_uuid = item.category_uuid
+                    category_uuid = item.category_uuid,
+                    host_url = item.host_url
                 )
             }
         }

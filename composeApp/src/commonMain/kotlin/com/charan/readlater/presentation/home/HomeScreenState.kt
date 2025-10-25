@@ -27,7 +27,8 @@ data class ReadLaterUiItem(
     val imageUrl : String = "",
     val url : String = "",
     val isDue : Boolean = false,
-    val categoryUUID : String = ""
+    val categoryUUID : String = "",
+    val hostURL : String = "",
 )
 
 

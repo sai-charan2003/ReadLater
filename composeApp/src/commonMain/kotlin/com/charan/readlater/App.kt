@@ -20,6 +20,7 @@ import kotlin.getValue
 @Composable
 @Preview
 fun App(
+    sharedURL : String = ""
 
 ) {
     val settingsDataStoreRepo: SettingsDataStoreRepo = koinInject()
@@ -35,7 +36,8 @@ fun App(
         Surface {
             NavAppHost(
                 navHostController = rememberNavController(),
-                isLoggedIn = isLoggedIn
+                isLoggedIn = isLoggedIn,
+                sharedURL = sharedURL
             )
         }
 

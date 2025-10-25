@@ -6,9 +6,11 @@ import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.toRoute
 import com.charan.readlater.presentation.add_url.AddURLScreen
 import com.charan.readlater.presentation.home.HomeScreen
 import com.charan.readlater.presentation.authentication.AuthenticationScreen
@@ -18,8 +20,17 @@ import com.charan.readlater.presentation.settings.account.AccountScreen
 @Composable
 fun NavAppHost(
     navHostController: NavHostController,
-    isLoggedIn: Boolean = true
+    isLoggedIn: Boolean = true,
+    sharedURL : String = "",
 ) {
+    LaunchedEffect(sharedURL){
+        if(sharedURL.isNotEmpty()) {
+            navHostController.navigate(AddURLScreenNav(sharedURL)) {
+                popUpTo(navHostController.graph.startDestinationId) { inclusive = true }
+                launchSingleTop = true
+            }
+        }
+    }
     NavHost(
         navController = navHostController,
         startDestination = if(isLoggedIn) HomeScreenNav else AuthenticationScreenNav,
@@ -106,10 +117,13 @@ fun NavAppHost(
         }
 
         composable <AddURLScreenNav>{
+            val url = it.toRoute<AddURLScreenNav>().url
             AddURLScreen(
                 onBackClick = {
+                    println("On Back press")
                     navHostController.popBackStack()
-                }
+                },
+                url = url
             )
         }
     }

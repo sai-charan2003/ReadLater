@@ -35,18 +35,21 @@ import com.charan.readlater.presentation.add_url.components.SelectCategoryBottom
 import com.charan.readlater.presentation.home.HomeScreenEvent
 import com.charan.readlater.presentation.home.HomeScreenViewModel
 import com.charan.readlater.ui.theme.IndexItem
-import com.charan.readlater.ui.theme.roundedListItemCorners
 import kotlinx.coroutines.flow.collectLatest
 import org.koin.compose.viewmodel.koinViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddURLScreen(
-    onBackClick: () -> Unit
+    onBackClick: () -> Unit,
+    url : String = ""
 ) {
     val viewModel : AddURLViewModel = koinViewModel<AddURLViewModel>()
     val state by viewModel.state.collectAsStateWithLifecycle()
     val categorySheetState = rememberModalBottomSheetState()
+    LaunchedEffect(Unit){
+        viewModel.onEvent(AddURLEvents.OnURLChange(url))
+    }
 
 
     LaunchedEffect(Unit){

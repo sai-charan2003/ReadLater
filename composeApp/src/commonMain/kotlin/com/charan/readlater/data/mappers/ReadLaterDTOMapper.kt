@@ -15,7 +15,9 @@ fun List<ReadLaterEntity>.toReadLaterDTO(emailId : String) : List<ReadLaterDTO> 
             is_due = it.is_due,
             is_deleted = it.isDeleted,
             email = emailId,
-            uuid = it.uuid
+            uuid = it.uuid,
+            categoryUUID = it.category_uuid,
+            hostURL = it.host_url ?: ""
 
         )
     }
@@ -33,7 +35,8 @@ fun List<ReadLaterDTO>.toReadLaterEntity() : List<ReadLaterEntity> {
             isSynced = true,
             uuid = it.uuid,
             isDeleted = it.is_deleted,
-            category_uuid = null
+            category_uuid = it.categoryUUID,
+            host_url = it.hostURL
         )
     }
 }

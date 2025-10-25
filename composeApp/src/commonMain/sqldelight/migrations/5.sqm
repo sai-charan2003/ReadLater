@@ -1,0 +1,1 @@
+ALTER TABLE readLaterEntity ADD COLUMN host_url TEXT DEFAULT NULL;

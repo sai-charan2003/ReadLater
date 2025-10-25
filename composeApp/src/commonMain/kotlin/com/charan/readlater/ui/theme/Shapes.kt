@@ -33,13 +33,34 @@ fun roundedListItemCorners(
                 bottomEnd = middleRadius
             )
         }
+
+        IndexItem.FIRST_AND_LAST -> {
+            RoundedCornerShape(
+                topStart = topBottomRadius,
+                topEnd = topBottomRadius,
+                bottomStart = topBottomRadius,
+                bottomEnd = topBottomRadius
+            )
+        }
     }
 
     return shape
 }
 
+fun <T> List<T>.indexItemFor(index: Int): IndexItem {
+    return when {
+        size == 1 -> IndexItem.FIRST_AND_LAST
+        index == 0 -> IndexItem.FIRST
+        index == size - 1 -> IndexItem.LAST
+        else -> IndexItem.MIDDLE
+    }
+}
+
+
 enum class IndexItem {
     FIRST,
     LAST,
-    MIDDLE
+    MIDDLE,
+
+    FIRST_AND_LAST
 }

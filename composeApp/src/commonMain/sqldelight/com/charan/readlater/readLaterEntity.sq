@@ -12,7 +12,8 @@ CREATE TABLE readLaterEntity (
     isSynced INTEGER AS Boolean NOT NULL DEFAULT 0,
     isDeleted INTEGER AS Boolean NOT NULL DEFAULT 0,
     uuid TEXT NOT NULL UNIQUE,
-    category_uuid TEXT DEFAULT NULL
+    category_uuid TEXT DEFAULT NULL,
+    host_url TEXT DEFAULT NULL
     );
 
 CREATE VIRTUAL TABLE readLaterSearchFTS USING fts4(
@@ -61,8 +62,10 @@ INSERT OR REPLACE INTO readLaterEntity (
     isSynced,
     uuid,
     isDeleted,
-    category_uuid)
-VALUES (?, ?, ?, ?, ?, ?,?,?,?,?);
+    category_uuid,
+    host_url
+    )
+VALUES (?, ?, ?, ?, ?, ?,?,?,?,?,?);
 
 getAllReadLaterItems:
 SELECT * FROM readLaterEntity;

@@ -1,7 +1,9 @@
 package com.charan.readlater.presentation.home
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
@@ -56,7 +58,7 @@ import com.charan.readlater.presentation.home.components.ScrollToTop
 import com.charan.readlater.presentation.home.components.SearchInputField
 import com.charan.readlater.presentation.home.components.UserAuthenticationAlert
 import com.charan.readlater.ui.theme.IndexItem
-import com.charan.readlater.ui.theme.roundedListItemCorners
+import com.charan.readlater.ui.theme.indexItemFor
 import kotlinx.coroutines.flow.collectLatest
 import org.koin.compose.viewmodel.koinViewModel
 
@@ -238,7 +240,8 @@ fun HomeScreen(
                                 onContextMenuOpen = {
 
                                 },
-                                indexItem = if(it == 0) IndexItem.FIRST else if (it == state.readLaterUiItem.size -1) IndexItem.LAST else IndexItem.MIDDLE
+                                indexItem = state.searchItems.indexItemFor(it),
+                                hostURL = item.hostURL
 
                             )
                             HorizontalDivider(
@@ -309,13 +312,12 @@ fun HomeScreen(
                             onContextMenuOpen = {
 
                             },
-                            indexItem = if(it == 0) IndexItem.FIRST else if (it == state.readLaterUiItem.size -1) IndexItem.LAST else IndexItem.MIDDLE,
+                            indexItem = state.readLaterUiItem.indexItemFor(it),
+                            hostURL = item.hostURL
 
 
                         )
-                        HorizontalDivider(
-                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f)
-                        )
+                        Spacer(Modifier.height(3.dp))
                     }
 
                 }
