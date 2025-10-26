@@ -26,17 +26,33 @@ fun WebMetaData.toReadLaterItem(url : String,isDue : Boolean,createdAt : String 
     )
 }
 
+fun ReadLaterEntity.toReadLaterUiItem(categoryName : String) : ReadLaterUiItem {
+    return ReadLaterUiItem(
+        uuid = this.uuid,
+        title = this.title ?: "",
+        description = this.description ?: "",
+        url = this.url,
+        isDue = this.is_due as Boolean,
+        imageUrl = this.image_url ?: "",
+        categoryUUID = this.category_uuid ?: "",
+        hostURL = this.host_url ?: "",
+        createdAt = this.created_at,
+        categoryName = categoryName
+    )
+}
+
 fun List<ReadLaterEntity>.toReadLaterUiItem() : List<ReadLaterUiItem> {
     return this.map {
         ReadLaterUiItem(
-            id = it.id.toString(),
+            uuid = it.uuid,
             title = it.title ?: "",
             description = it.description ?: "",
             url = it.url,
             isDue = it.is_due as Boolean,
             imageUrl = it.image_url ?: "",
             categoryUUID = it.category_uuid ?: "",
-            hostURL = it.host_url ?: ""
+            hostURL = it.host_url ?: "",
+            createdAt = it.created_at,
 
 
         )

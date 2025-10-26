@@ -63,6 +63,7 @@ class ReadLaterDataSourceImpl(
 
     override suspend fun updateItem(item: ReadLaterEntity) {
 
+
     }
 
     override suspend fun getUnSyncedItems(): List<ReadLaterEntity> {
@@ -120,7 +121,6 @@ class ReadLaterDataSourceImpl(
         id: Long,
         uuid: String
     ): Boolean {
-        println("Sync done for bookmark $id and $uuid")
         queries.updateIdAndSyncStatus(id, uuid)
         return true
     }
@@ -145,6 +145,31 @@ class ReadLaterDataSourceImpl(
                 )
             }
         }
+        return true
+    }
+
+    override suspend fun getBookmarkById(id: String): ReadLaterEntity? {
+        return queries.getBookmarkById(id.toLong()).asFlow().mapToList(Dispatchers.IO).first().firstOrNull()
+    }
+
+    override suspend fun getCategoryByUUID(uuid: String): CategoryEntity? {
+        return queries.getCategoryByUUID(uuid).asFlow().mapToList(Dispatchers.IO).first().firstOrNull()
+    }
+
+    override suspend fun getBookmarkByUUID(uuid: String): ReadLaterEntity? {
+        return queries.getBookmarkByUUID(uuid).asFlow().mapToList(Dispatchers.IO).first().firstOrNull()
+    }
+
+    override suspend fun deleteBookmarkByUUID(uuid: String): Boolean {
+        queries.deleteBookmarkByUUID(uuid)
+        return true
+    }
+
+    override suspend fun updateDueStatusByUUID(
+        uuid: String,
+        isDue: Boolean
+    ): Boolean {
+        queries.updateDueStatusByUUID(is_due = isDue, uuid = uuid)
         return true
     }
 }

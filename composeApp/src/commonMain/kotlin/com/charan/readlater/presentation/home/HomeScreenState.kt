@@ -10,7 +10,9 @@ data class HomeScreenState (
     val showUserNotAuthenticatedPop : Boolean = false,
     val searchItems : List<ReadLaterUiItem> = emptyList(),
     val     navigationDrawerState: NavigationDrawerState = NavigationDrawerState(),
-    val categoryItems: List<CategoryItem> = emptyList()
+    val categoryItems: List<CategoryItem> = emptyList(),
+    val showMoreOptionBottomSheet : Boolean = false,
+    val selectedBookmarkUUID : String = ""
 )
 
 data class NewUrlState(
@@ -21,7 +23,7 @@ data class NewUrlState(
 )
 
 data class ReadLaterUiItem(
-    val id : String = "",
+    val uuid : String = "",
     val title : String = "",
     val description : String = "",
     val imageUrl : String = "",
@@ -29,6 +31,8 @@ data class ReadLaterUiItem(
     val isDue : Boolean = false,
     val categoryUUID : String = "",
     val hostURL : String = "",
+    val categoryName : String = "",
+    val createdAt : String = ""
 )
 
 

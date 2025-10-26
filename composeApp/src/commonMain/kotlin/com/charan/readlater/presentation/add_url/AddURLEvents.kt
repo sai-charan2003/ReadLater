@@ -4,7 +4,7 @@ import com.charan.readlater.presentation.home.CategoryItem
 
 sealed interface AddURLEvents {
     data class OnURLChange(val url : String) : AddURLEvents
-    data object OnSaveURLClick : AddURLEvents
+    data class OnSaveURLClick(val isEdit : Boolean) : AddURLEvents
     data class OnDueButtonClick(val isDue : Boolean) : AddURLEvents
 
     data object OnCategorySheetOpen : AddURLEvents
@@ -16,4 +16,6 @@ sealed interface AddURLEvents {
     data object OnCreateCategoryClick : AddURLEvents
 
     data class OnNewCategoryNameChange(val name : String) : AddURLEvents
+
+    data class LoadDataForEdit(val uuid : String) : AddURLEvents
 }

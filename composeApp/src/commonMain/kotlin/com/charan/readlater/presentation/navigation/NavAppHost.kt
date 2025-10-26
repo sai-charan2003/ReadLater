@@ -88,8 +88,12 @@ fun NavAppHost(
                 navigateToLoginScreen = {
                     navHostController.navigate(AuthenticationScreenNav)
                 },
-                navigateToAddURLScreen = {
-                    navHostController.navigate(AddURLScreenNav)
+                navigateToAddURLScreen = { isEdit, id ->
+                    navHostController.navigate(AddURLScreenNav(
+                        url = "",
+                        isEdit = isEdit,
+                        uuid = id
+                    ))
                 }
             )
         }
@@ -117,13 +121,15 @@ fun NavAppHost(
         }
 
         composable <AddURLScreenNav>{
-            val url = it.toRoute<AddURLScreenNav>().url
+            val arguments = it.toRoute<AddURLScreenNav>()
             AddURLScreen(
                 onBackClick = {
                     println("On Back press")
                     navHostController.popBackStack()
                 },
-                url = url
+                sharedURL = arguments.url,
+                isEdit = arguments.isEdit,
+                uuid = arguments.uuid
             )
         }
     }

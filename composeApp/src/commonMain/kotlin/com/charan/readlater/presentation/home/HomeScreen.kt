@@ -1,6 +1,5 @@
 package com.charan.readlater.presentation.home
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
@@ -25,7 +24,6 @@ import androidx.compose.material3.FabPosition
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.LargeFlexibleTopAppBar
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalDrawerSheet
 import androidx.compose.material3.ModalNavigationDrawer
@@ -51,13 +49,11 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.charan.readlater.presentation.home.components.AddUrlBottomSheet
 import com.charan.readlater.presentation.home.components.BookmarkItem
 import com.charan.readlater.presentation.home.components.DrawerContent
-import com.charan.readlater.presentation.home.components.ScrollToTop
+import com.charan.readlater.presentation.home.components.MoreOptionsBottomSheet
 import com.charan.readlater.presentation.home.components.SearchInputField
 import com.charan.readlater.presentation.home.components.UserAuthenticationAlert
-import com.charan.readlater.ui.theme.IndexItem
 import com.charan.readlater.ui.theme.indexItemFor
 import kotlinx.coroutines.flow.collectLatest
 import org.koin.compose.viewmodel.koinViewModel
@@ -67,11 +63,11 @@ import org.koin.compose.viewmodel.koinViewModel
 fun HomeScreen(
     navigateToSettings : () -> Unit,
     navigateToLoginScreen : () -> Unit,
-    navigateToAddURLScreen : () -> Unit
+    navigateToAddURLScreen: (isEdit: Boolean, id: String) -> Unit
 ) {
     val viewModel = koinViewModel <HomeScreenViewModel>()
     val state by viewModel.state.collectAsStateWithLifecycle()
-    val addBookmarkModelSheet = rememberModalBottomSheetState()
+    val moreOptionsBottomSheetState = rememberModalBottomSheetState()
     val scrollSate = TopAppBarDefaults.enterAlwaysScrollBehavior()
     val appBarScrollBehavior = SearchBarDefaults.enterAlwaysSearchBarScrollBehavior()
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
@@ -89,6 +85,27 @@ fun HomeScreen(
     }
     LaunchedEffect(searchTextFieldState.text){
         viewModel.onEvent(HomeScreenEvent.OnSearch(searchTextFieldState.text.toString()))
+    }
+    if(state.showMoreOptionBottomSheet){
+        MoreOptionsBottomSheet(
+            onDismissRequest = {
+                viewModel.onEvent(HomeScreenEvent.OnMoreOptionBottomSheetDismiss)
+
+            },
+            onEdit = {
+                viewModel.onEvent(HomeScreenEvent.OnEdit(state.selectedBookmarkUUID))
+
+            },
+            onShare = {
+
+            },
+            onDelete = {
+                viewModel.onEvent(HomeScreenEvent.OnDeleteBookmark(state.selectedBookmarkUUID))
+
+            },
+            sheetState = moreOptionsBottomSheetState
+        )
+
     }
     LaunchedEffect(Unit){
         viewModel.effect.collectLatest { effect ->
@@ -123,8 +140,9 @@ fun HomeScreen(
                     }
                 }
 
-                HomeScreenEffect.NavigateToAddURLScreen -> {
-                    navigateToAddURLScreen()
+                is HomeScreenEffect.NavigateToAddURLScreen -> {
+                    navigateToAddURLScreen(effect.isEdit,effect.uuid)
+
                 }
             }
         }
@@ -227,25 +245,25 @@ fun HomeScreen(
                                 onLeftToRightSwipe = {
                                     viewModel.onEvent(
                                         HomeScreenEvent.OnDueStatusChange(
-                                            item.id.toLong(),
+                                            item.uuid,
                                             item.isDue
                                         )
                                     )
 
                                 },
                                 onRightToLeftSwipe = {
-                                    viewModel.onEvent(HomeScreenEvent.OnDeleteBookmark(item.id))
+                                    viewModel.onEvent(HomeScreenEvent.OnDeleteBookmark(item.uuid))
 
                                 },
                                 onContextMenuOpen = {
+                                    viewModel.onEvent(HomeScreenEvent.OnMoreItemButtonClick(uuid = item.uuid))
 
                                 },
                                 indexItem = state.searchItems.indexItemFor(it),
-                                hostURL = item.hostURL
+                                hostURL = item.hostURL,
+                                category = item.categoryUUID,
+                                createdAt = item.createdAt
 
-                            )
-                            HorizontalDivider(
-                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f)
                             )
                         }
 
@@ -284,7 +302,7 @@ fun HomeScreen(
                 ) {
                     items(
                         state.readLaterUiItem.size,
-                        key = { state.readLaterUiItem[it].id }
+                        key = { state.readLaterUiItem[it].uuid }
                     ) {
                         val item = state.readLaterUiItem[it]
                         BookmarkItem(
@@ -299,21 +317,24 @@ fun HomeScreen(
                             onLeftToRightSwipe = {
                                 viewModel.onEvent(
                                     HomeScreenEvent.OnDueStatusChange(
-                                        item.id.toLong(),
+                                        item.uuid,
                                         item.isDue
                                     )
                                 )
 
                             },
                             onRightToLeftSwipe = {
-                                viewModel.onEvent(HomeScreenEvent.OnDeleteBookmark(item.id))
+                                viewModel.onEvent(HomeScreenEvent.OnDeleteBookmark(item.uuid))
 
                             },
                             onContextMenuOpen = {
+                                viewModel.onEvent(HomeScreenEvent.OnMoreItemButtonClick(item.uuid))
 
                             },
                             indexItem = state.readLaterUiItem.indexItemFor(it),
-                            hostURL = item.hostURL
+                            hostURL = item.hostURL,
+                            category = item.categoryName,
+                            createdAt = item.createdAt
 
 
                         )

@@ -42,13 +42,21 @@ import org.koin.compose.viewmodel.koinViewModel
 @Composable
 fun AddURLScreen(
     onBackClick: () -> Unit,
-    url : String = ""
+    sharedURL : String = "",
+    isEdit : Boolean = false,
+    uuid : String = ""
+
 ) {
     val viewModel : AddURLViewModel = koinViewModel<AddURLViewModel>()
     val state by viewModel.state.collectAsStateWithLifecycle()
     val categorySheetState = rememberModalBottomSheetState()
     LaunchedEffect(Unit){
-        viewModel.onEvent(AddURLEvents.OnURLChange(url))
+        viewModel.onEvent(AddURLEvents.OnURLChange(sharedURL))
+    }
+    LaunchedEffect(Unit){
+        if(isEdit){
+            viewModel.onEvent(AddURLEvents.LoadDataForEdit(uuid))
+        }
     }
 
 
@@ -107,7 +115,7 @@ fun AddURLScreen(
         ) {
             item {
                 OutlinedTextField(
-                    value = state.url,
+                    value = state.bookmarkData.url,
                     onValueChange = {
                         viewModel.onEvent(AddURLEvents.OnURLChange(it))
                     },
@@ -125,13 +133,13 @@ fun AddURLScreen(
                 )
 
                 Button(
-                    onClick = { viewModel.onEvent(AddURLEvents.OnSaveURLClick) },
-                    enabled = !state.isLoading && state.url.isNotEmpty(),
+                    onClick = { viewModel.onEvent(AddURLEvents.OnSaveURLClick(isEdit)) },
+                    enabled = !state.isLoading && state.bookmarkData.url.isNotEmpty(),
                     modifier = Modifier
                         .fillMaxWidth()
 
                 ) {
-                    Text("Add Bookmark")
+                    Text(if (isEdit) "Update Bookmark" else "Save Bookmark")
                     AnimatedVisibility(state.isLoading, modifier = Modifier.padding(start = 10.dp)) {
                         CircularProgressIndicator(
                             modifier = Modifier.size(20.dp),
@@ -147,14 +155,14 @@ fun AddURLScreen(
                     title = "ReadLater",
                     trailingContent = {
                         Switch(
-                            checked = state.isDue,
+                            checked = state.bookmarkData.isDue,
                             onCheckedChange = {
                                 viewModel.onEvent(AddURLEvents.OnDueButtonClick(it))
                             }
                         )
                     },
                     onClick = {
-                        viewModel.onEvent(AddURLEvents.OnDueButtonClick(!state.isDue))
+                        viewModel.onEvent(AddURLEvents.OnDueButtonClick(!state.bookmarkData.isDue))
 
                     },
                     index = IndexItem.FIRST

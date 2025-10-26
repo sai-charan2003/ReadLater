@@ -1,6 +1,7 @@
 package com.charan.readlater.data.repository.impl
 
 import com.charan.readlater.CategoryEntity
+import com.charan.readlater.ReadLaterEntity
 import com.charan.readlater.data.local.model.ImportData
 import com.charan.readlater.data.local.model.WebMetaData
 import com.charan.readlater.data.repository.BookmarkManagerRepo
@@ -10,6 +11,7 @@ import com.charan.readlater.data.repository.SupabaseRepo
 import com.charan.readlater.data.repository.WebScrapperRepo
 import com.charan.readlater.data.mappers.toReadLaterItem
 import com.charan.readlater.data.repository.SyncManager
+import com.charan.readlater.presentation.add_url.BookmarkDataUIState
 import com.charan.readlater.presentation.home.ReadLaterUiItem
 import com.charan.readlater.utils.ProcessState
 import kotlinx.coroutines.Dispatchers
@@ -35,11 +37,11 @@ class BookmarkManagerRepoImpl(
     private val syncManager: SyncManager,
     private val webScrapperRepo: WebScrapperRepo
 ) : BookmarkManagerRepo {
-    override suspend fun addBookmark(url: String, isDue : Boolean,categoryUUID: String): Flow<ProcessState<Boolean>> =flow{
+    override suspend fun addBookmark(bookmarkData : BookmarkDataUIState): Flow<ProcessState<Boolean>> =flow{
         emit(ProcessState.Loading())
         try {
-            val metaData = webScrapperRepo.getWebMetaData(url)
-            val readLaterItem = metaData.toReadLaterItem(url,isDue, categoryUUID = categoryUUID)
+            val metaData = webScrapperRepo.getWebMetaData(bookmarkData.url)
+            val readLaterItem = metaData.toReadLaterItem(bookmarkData.url,bookmarkData.isDue, categoryUUID = bookmarkData.categoryUUID)
             readLaterDataSourceRepo.insertItem(readLaterItem)
             emit(ProcessState.Success(true))
             syncManager.sync()
@@ -49,10 +51,39 @@ class BookmarkManagerRepoImpl(
         }
     }
 
-    override suspend fun deleteBookmark(id: String): Flow<ProcessState<Boolean>> = flow {
+    override suspend fun updateBookmark(bookmarkData: BookmarkDataUIState, bookmarkUUID : String) : Flow<ProcessState<Boolean>> = flow{
         emit(ProcessState.Loading())
         try {
-            readLaterDataSourceRepo.deleteItem(id)
+            val existingItem = readLaterDataSourceRepo.getBookmarkByUUID(bookmarkUUID)
+            val metaData = webScrapperRepo.getWebMetaData(bookmarkData.url)
+            val updatedItem = ReadLaterEntity(
+                id = existingItem?.id ?: 0,
+                title = metaData.title,
+                url = bookmarkData.url,
+                description = metaData.description,
+                created_at = existingItem?.created_at ?: "",
+                is_due = bookmarkData.isDue,
+                image_url = metaData.imageUrl,
+                isSynced = false,
+                uuid = existingItem?.uuid ?: "",
+                isDeleted = false,
+                category_uuid = bookmarkData.categoryUUID,
+                host_url = metaData.hostURL
+            )
+            readLaterDataSourceRepo.insertItem(updatedItem)
+            emit(ProcessState.Success(true))
+            syncManager.sync()
+        } catch (e: Exception){
+            emit(ProcessState.Error(e.message.toString()))
+
+        }
+
+    }
+
+    override suspend fun deleteBookmark(uuid: String): Flow<ProcessState<Boolean>> = flow {
+        emit(ProcessState.Loading())
+        try {
+            readLaterDataSourceRepo.deleteBookmarkByUUID(uuid)
             emit(ProcessState.Success(true))
             syncManager.sync()
         } catch (e: Exception) {
@@ -62,12 +93,12 @@ class BookmarkManagerRepoImpl(
     }
 
     override suspend fun updateDueStatus(
-        id: Long,
+        uuid: String,
         isDue: Boolean
     ): Flow<ProcessState<Boolean>> = flow{
         emit(ProcessState.Loading())
         try {
-            readLaterDataSourceRepo.updateDueStatus(id, isDue)
+            readLaterDataSourceRepo.updateDueStatusByUUID(uuid, isDue)
             emit(ProcessState.Success(true))
             syncManager.sync()
         } catch (e: Exception) {

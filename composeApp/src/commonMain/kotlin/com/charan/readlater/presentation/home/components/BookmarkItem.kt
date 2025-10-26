@@ -1,6 +1,7 @@
 package com.charan.readlater.presentation.home.components
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
@@ -20,9 +21,13 @@ import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Done
 import androidx.compose.material.icons.filled.Schedule
+import androidx.compose.material.icons.rounded.Folder
 import androidx.compose.material.icons.rounded.MoreVert
+import androidx.compose.material.icons.rounded.Schedule
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
@@ -39,6 +44,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.lerp
 import coil3.compose.AsyncImage
@@ -51,6 +58,8 @@ import com.charan.readlater.ui.theme.roundedListItemCorners
 fun BookmarkItem(
     title: String,
     description: String,
+    createdAt: String,
+    category : String,
     hostURL : String,
     imageUrl: String,
     onClick: () -> Unit,
@@ -140,13 +149,14 @@ fun BookmarkItem(
                 content = {
                     BookmarkListItem(
                         title = title,
-                        description = description,
                         hostURL = hostURL,
                         imageUrl = imageUrl,
                         onClick = onClick,
                         isDue = isDue,
                         onContextMenuOpen = onContextMenuOpen,
-                        indexItem = indexItem
+                        indexItem = indexItem,
+                        categoryName = category,
+                        createdAt = createdAt
                     )
                 }
             )
@@ -155,66 +165,136 @@ fun BookmarkItem(
     )
 }
 
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
-internal fun BookmarkListItem(
+fun BookmarkListItem(
     title: String,
-    description: String,
     hostURL: String,
     imageUrl: String,
     onClick: () -> Unit,
-    isDue: Boolean = false,
     onContextMenuOpen: () -> Unit,
     modifier: Modifier = Modifier,
+    categoryName : String,
+    createdAt : String,
+    isDue: Boolean = false,
     indexItem: IndexItem
 ) {
-
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .clickable { onClick() }
+            .padding(horizontal = 16.dp, vertical = 12.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
         Row(
-            modifier = Modifier
-                .padding(12.dp),
-            verticalAlignment = Alignment.CenterVertically
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            verticalAlignment = Alignment.Top
         ) {
-            AsyncImage(
-                model = imageUrl,
-                contentDescription = title,
-                contentScale = ContentScale.Crop,
-                modifier = Modifier
-                    .size(width = 80.dp, height = 60.dp)
-                    .clip(RoundedCornerShape(10.dp))
-            )
-
-            Spacer(modifier = Modifier.width(12.dp))
             Column(
-                modifier = Modifier
-                    .weight(1f)
-                    .padding(end = 8.dp)
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.spacedBy(6.dp)
             ) {
                 Text(
                     text = title,
-                    style = MaterialTheme.typography.titleMedium,
+                    style = MaterialTheme.typography.bodyLarge,
                     color = MaterialTheme.colorScheme.onSurface,
-                    maxLines = 2
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis
                 )
 
-                Spacer(modifier = Modifier.height(6.dp))
-                Text(
-                    text = hostURL,
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.outline
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = hostURL,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.weight(1f, fill = false)
+                    )
+
+                    Text(
+                        text = "•",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+
+                    Text(
+                        text = "2h ago",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        maxLines = 1
+                    )
+                }
+            }
+            if(imageUrl.isNotEmpty()) {
+                AsyncImage(
+                    model = imageUrl,
+                    contentDescription = null,
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier
+                        .size(56.dp)
+                        .clip(RoundedCornerShape(8.dp))
                 )
             }
+        }
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(6.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                if(categoryName.isNotEmpty()) {
+                    Icon(
+                        imageVector = Icons.Rounded.Folder,
+                        contentDescription = null,
+                        modifier = Modifier.size(14.dp),
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
 
-            // Context menu icon
+                    Text(
+                        text = categoryName,
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        maxLines = 1
+                    )
+                }
+
+                if (isDue) {
+                    Icon(
+                        imageVector = Icons.Rounded.Schedule,
+                        contentDescription = null,
+                        modifier = Modifier.size(14.dp),
+                        tint = MaterialTheme.colorScheme.error
+                    )
+                }
+            }
+
             IconButton(
                 onClick = onContextMenuOpen,
-                modifier = Modifier.size(32.dp)
+                modifier = Modifier.size(28.dp)
             ) {
                 Icon(
                     imageVector = Icons.Rounded.MoreVert,
                     contentDescription = "Options",
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.size(18.dp)
                 )
             }
         }
-
+    }
 }
+
+
+
+
+
+
+
 

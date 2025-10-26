@@ -48,5 +48,17 @@ interface ReadLaterDataSourceRepo {
 
     suspend fun insertCategories(categories: List<CategoryEntity>) : Boolean
 
+    suspend fun getBookmarkById(id : String) : ReadLaterEntity?
+
+    suspend fun getCategoryByUUID(uuid : String) : CategoryEntity?
+
+    suspend fun getBookmarkByUUID(uuid : String) : ReadLaterEntity?
+
+    suspend fun deleteBookmarkByUUID(uuid : String) : Boolean
+
+    suspend fun updateDueStatusByUUID(uuid: String, isDue: Boolean) : Boolean
+
+
+
 
 }

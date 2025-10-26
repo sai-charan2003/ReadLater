@@ -115,3 +115,19 @@ UPDATE readLaterEntity SET isSynced = 1, id = ? WHERE uuid = ?;
 
 updateIdAndSyncStatusCategory:
 UPDATE categoryEntity SET isSynced = 1, id = ? WHERE uuid = ?;
+
+getBookmarkById:
+SELECT * FROM readLaterEntity WHERE id = ? LIMIT 1;
+
+getCategoryByUUID:
+SELECT * FROM categoryEntity WHERE uuid = ? LIMIT 1;
+
+deleteBookmarkByUUID:
+UPDATE readLaterEntity SET isDeleted = 1, isSynced = 0 WHERE uuid = ?;
+
+getBookmarkByUUID:
+SELECT * FROM readLaterEntity WHERE uuid = ? LIMIT 1;
+
+updateDueStatusByUUID:
+UPDATE readLaterEntity SET is_due = ?, isSynced = 0 WHERE uuid = ?;
+

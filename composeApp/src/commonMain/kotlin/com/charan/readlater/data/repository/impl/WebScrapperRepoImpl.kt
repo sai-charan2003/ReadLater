@@ -22,8 +22,10 @@ class WebScrapperRepoImpl : WebScrapperRepo {
                 hostURL = hostURL
             )
         } catch (e: Exception){
+            val hostURL = Url(url).host
             return WebMetaData(
-                title = url
+                title = url,
+                hostURL = hostURL.ifEmpty { url }
             )
         }
 
@@ -52,8 +54,7 @@ class WebScrapperRepoImpl : WebScrapperRepo {
                 return content
             }
         }
-        val host = Url(url).host
-        return "https://${host}/favicon.ico"
+        return ""
     }
 
 }

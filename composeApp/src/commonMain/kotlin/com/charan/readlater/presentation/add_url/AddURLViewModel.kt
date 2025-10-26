@@ -43,19 +43,26 @@ class AddURLViewModel(
             is AddURLEvents.OnDueButtonClick -> {
                 _state.update { state->
                     state.copy(
-                        isDue = event.isDue
+                        bookmarkData = state.bookmarkData.copy(
+                            isDue = !state.bookmarkData.isDue
+                        )
                     )
                 }
 
             }
-            AddURLEvents.OnSaveURLClick -> {
-
-                saveURL(_state.value.url, _state.value.isDue, _state.value.selectedCategoryUUID)
+            is AddURLEvents.OnSaveURLClick -> {
+                if(event.isEdit){
+                    updateBookmark()
+                } else{
+                    saveURL()
+                }
             }
             is AddURLEvents.OnURLChange ->{
                 _state.update { state->
                     state.copy(
-                        url = event.url
+                        bookmarkData = state.bookmarkData.copy(
+                            url = event.url
+                        )
                     )
                 }
             }
@@ -91,17 +98,75 @@ class AddURLViewModel(
                     )
                 }
             }
+
+            is AddURLEvents.LoadDataForEdit -> {
+                loadDataForEdit(event.uuid)
+
+            }
         }
     }
 
-    private fun saveURL(url : String, isDue : Boolean,categoryUUID : String)= viewModelScope.launch{
-        bookmarkManagerRepo.addBookmark(url ,isDue,categoryUUID).collectLatest {
+    private fun loadDataForEdit(id : String ) = viewModelScope.launch {
+        val bookmark = readLaterDataSourceRepo.getBookmarkByUUID(id)
+        _state.update { state->
+            state.copy(
+                bookmarkData = state.bookmarkData.copy(
+                    url = bookmark?.url ?: "",
+                    isDue = bookmark?.is_due ?: false,
+                    categoryUUID = bookmark?.category_uuid ?: "",
+                ),
+                selectedCategory = readLaterDataSourceRepo.getCategoryByUUID(bookmark?.category_uuid ?: "")?.name ?: "",
+                editUUID = id
+            )
+
+        }
+    }
+
+    private fun updateBookmark() = viewModelScope.launch {
+        bookmarkManagerRepo.updateBookmark(_state.value.bookmarkData,_state.value.editUUID).collectLatest { state->
+            when(state){
+                is ProcessState.Error -> {
+                    _state.update { state->
+                        state.copy(
+                            isLoading = false,
+                            errorMessage = state.errorMessage
+                        )
+                    }
+
+                }
+                is ProcessState.Loading -> {
+                    _state.update { state->
+                        state.copy(
+                            isLoading = true,
+                            errorMessage = ""
+                        )
+                    }
+                }
+                ProcessState.NotDetermined -> {
+
+                }
+                is ProcessState.Success<*> -> {
+                    _state.update { state->
+                        state.copy(
+                            isLoading = false,
+                            errorMessage = ""
+                        )
+                    }
+                    _effects.emit(AddURLEffects.OnBack)
+                }
+            }
+
+        }
+    }
+
+    private fun saveURL()= viewModelScope.launch{
+        bookmarkManagerRepo.addBookmark(_state.value.bookmarkData).collectLatest {
             when(it){
                 is ProcessState.Error -> {
                     _state.update { state->
                         state.copy(
                             isLoading = false,
-                            errorMessage = it.exception ?: "An unexpected error occurred"
+                            errorMessage = it.exception
                         )
                     }
 
@@ -134,13 +199,15 @@ class AddURLViewModel(
         _state.update {
             it.copy(
                 selectedCategory = categoryItem.name,
-                selectedCategoryUUID = categoryItem.uuid,
                 categorySelectBottomSheet = false,
                 categoryItems = it.categoryItems.map { item->
                     item.copy(
                         isSelected = item.uuid == categoryItem.uuid
                     )
-                }
+                },
+                bookmarkData = it.bookmarkData.copy(
+                    categoryUUID = categoryItem.uuid
+                )
             )
         }
 
@@ -183,7 +250,9 @@ class AddURLViewModel(
                             newCategoryName = "",
                             categorySelectBottomSheet = false,
                             selectedCategory = name,
-                            selectedCategoryUUID = uuid
+                            bookmarkData = it.bookmarkData.copy(
+                                categoryUUID = uuid
+                            )
                         )
                     }
 

@@ -1,6 +1,7 @@
 package com.charan.readlater.data.repository
 
 import com.charan.readlater.data.local.model.ImportData
+import com.charan.readlater.presentation.add_url.BookmarkDataUIState
 import com.charan.readlater.presentation.home.ReadLaterUiItem
 import com.charan.readlater.utils.ProcessState
 import kotlinx.coroutines.flow.Flow
@@ -11,11 +12,13 @@ import kotlinx.coroutines.flow.Flow
  */
 interface BookmarkManagerRepo {
 
-    suspend fun addBookmark(url : String,isDue : Boolean,categoryUUID: String) : Flow<ProcessState<Boolean>>
+    suspend fun addBookmark(bookmarkData: BookmarkDataUIState) : Flow<ProcessState<Boolean>>
 
-    suspend fun deleteBookmark(id: String) : Flow<ProcessState<Boolean>>
+    suspend fun updateBookmark(bookmarkData: BookmarkDataUIState,bookmarkUUID : String) : Flow<ProcessState<Boolean>>
 
-    suspend fun updateDueStatus(id: Long, isDue: Boolean) : Flow<ProcessState<Boolean>>
+    suspend fun deleteBookmark(uuid: String) : Flow<ProcessState<Boolean>>
+
+    suspend fun updateDueStatus(uuid: String, isDue: Boolean) : Flow<ProcessState<Boolean>>
 
     suspend fun addImportBookmark(importData : List<ImportData>) : Flow<ProcessState<Boolean>>
 

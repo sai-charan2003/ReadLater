@@ -58,9 +58,12 @@ class HomeScreenViewModel(
 
     private fun getAllBookmarks()= viewModelScope.launch{
         readLaterDataSourceRepo.getAllActiveItems().collectLatest { items->
+            val readLaterUiItems = items.map {
+                it.toReadLaterUiItem(readLaterDataSourceRepo.getCategoryByUUID(it.category_uuid ?: "")?.name ?: "")            }
+
             _state.update { state->
                 state.copy(
-                    readLaterUiItem = items.toReadLaterUiItem()
+                    readLaterUiItem = readLaterUiItems
                 )
             }
 
@@ -71,7 +74,7 @@ class HomeScreenViewModel(
         when(event){
 
             HomeScreenEvent.OnAddURLClick -> {
-                _effect.emit(HomeScreenEffect.NavigateToAddURLScreen)
+                _effect.emit(NavigateToAddURLScreen(false,""))
             }
             HomeScreenEvent.OnSaveURLClick -> {
 //                val url = state.value.newUrlState
@@ -120,7 +123,13 @@ class HomeScreenViewModel(
             }
 
             is HomeScreenEvent.OnDeleteBookmark -> {
-                deleteBookmark(event.id)
+                deleteBookmark(event.uuid)
+                _state.update {
+                    it.copy(
+                        showMoreOptionBottomSheet = false,
+                        selectedBookmarkUUID = ""
+                    )
+                }
 
             }
 
@@ -133,7 +142,7 @@ class HomeScreenViewModel(
             }
 
             is HomeScreenEvent.OnDueStatusChange -> {
-                updateDueStatus(event.id,!event.isDue)
+                updateDueStatus(event.uuid,!event.isDue)
             }
 
             HomeScreenEvent.NavigateToLoginScreen -> {
@@ -178,6 +187,33 @@ class HomeScreenViewModel(
                 }
                 filterBookmarksByIndex(event.index)
                 _effect.emit(ToggleNavigationDrawer)
+            }
+
+            is HomeScreenEvent.OnMoreItemButtonClick -> {
+                _state.update {
+                    it.copy(
+                        showMoreOptionBottomSheet = !it.showMoreOptionBottomSheet,
+                        selectedBookmarkUUID = event.uuid
+                    )
+                }
+            }
+            HomeScreenEvent.OnMoreOptionBottomSheetDismiss -> {
+                _state.update {
+                    it.copy(
+                        showMoreOptionBottomSheet = false,
+                        selectedBookmarkUUID = ""
+                    )
+                }
+            }
+
+            is HomeScreenEvent.OnEdit -> {
+                _effect.emit(NavigateToAddURLScreen(true,event.uuid))
+                _state.update {
+                    it.copy(
+                        showMoreOptionBottomSheet = false,
+                        selectedBookmarkUUID = ""
+                    )
+                }
             }
         }
     }
@@ -247,12 +283,12 @@ class HomeScreenViewModel(
             }
     }
 
-    private fun deleteBookmark(id : String) = viewModelScope.launch {
-        bookmarkManagerRepo.deleteBookmark(id).collectLatest {  }
+    private fun deleteBookmark(uuid : String) = viewModelScope.launch {
+        bookmarkManagerRepo.deleteBookmark(uuid).collectLatest {  }
     }
 
-    private fun updateDueStatus(id : Long , isDue : Boolean) = viewModelScope.launch {
-        bookmarkManagerRepo.updateDueStatus(id, isDue).collectLatest { }
+    private fun updateDueStatus(uuid : String , isDue : Boolean) = viewModelScope.launch {
+        bookmarkManagerRepo.updateDueStatus(uuid, isDue).collectLatest { }
     }
 
     private fun drawerItemsList() {
