@@ -11,6 +11,8 @@ import com.charan.readlater.data.repository.SupabaseRepo
 import com.charan.readlater.data.repository.WebScrapperRepo
 import com.charan.readlater.data.mappers.toReadLaterItem
 import com.charan.readlater.data.repository.SyncManager
+import com.charan.readlater.data.worker.SyncWorker
+import com.charan.readlater.data.worker.doSyncWork
 import com.charan.readlater.presentation.add_url.BookmarkDataUIState
 import com.charan.readlater.presentation.home.ReadLaterUiItem
 import com.charan.readlater.utils.ProcessState
@@ -35,7 +37,7 @@ class BookmarkManagerRepoImpl(
     private val readLaterSupabaseRepo: SupabaseRepo,
     private val settingsDataStoreRepo: SettingsDataStoreRepo,
     private val syncManager: SyncManager,
-    private val webScrapperRepo: WebScrapperRepo
+    private val webScrapperRepo: WebScrapperRepo,
 ) : BookmarkManagerRepo {
     override suspend fun addBookmark(bookmarkData : BookmarkDataUIState): Flow<ProcessState<Boolean>> =flow{
         emit(ProcessState.Loading())
@@ -72,8 +74,9 @@ class BookmarkManagerRepoImpl(
             )
             readLaterDataSourceRepo.insertItem(updatedItem)
             emit(ProcessState.Success(true))
-            syncManager.sync()
+            doSyncWork()
         } catch (e: Exception){
+            println(e)
             emit(ProcessState.Error(e.message.toString()))
 
         }
@@ -125,6 +128,7 @@ class BookmarkManagerRepoImpl(
                                 title = data.title ?: metaData.title,
                                 description = metaData.description,
                                 imageUrl = metaData.imageUrl,
+                                hostURL = metaData.hostURL
                             )
                             val readLaterItem = item.toReadLaterItem(
                                 data.url ?: "",

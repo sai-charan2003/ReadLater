@@ -11,6 +11,7 @@ import com.charan.readlater.data.repository.SettingsDataStoreRepo
 import com.charan.readlater.data.repository.SupabaseRepo
 import com.charan.readlater.data.repository.SyncManager
 import com.charan.readlater.presentation.home.HomeScreenEffect.*
+import com.charan.readlater.utils.DateUtils
 import com.charan.readlater.utils.ProcessState
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.async
@@ -39,27 +40,33 @@ class HomeScreenViewModel(
     val effect = _effect.asSharedFlow()
 
     init {
-        loadSession()
+        supabaseInit()
         getAllBookmarks()
-        syncData()
         drawerItemsList()
         getAllCategories()
     }
 
-
-    private fun loadSession() = viewModelScope.launch {
-        val session = async { supabaseRepoImpl.loadSession() }
-        session.await()
+    private fun supabaseInit() = viewModelScope.launch{
+        loadSession()
+        syncData()
         fetchData()
+
     }
-    private fun syncData() = viewModelScope.launch {
+
+
+    private suspend fun loadSession() {
+        supabaseRepoImpl.loadSession()
+    }
+    private suspend fun syncData() {
         syncManager.sync()
     }
 
     private fun getAllBookmarks()= viewModelScope.launch{
         readLaterDataSourceRepo.getAllActiveItems().collectLatest { items->
             val readLaterUiItems = items.map {
-                it.toReadLaterUiItem(readLaterDataSourceRepo.getCategoryByUUID(it.category_uuid ?: "")?.name ?: "")            }
+                it.toReadLaterUiItem(readLaterDataSourceRepo.getCategoryByUUID(it.category_uuid ?: "")?.name ?: "")
+            }
+                .sortedByDescending { item -> DateUtils.isoStringToMillis(item.createdAt) }
 
             _state.update { state->
                 state.copy(

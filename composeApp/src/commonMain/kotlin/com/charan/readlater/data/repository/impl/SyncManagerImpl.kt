@@ -15,23 +15,24 @@ import com.charan.readlater.utils.ProcessState
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.channelFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.supervisorScope
 
 class SyncManagerImpl(
     private val readLaterDataSourceRepo: ReadLaterDataSourceRepo,
     private val settingsDataStoreRepo: SettingsDataStoreRepo,
     private val supabaseRepo: SupabaseRepo
 ) : SyncManager {
-    override suspend fun sync() = coroutineScope{
+    override suspend fun sync() = supervisorScope{
         val unSyncedItem = readLaterDataSourceRepo.getUnSyncedItems()
         val isSyncEnabled = settingsDataStoreRepo.getLoginType().first() == LoginTypeEnum.GOOGLE
         if(isSyncEnabled){
             val syncItems = unSyncedItem.toReadLaterDTO(emailId = supabaseRepo.getEmailId() ?: "")
-            println(syncItems)
             val bookmarksJob = async {
                 supabaseRepo.syncAllBookmarks(syncItems).collectLatest {
                     when (it) {
@@ -100,8 +101,8 @@ class SyncManagerImpl(
         }
     }
 
-    override suspend fun fetchAndUpdate(): Flow<ProcessState<Boolean>> = flow {
-        emit(ProcessState.Loading())
+    override suspend fun fetchAndUpdate(): Flow<ProcessState<Boolean>> = channelFlow {
+        send(ProcessState.Loading())
 
         try {
             coroutineScope {
@@ -113,7 +114,7 @@ class SyncManagerImpl(
                                 readLaterDataSourceRepo.insertItems(data)
                             }
                             is ProcessState.Error -> {
-                                emit(ProcessState.Error(it.exception))
+                                send(ProcessState.Error(it.exception))
                             }
                             else -> Unit
                         }
@@ -127,7 +128,7 @@ class SyncManagerImpl(
                                 readLaterDataSourceRepo.insertCategories(data.toCategoryEntityList())
                             }
                             is ProcessState.Error -> {
-                                emit(ProcessState.Error(it.exception))
+                                send(ProcessState.Error(it.exception))
                             }
                             else -> Unit
                         }
@@ -137,10 +138,10 @@ class SyncManagerImpl(
                 bookmarksDeferred.await()
                  categoriesDeferred.await()
 
-                emit(ProcessState.Success(true))
+                send(ProcessState.Success(true))
             }
         } catch (e: Exception) {
-            emit(ProcessState.Error(e.message.toString()))
+            send(ProcessState.Error(e.message.toString()))
         }
     }
 

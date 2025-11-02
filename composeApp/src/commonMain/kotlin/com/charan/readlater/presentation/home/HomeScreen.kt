@@ -262,7 +262,7 @@ fun HomeScreen(
                                 indexItem = state.searchItems.indexItemFor(it),
                                 hostURL = item.hostURL,
                                 category = item.categoryUUID,
-                                createdAt = item.createdAt
+                                createdAt = item.formatedDate
 
                             )
                         }
@@ -334,7 +334,7 @@ fun HomeScreen(
                             indexItem = state.readLaterUiItem.indexItemFor(it),
                             hostURL = item.hostURL,
                             category = item.categoryName,
-                            createdAt = item.createdAt
+                            createdAt = item.formatedDate
 
 
                         )

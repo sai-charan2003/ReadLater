@@ -88,8 +88,10 @@ kotlin {
             implementation(libs.firebase.config)
             implementation(libs.ktor.client.okhttp)
             api(libs.sqlite.android)
-            implementation("androidx.sqlite:sqlite-bundled:2.6.1")
-            implementation("androidx.sqlite:sqlite-framework:2.6.1")
+            implementation(libs.androidx.sqlite.bundled)
+            implementation(libs.androidx.sqlite.framework)
+            implementation(libs.androidx.work.runtime.ktx)
+            implementation(libs.koin.androidx.workmanager)
 
         }
         commonMain.dependencies {

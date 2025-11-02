@@ -30,7 +30,7 @@ firebaseConfig = "23.0.0"
 junit = "4.13.2"
 kotlin = "2.2.0"
 kotlinx-coroutines = "1.10.2"
-koin = "4.1.0"
+koin = "4.1.1"
 googleServices = "4.4.3"
 buildKonfig = "0.15.2"
 ktor = "3.2.3"
@@ -39,12 +39,15 @@ ktorClientCio = "3.2.3"
 csv = "1.1"
 sqliteAndroid = "3.45.0"
 sqliteFramework = "2.6.1"
+workRuntimeKtx = "2.11.0"
 
 
 [libraries]
 android-driver = { module = "app.cash.sqldelight:android-driver", version.ref = "androidDriver" }
 androidx-datastore = { module = "androidx.datastore:datastore", version.ref = "datastorePreferences" }
 androidx-datastore-preferences = { module = "androidx.datastore:datastore-preferences", version.ref = "datastorePreferences" }
+androidx-sqlite-bundled = { module = "androidx.sqlite:sqlite-bundled", version.ref = "sqliteFramework" }
+androidx-work-runtime-ktx = { module = "androidx.work:work-runtime-ktx", version.ref = "workRuntimeKtx" }
 auth-kt = { module = "io.github.jan-tennert.supabase:auth-kt",version.ref = "supabase" }
 coil-compose = { module = "io.coil-kt.coil3:coil-compose", version.ref = "coilCompose" }
 coil-network-ktor3 = { module = "io.coil-kt.coil3:coil-network-ktor3", version.ref = "coilCompose" }
@@ -56,6 +59,7 @@ firebase-config = { module = "com.google.firebase:firebase-config", version.ref 
 firebase-firestore = { module = "dev.gitlive:firebase-firestore", version.ref = "firebaseAuth" }
 kmpauth-google = { module = "io.github.mirzemehdi:kmpauth-google", version.ref = "kmpauthGoogle" }
 kmpauth-uihelper = { module = "io.github.mirzemehdi:kmpauth-uihelper", version.ref = "kmpauthGoogle" }
+koin-androidx-workmanager = { module = "io.insert-koin:koin-androidx-workmanager", version.ref = "koin" }
 kotlin-csv-jvm = { module = "com.jsoizo:kotlin-csv-jvm", version.ref = "kotlinCsvJvm" }
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
 kotlin-testJunit = { module = "org.jetbrains.kotlin:kotlin-test-junit", version.ref = "kotlin" }

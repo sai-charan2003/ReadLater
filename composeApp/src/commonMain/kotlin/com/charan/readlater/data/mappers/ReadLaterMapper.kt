@@ -3,6 +3,7 @@ package com.charan.readlater.data.mappers
 import com.charan.readlater.ReadLaterEntity
 import com.charan.readlater.data.local.model.WebMetaData
 import com.charan.readlater.presentation.home.ReadLaterUiItem
+import com.charan.readlater.utils.DateUtils
 import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
 import kotlin.uuid.ExperimentalUuidApi
@@ -36,6 +37,7 @@ fun ReadLaterEntity.toReadLaterUiItem(categoryName : String) : ReadLaterUiItem {
         imageUrl = this.image_url ?: "",
         categoryUUID = this.category_uuid ?: "",
         hostURL = this.host_url ?: "",
+        formatedDate = DateUtils.formatReadableDateFromIso(this.created_at),
         createdAt = this.created_at,
         categoryName = categoryName
     )

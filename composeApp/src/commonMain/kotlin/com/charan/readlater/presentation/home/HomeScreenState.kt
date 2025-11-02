@@ -32,7 +32,8 @@ data class ReadLaterUiItem(
     val categoryUUID : String = "",
     val hostURL : String = "",
     val categoryName : String = "",
-    val createdAt : String = ""
+    val createdAt : String = "",
+    val formatedDate : String = ""
 )
 
 

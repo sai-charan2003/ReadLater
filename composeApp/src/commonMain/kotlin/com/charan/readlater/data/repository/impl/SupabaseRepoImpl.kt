@@ -116,11 +116,15 @@ class SupabaseRepoImpl(
     override suspend fun syncAllBookmarks(syncItems: List<ReadLaterDTO>): Flow<ProcessState<List<ReadLaterDTO>>> =flow{
         emit(ProcessState.Loading())
         try {
-            val insertedData = readLaterSupabaseClient.from(SupabaseAppConstatnts.READ_LATER_TABLE_NAME).upsert(syncItems){
+            val insertedData = readLaterSupabaseClient
+                .from(SupabaseAppConstatnts.READ_LATER_TABLE_NAME)
+                .upsert(values = syncItems){
+                    onConflict = "uuid"
                 select()
             }.decodeList<ReadLaterDTO>()
             emit(ProcessState.Success(insertedData))
         } catch (e: Exception){
+            println(e)
             emit(ProcessState.Error(e.message.toString()))
         }
 
