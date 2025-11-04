@@ -7,9 +7,15 @@
 
 import UIKit
 import GoogleSignIn
+import ComposeApp
 
 
 class AppDelegate: NSObject, UIApplicationDelegate {
+    
+    func applicationDidFinishLaunching(_ application: UIApplication) {
+        MainViewControllerKt.MainViewController()
+        
+    }
 
     func application(
         _ app: UIApplication,

@@ -3,6 +3,7 @@ package com.charan.readlater.data.repository.impl
 
 import app.cash.sqldelight.coroutines.asFlow
 import app.cash.sqldelight.coroutines.mapToList
+import app.cash.sqldelight.coroutines.mapToOne
 import com.charan.readlater.CategoryEntity
 import com.charan.readlater.ReadLaterDatabase
 import com.charan.readlater.ReadLaterEntity
@@ -171,5 +172,9 @@ class ReadLaterDataSourceImpl(
     ): Boolean {
         queries.updateDueStatusByUUID(is_due = isDue, uuid = uuid)
         return true
+    }
+
+    override suspend fun getUnsyncedItemsCount(): Flow<Long> {
+        return queries.getUnsyncedItemCount().asFlow().mapToOne(Dispatchers.IO)
     }
 }

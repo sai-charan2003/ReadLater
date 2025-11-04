@@ -131,3 +131,9 @@ SELECT * FROM readLaterEntity WHERE uuid = ? LIMIT 1;
 updateDueStatusByUUID:
 UPDATE readLaterEntity SET is_due = ?, isSynced = 0 WHERE uuid = ?;
 
+getUnsyncedItemCount :
+SELECT
+    (SELECT COUNT(*) FROM readLaterEntity WHERE isSynced = 0) +
+    (SELECT COUNT(*) FROM categoryEntity WHERE isSynced = 0) AS total_unsynced;
+
+

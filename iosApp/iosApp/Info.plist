@@ -2,10 +2,12 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-	<key>GIDServerClientID</key>
-	<string>757664231200-54035m1vk2l54bt0vvmkiugufj2nrco4.apps.googleusercontent.com</string>
-	<key>GIDClientID</key>
-	<string>757664231200-uq4re90b3s1ag9s5cn7p5jl73g0iujtb.apps.googleusercontent.com</string>
+	<key>CADisableMinimumFrameDurationOnPhone</key>
+	<true/>
+	<key>BGTaskSchedulerPermittedIdentifiers</key>
+	<array>
+		<string>com.charan.readlater.apprefresh</string>
+	</array>
 	<key>CFBundleURLTypes</key>
 	<array>
 		<dict>
@@ -15,22 +17,29 @@
 			</array>
 		</dict>
 	</array>
-	<key>CADisableMinimumFrameDurationOnPhone</key>
-	<true/>
-    <key>NSExtension</key>
-    <dict>
-        <key>NSExtensionAttributes</key>
-        <dict>
-            <key>NSExtensionActivationRule</key>
-            <dict>
-                <key>NSExtensionActivationSupportsWebURLWithMaxCount</key>
-                <integer>1</integer>
-            </dict>
-        </dict>
-        <key>NSExtensionPointIdentifier</key>
-        <string>com.apple.share-services</string>
-        <key>NSExtensionPrincipalClass</key>
-        <string>ShareViewController</string>
-    </dict>
+	<key>GIDClientID</key>
+	<string>757664231200-uq4re90b3s1ag9s5cn7p5jl73g0iujtb.apps.googleusercontent.com</string>
+	<key>GIDServerClientID</key>
+	<string>757664231200-54035m1vk2l54bt0vvmkiugufj2nrco4.apps.googleusercontent.com</string>
+	<key>NSExtension</key>
+	<dict>
+		<key>NSExtensionAttributes</key>
+		<dict>
+			<key>NSExtensionActivationRule</key>
+			<dict>
+				<key>NSExtensionActivationSupportsWebURLWithMaxCount</key>
+				<integer>1</integer>
+			</dict>
+		</dict>
+		<key>NSExtensionPointIdentifier</key>
+		<string>com.apple.share-services</string>
+		<key>NSExtensionPrincipalClass</key>
+		<string>ShareViewController</string>
+	</dict>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>fetch</string>
+		<string>processing</string>
+	</array>
 </dict>
 </plist>

@@ -7,4 +7,6 @@ interface SyncManager {
     suspend fun sync()
 
     suspend fun fetchAndUpdate() : Flow<ProcessState<Boolean>>
+
+    suspend fun syncListener()
 }

@@ -74,7 +74,6 @@ class BookmarkManagerRepoImpl(
             )
             readLaterDataSourceRepo.insertItem(updatedItem)
             emit(ProcessState.Success(true))
-            doSyncWork()
         } catch (e: Exception){
             println(e)
             emit(ProcessState.Error(e.message.toString()))

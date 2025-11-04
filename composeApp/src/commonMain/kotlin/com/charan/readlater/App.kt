@@ -7,6 +7,7 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.navigation.compose.rememberNavController
 import com.charan.readlater.data.repository.SettingsDataStoreRepo
+import com.charan.readlater.data.repository.SyncManager
 import com.charan.readlater.presentation.navigation.NavAppHost
 import com.charan.readlater.ui.theme.ReadLaterTheme
 import com.mmk.kmpauth.google.GoogleAuthCredentials
@@ -24,12 +25,13 @@ fun App(
 
 ) {
     val settingsDataStoreRepo: SettingsDataStoreRepo = koinInject()
+    val syncManager : SyncManager = koinInject()
     var isLoggedIn by rememberSaveable{
         mutableStateOf(true)
     }
     LaunchedEffect(Unit){
-        println(settingsDataStoreRepo.getLoginType().first())
         isLoggedIn = settingsDataStoreRepo.getLoginType().first()!=null
+        syncManager.syncListener()
     }
     GoogleAuthProvider.create(credentials = GoogleAuthCredentials(serverId = BuildKonfig.GOOGLE_SERVER_ID))
     ReadLaterTheme{

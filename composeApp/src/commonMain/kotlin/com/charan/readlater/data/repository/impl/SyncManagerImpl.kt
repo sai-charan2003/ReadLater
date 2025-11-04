@@ -28,7 +28,7 @@ class SyncManagerImpl(
     private val settingsDataStoreRepo: SettingsDataStoreRepo,
     private val supabaseRepo: SupabaseRepo
 ) : SyncManager {
-    override suspend fun sync() = supervisorScope{
+    override suspend fun sync() = coroutineScope{
         val unSyncedItem = readLaterDataSourceRepo.getUnSyncedItems()
         val isSyncEnabled = settingsDataStoreRepo.getLoginType().first() == LoginTypeEnum.GOOGLE
         if(isSyncEnabled){
@@ -142,6 +142,19 @@ class SyncManagerImpl(
             }
         } catch (e: Exception) {
             send(ProcessState.Error(e.message.toString()))
+        }
+    }
+
+    override suspend fun syncListener() = coroutineScope{
+        readLaterDataSourceRepo.getUnsyncedItemsCount().collectLatest { value ->
+            if(value > 0){
+                println("There are $value unsynced items. Starting sync...")
+
+                    sync()
+
+            } else {
+                println("All items are synced.")
+            }
         }
     }
 

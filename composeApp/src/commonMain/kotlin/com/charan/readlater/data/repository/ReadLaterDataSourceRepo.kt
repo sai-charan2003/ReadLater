@@ -58,6 +58,8 @@ interface ReadLaterDataSourceRepo {
 
     suspend fun updateDueStatusByUUID(uuid: String, isDue: Boolean) : Boolean
 
+    suspend fun getUnsyncedItemsCount() : Flow<Long>
+
 
 
 
