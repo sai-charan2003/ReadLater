@@ -28,6 +28,10 @@ jobs:
     permissions: write-all
     runs-on: ubuntu-latest
     needs: create-release
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_ANONKEY: ${{ secrets.SUPABASE_ANONKEY }}
+      GOOGLE_SERVER_ID: ${{ secrets.GOOGLE_SERVER_ID }}
     steps:
       - uses: actions/checkout@v4
 
