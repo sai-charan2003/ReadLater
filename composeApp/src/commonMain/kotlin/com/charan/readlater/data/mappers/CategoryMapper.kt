@@ -28,7 +28,7 @@ fun List<CategoryEntity>.toCategoryDTO(email : String) : List<CategoryDTO>{
             id = 0,
             name = it.name,
             created_at = it.createdAt,
-            isDeleted = it.isDeleted,
+            is_deleted = it.isDeleted,
             uuid = it.uuid,
             email = email
         )
@@ -41,7 +41,7 @@ fun List<CategoryDTO>.toCategoryEntityList() : List<CategoryEntity>{
             id = it.id,
             name = it.name,
             createdAt = it.created_at,
-            isDeleted = it.isDeleted,
+            isDeleted = it.is_deleted,
             uuid = it.uuid,
             isSynced = true
         )

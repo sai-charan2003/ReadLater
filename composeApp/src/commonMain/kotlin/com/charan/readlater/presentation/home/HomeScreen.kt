@@ -50,7 +50,9 @@ import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.charan.readlater.presentation.home.components.BookmarkItem
+import com.charan.readlater.presentation.home.components.DeleteCategoryDialog
 import com.charan.readlater.presentation.home.components.DrawerContent
+import com.charan.readlater.presentation.home.components.EditCategoryDialog
 import com.charan.readlater.presentation.home.components.MoreOptionsBottomSheet
 import com.charan.readlater.presentation.home.components.SearchInputField
 import com.charan.readlater.presentation.home.components.UserAuthenticationAlert
@@ -106,6 +108,33 @@ fun HomeScreen(
             sheetState = moreOptionsBottomSheetState
         )
 
+    }
+
+    if(state.showDeleteCategoryDialog){
+        DeleteCategoryDialog(
+            categoryName = state.editCategoryState.categoryName,
+            onConfirmDelete = {
+                viewModel.onEvent(HomeScreenEvent.OnDeleteCategory)
+            },
+            onDismissRequest = {
+                viewModel.onEvent(HomeScreenEvent.OnToggleDeleteConfirmationDialog(categoryUUID = ""))
+            }
+        )
+    }
+
+    if(state.showEditCategoryDialog){
+        EditCategoryDialog(
+            categoryName = state.editCategoryState.categoryName,
+            onCategoryNameChange = { newName ->
+                viewModel.onEvent(HomeScreenEvent.OnCategoryNameChange(newName))
+            },
+            onDismissRequest = {
+                viewModel.onEvent(HomeScreenEvent.ToggleEditCategoryDialog(categoryUUID = ""))
+            },
+            onConfirmEdit = {
+                viewModel.onEvent(HomeScreenEvent.OnEditCategory)
+            }
+        )
     }
     LaunchedEffect(Unit){
         viewModel.effect.collectLatest { effect ->
@@ -174,6 +203,22 @@ fun HomeScreen(
                     selectedIndex = state.navigationDrawerState.selectedItemIndex,
                     onItemClick = { _, index ->
                         viewModel.onEvent(HomeScreenEvent.OnNavigationDrawerItemClick(index))
+
+                    },
+                    onEdit = {
+                        viewModel.onEvent(
+                            HomeScreenEvent.ToggleEditCategoryDialog(
+                                categoryUUID = it.categoryItem.uuid
+                            )
+                        )
+
+                    },
+                    onDelete = {
+                        viewModel.onEvent(
+                            HomeScreenEvent.OnToggleDeleteConfirmationDialog(
+                                categoryUUID = it.categoryItem.uuid
+                            )
+                        )
 
                     }
 

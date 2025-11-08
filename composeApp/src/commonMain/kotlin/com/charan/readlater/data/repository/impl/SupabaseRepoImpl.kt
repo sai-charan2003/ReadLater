@@ -156,7 +156,8 @@ class SupabaseRepoImpl(
 
             emit(ProcessState.Loading())
             try {
-                val syncedCategories = readLaterSupabaseClient.from(SupabaseAppConstatnts.CATEGORY_TABLE_NAME).insert(categoryList){
+                val syncedCategories = readLaterSupabaseClient.from(SupabaseAppConstatnts.CATEGORY_TABLE_NAME).upsert(categoryList){
+                    onConflict = "uuid"
                     select()
                 }.decodeList<CategoryDTO>()
                 emit(ProcessState.Success(syncedCategories))

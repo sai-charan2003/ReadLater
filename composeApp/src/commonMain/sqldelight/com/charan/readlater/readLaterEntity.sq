@@ -102,7 +102,7 @@ updateCategoryId:
 UPDATE readLaterEntity SET id = ? WHERE category_uuid = ?;
 
 getAllCategories:
-SELECT * FROM categoryEntity;
+SELECT * FROM categoryEntity ;
 
 getBookmarkItemByCategoryUUID :
 SELECT * FROM readLaterEntity WHERE category_uuid = ? AND isDeleted = 0;
@@ -135,5 +135,17 @@ getUnsyncedItemCount :
 SELECT
     (SELECT COUNT(*) FROM readLaterEntity WHERE isSynced = 0) +
     (SELECT COUNT(*) FROM categoryEntity WHERE isSynced = 0) AS total_unsynced;
+
+updateCategoryByUUID:
+UPDATE categoryEntity SET name = ?, isSynced = 0 WHERE uuid = ?;
+
+deleteCategoryByUUID:
+UPDATE categoryEntity SET isDeleted = 1, isSynced = 0 WHERE uuid = ?;
+
+getAllActiveCategories:
+SELECT * FROM categoryEntity WHERE isDeleted = 0;
+
+deleteAllCategories:
+DELETE FROM categoryEntity;
 
 

@@ -40,8 +40,8 @@ class HomeScreenViewModel(
     val effect = _effect.asSharedFlow()
 
     init {
-        supabaseInit()
         getAllBookmarks()
+        supabaseInit()
         drawerItemsList()
         getAllCategories()
     }
@@ -222,6 +222,77 @@ class HomeScreenViewModel(
                     )
                 }
             }
+
+            HomeScreenEvent.OnDeleteCategory -> {
+                val categoryUUID = _state.value.editCategoryState.categoryUUID
+                println(categoryUUID)
+                    readLaterDataSourceRepo.deleteCategoryByUUID(categoryUUID)
+
+                _state.update {
+                    it.copy(
+                        showDeleteCategoryDialog = false
+                    )
+                }
+
+
+            }
+            HomeScreenEvent.OnEditCategory -> {
+                val currentState = _state.value.editCategoryState
+
+                    readLaterDataSourceRepo.updateCategory(
+                        uuid = currentState.categoryUUID,
+                        categoryName = currentState.categoryName
+                    )
+
+                _state.update {
+                    it.copy(
+                        showEditCategoryDialog = false
+                    )
+                }
+
+            }
+            is HomeScreenEvent.OnToggleDeleteConfirmationDialog -> {
+                _state.update {
+                    it.copy(
+                        showDeleteCategoryDialog = !it.showDeleteCategoryDialog
+                    )
+                }
+                loadEditCategoryData(event.categoryUUID)
+            }
+            is HomeScreenEvent.ToggleEditCategoryDialog -> {
+                _state.update {
+                    it.copy(
+                        showEditCategoryDialog = !it.showEditCategoryDialog
+                    )
+                }
+                loadEditCategoryData(event.categoryUUID)
+            }
+
+            is HomeScreenEvent.OnCategoryNameChange -> {
+                _state.update {
+                    it.copy(
+                        editCategoryState = it.editCategoryState.copy(
+                            categoryName = event.name,
+                            errorMessage = ""
+                        )
+                    )
+                }
+            }
+
+        }
+    }
+
+    private fun loadEditCategoryData(categoryUUID : String) = viewModelScope.launch {
+        val categoryEntity = readLaterDataSourceRepo.getCategoryByUUID(categoryUUID)
+        categoryEntity?.let {
+            _state.update {
+                it.copy(
+                    editCategoryState = it.editCategoryState.copy(
+                        categoryUUID = categoryEntity.uuid,
+                        categoryName = categoryEntity.name
+                    )
+                )
+            }
         }
     }
 
@@ -355,12 +426,15 @@ class HomeScreenViewModel(
     private fun getAllCategories() = viewModelScope.launch {
         readLaterDataSourceRepo.getAllCategories().collectLatest { categoryEntities ->
             _state.update {
-                it.copy(
-                   categoryItems = categoryEntities.toCategoryUIList(),
-                    navigationDrawerState = it.navigationDrawerState.copy(
-                        drawerItems = it.navigationDrawerState.drawerItems + categoryEntities.toCategoryUIList().map { DrawerItems.Category(it) }
-                    )
+                val newCategoryItems = categoryEntities.toCategoryUIList()
+                val nonCategoryDrawerItems = it.navigationDrawerState.drawerItems
+                    .filterNot { item -> item is DrawerItems.Category }
 
+                it.copy(
+                    categoryItems = newCategoryItems,
+                    navigationDrawerState = it.navigationDrawerState.copy(
+                        drawerItems = nonCategoryDrawerItems + newCategoryItems.map { DrawerItems.Category(it) }
+                    )
                 )
             }
         }

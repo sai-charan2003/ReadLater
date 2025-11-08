@@ -15,7 +15,7 @@ sealed interface HomeScreenEvent {
 
     data class OnDeleteBookmark(val uuid : String) : HomeScreenEvent
 
-    data class OnTabChange(val index : Int) : HomeScreenEvent
+    data class  OnTabChange(val index : Int) : HomeScreenEvent
 
     data class OnDueStatusChange(val uuid : String, val isDue: Boolean  ) : HomeScreenEvent
 
@@ -36,4 +36,14 @@ sealed interface HomeScreenEvent {
     data object OnMoreOptionBottomSheetDismiss : HomeScreenEvent
 
     data class OnEdit(val uuid : String) : HomeScreenEvent
+
+    data class OnToggleDeleteConfirmationDialog(val categoryUUID: String) : HomeScreenEvent
+
+    data class ToggleEditCategoryDialog(val categoryUUID: String) : HomeScreenEvent
+
+    data object OnEditCategory : HomeScreenEvent
+
+    data object OnDeleteCategory : HomeScreenEvent
+
+    data class OnCategoryNameChange(val name : String) : HomeScreenEvent
 }

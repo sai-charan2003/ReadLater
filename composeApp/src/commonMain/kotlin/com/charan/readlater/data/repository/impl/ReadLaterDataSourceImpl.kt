@@ -8,12 +8,10 @@ import com.charan.readlater.CategoryEntity
 import com.charan.readlater.ReadLaterDatabase
 import com.charan.readlater.ReadLaterEntity
 import com.charan.readlater.data.repository.ReadLaterDataSourceRepo
-import com.charan.readlater.utils.ProcessState
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.flow
 
 class ReadLaterDataSourceImpl(
     private val db : ReadLaterDatabase
@@ -73,6 +71,7 @@ class ReadLaterDataSourceImpl(
 
     override suspend fun clearAllData() {
         queries.delteAllReadLaterItems()
+        queries.deleteAllCategories()
     }
 
     override suspend fun getAllActiveItems(): Flow<List<ReadLaterEntity> >{
@@ -107,7 +106,7 @@ class ReadLaterDataSourceImpl(
     }
 
     override suspend fun getAllCategories(): Flow<List<CategoryEntity>> {
-        return queries.getAllCategories().asFlow().mapToList(Dispatchers.IO)
+        return queries.getAllActiveCategories().asFlow().mapToList(Dispatchers.IO)
     }
 
     override suspend fun getBookmarkItemsByCategoryUUID(categoryUUID: String): Flow<List<ReadLaterEntity>> {
@@ -176,5 +175,18 @@ class ReadLaterDataSourceImpl(
 
     override suspend fun getUnsyncedItemsCount(): Flow<Long> {
         return queries.getUnsyncedItemCount().asFlow().mapToOne(Dispatchers.IO)
+    }
+
+    override suspend fun deleteCategoryByUUID(uuid: String): Boolean {
+        queries.deleteCategoryByUUID(uuid)
+        return true
+    }
+
+    override suspend fun updateCategory(categoryName : String, uuid: String): Boolean {
+        queries.updateCategoryByUUID(
+            name = categoryName,
+            uuid = uuid
+        )
+        return true
     }
 }

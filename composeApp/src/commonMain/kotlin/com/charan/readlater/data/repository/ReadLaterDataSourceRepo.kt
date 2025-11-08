@@ -60,6 +60,10 @@ interface ReadLaterDataSourceRepo {
 
     suspend fun getUnsyncedItemsCount() : Flow<Long>
 
+    suspend fun deleteCategoryByUUID(uuid : String) : Boolean
+
+    suspend fun updateCategory(categoryName: String, uuid : String) : Boolean
+
 
 
 
