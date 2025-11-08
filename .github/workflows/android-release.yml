@@ -2,6 +2,8 @@ name: Build and Create Releases
 
 on:
   push:
+    branches:
+      - master
     tags:
       - v*
   workflow_dispatch:
@@ -51,10 +53,10 @@ jobs:
         with:
           fileName: "keystore"
           encodedString: ${{ secrets.KEYSTORE_BASE64 }}
-      - name: Build Android APK
-        run: ./gradlew composeApp:bundleRelease -Pandroid.injected.signing.store.file=${{ steps.decode_keystore.outputs.filePath }} -Pandroid.injected.signing.store.password=${{ secrets.KEYSTORE_PASSWORD }} -Pandroid.injected.signing.key.alias=${{ secrets.KEY_ALIAS }} -Pandroid.injected.signing.key.password=${{ secrets.KEY_PASSWORD }}
 
-
+      # This step had an indentation error which is now fixed
+      - name: Build Android AAB and APK
+        run: ./gradlew composeApp:bundleRelease composeApp:assembleRelease -Pandroid.injected.signing.store.file=${{ steps.decode_keystore.outputs.filePath }} -Pandroid.injected.signing.store.password=${{ secrets.KEYSTORE_PASSWORD }} -Pandroid.injected.signing.key.alias=${{ secrets.KEY_ALIAS }} -Pandroid.injected.signing.key.password=${{ secrets.KEY_PASSWORD }}
 
       - name: Upload Release AAB
         uses: actions/upload-release-asset@v1
