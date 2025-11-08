@@ -11,7 +11,7 @@ jobs:
     permissions: write-all
     runs-on: ubuntu-latest
     outputs:
-      output1: ${{ steps.create_release.outputs.upload_url }}
+      upload_url: ${{ steps.create_release.outputs.upload_url }}
     steps:
       - name: Create Release
         id: create_release
@@ -19,8 +19,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: ${{ github.ref }}
-          release_name: Release ${{ github.ref }}
+          tag_name: ${{ github.ref_name }}
+          release_name: Release ${{ github.ref_name }}
           draft: false
           prerelease: false
 
@@ -30,9 +30,6 @@ jobs:
     needs: create-release
     steps:
       - uses: actions/checkout@v4
-        with:
-          repository: ${{ github.event.pull_request.head.repo.full_name }}
-          ref: ${{ github.event.pull_request.head.ref }}
 
       - name: Set up JDK
         uses: actions/setup-java@v1
@@ -49,28 +46,29 @@ jobs:
           fileName: "keystore"
           encodedString: ${{ secrets.KEYSTORE_BASE64 }}
 
-      - name: Build Android AAB
-        run: ./gradlew composeApp:assembleRelease -Pandroid.injected.signing.store.file=${{ steps.decode_keystore.outputs.filePath }} -Pandroid.injected.signing.store.password=${{ secrets.KEY_PASSWORD }} -Pandroid.injected.signing.key.alias=${{ secrets.ANDROID_KEYSTORE_ALIAS }} -Pandroid.injected.signing.key.password=${{ secrets.KEYSTORE_PASSWORD }}
-
       - name: Build Android APK
-        run: ./gradlew composeApp:bundleRelease -Pandroid.injected.signing.store.file=${{ steps.decode_keystore.outputs.filePath }} -Pandroid.injected.signing.store.password=${{ secrets.KEY_PASSWORD }} -Pandroid.injected.signing.key.alias=${{ secrets.ANDROID_KEYSTORE_ALIAS }} -Pandroid.injected.signing.key.password=${{ secrets.KEYSTORE_PASSWORD }}
+        run: ./gradlew composeApp:assembleRelease \
+          -Pandroid.injected.signing.store.file=${{ steps.decode_keystore.outputs.filePath }} \
+          -Pandroid.injected.signing.store.password=${{ secrets.KEY_PASSWORD }} \
+          -Pandroid.injected.signing.key.alias=${{ secrets.ANDROID_KEYSTORE_ALIAS }} \
+          -Pandroid.injected.signing.key.password=${{ secrets.KEYSTORE_PASSWORD }}
 
-      - name: Upload Release AAB Asset
+      - name: Upload Release AAB
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          upload_url: ${{ needs.create-release.outputs.output1 }}
+          upload_url: ${{ needs.create-release.outputs.upload_url }}
           asset_path: composeApp/build/outputs/bundle/release/composeApp-release.aab
           asset_name: minesweeperk-${{ github.ref_name }}.aab
           asset_content_type: application/x-authorware-bin
 
-      - name: Upload Release APK Asset
+      - name: Upload Release APK
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          upload_url: ${{ needs.create-release.outputs.output1 }}
+          upload_url: ${{ needs.create-release.outputs.upload_url }}
           asset_path: composeApp/build/outputs/apk/release/composeApp-release.apk
           asset_name: minesweeperk-${{ github.ref_name }}.apk
           asset_content_type: application/vnd.android.package-archive
