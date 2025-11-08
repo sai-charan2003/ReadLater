@@ -51,13 +51,10 @@ jobs:
         with:
           fileName: "keystore"
           encodedString: ${{ secrets.KEYSTORE_BASE64 }}
-
       - name: Build Android APK
-        run: ./gradlew composeApp:assembleRelease \
-          -Pandroid.injected.signing.store.file=${{ steps.decode_keystore.outputs.filePath }} \
-          -Pandroid.injected.signing.store.password=${{ secrets.KEY_PASSWORD }} \
-          -Pandroid.injected.signing.key.alias=${{ secrets.ANDROID_KEYSTORE_ALIAS }} \
-          -Pandroid.injected.signing.key.password=${{ secrets.KEYSTORE_PASSWORD }}
+        run: ./gradlew composeApp:bundleRelease -Pandroid.injected.signing.store.file=${{ steps.decode_keystore.outputs.filePath }} -Pandroid.injected.signing.store.password=${{ secrets.KEYSTORE_PASSWORD }} -Pandroid.injected.signing.key.alias=${{ secrets.KEY_ALIAS }} -Pandroid.injected.signing.key.password=${{ secrets.KEY_PASSWORD }}
+
+
 
       - name: Upload Release AAB
         uses: actions/upload-release-asset@v1
