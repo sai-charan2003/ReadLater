@@ -209,16 +209,21 @@ compose.desktop {
 }
 buildkonfig {
     packageName = "com.charan.readlater"
+
     defaultConfigs {
-        val supabaseUrl : String = gradleLocalProperties(rootDir,providers).getProperty("SUPABASE_URL")
+        val supabaseUrl: String = System.getenv("SUPABASE_URL")
+            ?: gradleLocalProperties(rootDir, providers).getProperty("SUPABASE_URL")
         buildConfigField(FieldSpec.Type.STRING, "SUPABASE_URL", supabaseUrl)
-        val supabaseAnonKey : String = gradleLocalProperties(rootDir,providers).getProperty("SUPABASE_ANONKEY")
+
+        val supabaseAnonKey: String = System.getenv("SUPABASE_ANONKEY")
+            ?: gradleLocalProperties(rootDir, providers).getProperty("SUPABASE_ANONKEY")
         buildConfigField(FieldSpec.Type.STRING, "SUPABASE_ANONKEY", supabaseAnonKey)
-        val googleServerId : String = gradleLocalProperties(rootDir,providers).getProperty("GOOGLE_SERVER_ID")
+
+        val googleServerId: String = System.getenv("GOOGLE_SERVER_ID")
+            ?: gradleLocalProperties(rootDir, providers).getProperty("GOOGLE_SERVER_ID")
         buildConfigField(FieldSpec.Type.STRING, "GOOGLE_SERVER_ID", googleServerId)
-
-
     }
 }
+
 
 
