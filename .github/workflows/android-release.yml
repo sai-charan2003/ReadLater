@@ -3,8 +3,8 @@ name: Build and Release Android App
 on:
   push:
     tags:
-      - "v*"    # Runs when a version tag like v1.0.0 is pushed
-  workflow_dispatch:  # Allows manual trigger
+      - "v*"    # Example: v1.0.0
+  workflow_dispatch:  # Manual trigger option
 
 jobs:
   build:
@@ -19,7 +19,7 @@ jobs:
       GOOGLE_SERVER_ID: ${{ secrets.GOOGLE_SERVER_ID }}
 
     steps:
-      # 1️⃣ Checkout code
+      # 1️⃣ Checkout the repo
       - name: Checkout Repository
         uses: actions/checkout@v4
 
@@ -32,41 +32,50 @@ jobs:
 
       # 3️⃣ Decode and save the keystore
       - name: Decode Keystore
-        run: |
-          echo "$KEYSTORE_BASE64" | base64 --decode > my-release-key.jks
+        run: echo "$KEYSTORE_BASE64" | base64 --decode > my-release-key.jks
 
       # 4️⃣ Setup Gradle caching
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v3
 
-      # 5️⃣ Build the release APK & AAB
+      # 5️⃣ Build release APK and AAB from composeApp module
       - name: Build Release
         run: |
-          ./gradlew assembleRelease
-          ./gradlew bundleRelease
+          ./gradlew :composeApp:assembleRelease
+          ./gradlew :composeApp:bundleRelease
 
-      # 6️⃣ Sign the release builds
-      - name: Sign APK and AAB
+      # 6️⃣ Sign the release APK
+      - name: Sign APK
         uses: r0adkll/sign-android-release@v1
         with:
-          releaseDirectory: app/build/outputs/
+          releaseDirectory: composeApp/build/outputs/apk/release/
           signingKeyBase64: ${{ secrets.KEYSTORE_BASE64 }}
           alias: ${{ secrets.KEY_ALIAS }}
           keyStorePassword: ${{ secrets.KEYSTORE_PASSWORD }}
           keyPassword: ${{ secrets.KEY_PASSWORD }}
 
-      # 7️⃣ Rename outputs for clarity
+      # 7️⃣ Sign the release AAB
+      - name: Sign AAB
+        uses: r0adkll/sign-android-release@v1
+        with:
+          releaseDirectory: composeApp/build/outputs/bundle/release/
+          signingKeyBase64: ${{ secrets.KEYSTORE_BASE64 }}
+          alias: ${{ secrets.KEY_ALIAS }}
+          keyStorePassword: ${{ secrets.KEYSTORE_PASSWORD }}
+          keyPassword: ${{ secrets.KEY_PASSWORD }}
+
+      # 8️⃣ Rename outputs for clarity
       - name: Rename outputs
         run: |
-          mv app/build/outputs/apk/release/app-release-signed.apk app-release.apk || true
-          mv app/build/outputs/bundle/release/app-release-signed.aab app-release.aab || true
+          mv composeApp/build/outputs/apk/release/*-signed.apk composeApp-release.apk || true
+          mv composeApp/build/outputs/bundle/release/*-signed.aab composeApp-release.aab || true
 
-      # 8️⃣ Create GitHub Release and upload artifacts
+      # 9️⃣ Create a GitHub Release and upload APK + AAB
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           files: |
-            app-release.apk
-            app-release.aab
+            composeApp-release.apk
+            composeApp-release.aab
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
