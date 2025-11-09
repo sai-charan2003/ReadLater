@@ -1,75 +1,59 @@
-# This name will appear in the GitHub Actions UI
-name: Build and Release Android App
+name: Android Signed Release (Upload to GitHub Releases)
 
-# Triggers the workflow on pushes to tags (e.g., "v1.0")
-# and also allows for manual triggering from the Actions tab
 on:
   push:
     tags:
-      - "v*" # Matches tags like v1.0, v2.0.1, etc.
+      - 'v*' # Runs when you push a version tag, e.g., v1.0.0
   workflow_dispatch:
 
+env:
+  main_project_module: app
+  SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+  SUPABASE_ANONKEY: ${{ secrets.SUPABASE_ANONKEY }}
+  GOOGLE_SERVER_ID: ${{ secrets.GOOGLE_SERVER_ID }}
+
 jobs:
-  build:
+  build-release:
     runs-on: ubuntu-latest
 
-    # These permissions are required for the release action
-    # to create a new release and upload assets.
-    permissions:
-      contents: write
-
     steps:
-      - name: Checkout code
+      - name: 🧾 Checkout repository
         uses: actions/checkout@v4
 
-      - name: Set up JDK 17
+      - name: ☕ Set up JDK 17
         uses: actions/setup-java@v4
         with:
-          distribution: "temurin"
-          java-version: "17"
+          distribution: 'zulu'
+          java-version: '17'
+          cache: 'gradle'
 
-      - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v3
+      - name: 🧰 Set up Android SDK
+        uses: android-actions/setup-android@v3
 
-      - name: Build with Gradle
-        env:
-          # Make secrets available as environment variables for the build
-          # Your build.gradle must be configured to read these (e.g., System.getenv("..."))
-          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-          SUPABASE_ANONKEY: ${{ secrets.SUPABASE_ANONKEY }}
-          GOOGLE_SERVER_ID: ${{ secrets.GOOGLE_SERVER_ID }}
-        # Only run assembleRelease to build the APK
-        run: ./gradlew :composeApp:assembleRelease
+      - name: 📦 Install required build tools
+        run: sdkmanager "build-tools;34.0.0"
 
-      # The r0adkll/sign-android-release action can use the base64-encoded
-      # keystore directly, so the "Decode Keystore" step is not needed.
-      # This action signs the APK file *in-place*.
-      - name: Sign APK
-        uses: r0adkll/sign-android-release@v1
-        with:
-          releaseDirectory: composeApp/build/outputs/apk/release/
-          signingKeyBase64: ${{ secrets.KEYSTORE_BASE64 }}
-          alias: ${{ secrets.KEY_ALIAS }}
-          keyStorePassword: ${{ secrets.KEYSTORE_PASSWORD }}
-          keyPassword: ${{ secrets.KEY_PASSWORD }}
-
-      # Removed the "Sign AAB" step
-
-      - name: Rename Release File
+      - name: 🔑 Decode Keystore
         run: |
-          # The signing action signs files in-place (e.g., composeApp-release.apk)
-          # It does *not* create a "-signed.apk" file.
-          # We move the (now signed) file to the root for easy uploading.
-          mv composeApp/build/outputs/apk/release/composeApp-release.apk composeApp-release.apk
+          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > keystore.jks
 
-      - name: Create GitHub Release
-        # This action automatically detects the tag, creates a release for it,
-        # and uploads the specified files.
+      - name: ⚙️ Build Signed Release APK
+        run: |
+          ./gradlew clean
+          ./gradlew :${{ env.main_project_module }}:assembleRelease \
+            -Pandroid.injected.signing.store.file=${{ github.workspace }}/keystore.jks \
+            -Pandroid.injected.signing.store.password=${{ secrets.KEYSTORE_PASSWORD }} \
+            -Pandroid.injected.signing.key.alias=${{ secrets.KEY_ALIAS }} \
+            -Pandroid.injected.signing.key.password=${{ secrets.KEY_PASSWORD }}
+
+      - name: 🔍 Verify APK
+        run: ls -lh ${{ env.main_project_module }}/build/outputs/apk/release/
+
+      - name: 📤 Upload Signed APK to GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          # Only upload the APK file
-          files: composeApp-release.apk
+          files: |
+            ${{ env.main_project_module }}/build/outputs/apk/release/*.apk
+          generate_release_notes: true
         env:
-          # The GITHUB_TOKEN is automatically provided by GitHub Actions
-          # and is required by this action.
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
