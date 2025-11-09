@@ -3,15 +3,14 @@ name: Build and Release Android App
 on:
   push:
     tags:
-      - "v*"    # Example: v1.0.0
-  workflow_dispatch:  # Manual trigger option
+      - "v*"
+  workflow_dispatch:
 
 jobs:
   build:
-    name: Build Release APK & AAB
     runs-on: ubuntu-latest
     permissions:
-      contents: write   # Needed for GitHub Releases
+      contents: write
 
     env:
       SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
@@ -19,32 +18,26 @@ jobs:
       GOOGLE_SERVER_ID: ${{ secrets.GOOGLE_SERVER_ID }}
 
     steps:
-      # 1️⃣ Checkout the repo
-      - name: Checkout Repository
+      - name: Checkout
         uses: actions/checkout@v4
 
-      # 2️⃣ Set up JDK
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
           distribution: "temurin"
           java-version: "17"
 
-      # 3️⃣ Decode and save the keystore
       - name: Decode Keystore
         run: echo "$KEYSTORE_BASE64" | base64 --decode > my-release-key.jks
 
-      # 4️⃣ Setup Gradle caching
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v3
 
-      # 5️⃣ Build release APK and AAB from composeApp module
       - name: Build Release
         run: |
           ./gradlew :composeApp:assembleRelease
           ./gradlew :composeApp:bundleRelease
 
-      # 6️⃣ Sign the release APK
       - name: Sign APK
         uses: r0adkll/sign-android-release@v1
         with:
@@ -53,8 +46,8 @@ jobs:
           alias: ${{ secrets.KEY_ALIAS }}
           keyStorePassword: ${{ secrets.KEYSTORE_PASSWORD }}
           keyPassword: ${{ secrets.KEY_PASSWORD }}
+          buildToolsVersion: "34.0.0"
 
-      # 7️⃣ Sign the release AAB
       - name: Sign AAB
         uses: r0adkll/sign-android-release@v1
         with:
@@ -63,14 +56,13 @@ jobs:
           alias: ${{ secrets.KEY_ALIAS }}
           keyStorePassword: ${{ secrets.KEYSTORE_PASSWORD }}
           keyPassword: ${{ secrets.KEY_PASSWORD }}
+          buildToolsVersion: "34.0.0"
 
-      # 8️⃣ Rename outputs for clarity
       - name: Rename outputs
         run: |
           mv composeApp/build/outputs/apk/release/*-signed.apk composeApp-release.apk || true
           mv composeApp/build/outputs/bundle/release/*-signed.aab composeApp-release.aab || true
 
-      # 9️⃣ Create a GitHub Release and upload APK + AAB
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
