@@ -5,6 +5,7 @@ import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.targets.js.webpack.KotlinWebpackConfig
+import java.util.Properties
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
@@ -127,7 +128,7 @@ kotlin {
             implementation(compose.materialIconsExtended)
             implementation(libs.filekit.dialogs.compose)
             implementation(libs.filekit.dialogs)
-            implementation("de.brudaswen.kotlinx.serialization:kotlinx-serialization-csv:3.0.2")
+            implementation(libs.serialization.kotlinx.serialization.csv)
 
 
 
@@ -167,15 +168,30 @@ android {
         versionCode = 1
         versionName = "1.0"
     }
-    buildToolsVersion  = "34.0.0"
     packaging {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
     }
+    signingConfigs {
+        create("release"){
+            val properties = Properties().apply {
+                load(project.rootProject.file("local.properties").inputStream())
+            }
+            keyAlias = properties.getProperty("KEY_ALIAS") ?: ""
+            keyPassword = properties.getProperty("KEY_PASSWORD") ?: ""
+            storeFile = file(properties.getProperty("KEY_LOCATION") ?: "")
+            storePassword = properties.getProperty("KEYSTORE_PASSWORD") ?: ""
+        }
+    }
     buildTypes {
-        getByName("release") {
-            isMinifyEnabled = false
+        release {
+            isMinifyEnabled = true
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
+            signingConfig = signingConfigs.getByName("release")
         }
     }
     buildFeatures {

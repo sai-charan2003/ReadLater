@@ -15,6 +15,7 @@ datastorePreferences = "1.1.7"
 filekitDialogsCompose = "0.12.0"
 kmpauthGoogle = "2.4.0-alpha05"
 kotlinCsvJvm = "1.10.0"
+kotlinxSerializationCsv = "3.1.0"
 kotlinxSerializationFlf = "0.0.23"
 kotlinxSerializationJson = "1.7.3"
 ksoup = "0.2.5"
@@ -90,6 +91,7 @@ native-driver = { module = "app.cash.sqldelight:native-driver", version.ref = "a
 navigation-compose = { module = "org.jetbrains.androidx.navigation:navigation-compose", version.ref = "navigationCompose" }
 postgrest-kt = { module = "io.github.jan-tennert.supabase:postgrest-kt",version.ref = "supabase" }
 compose-auth-kt = { module = "io.github.jan-tennert.supabase:compose-auth",version.ref = "supabase" }
+serialization-kotlinx-serialization-csv = { module = "de.brudaswen.kotlinx.serialization:kotlinx-serialization-csv", version.ref = "kotlinxSerializationCsv" }
 sqlite-driver = { module = "app.cash.sqldelight:sqlite-driver", version.ref = "androidDriver" }
 web-worker-driver = { module = "app.cash.sqldelight:web-worker-driver", version.ref = "androidDriver" }
 ktor-client-core = { module = "io.ktor:ktor-client-core", version.ref = "ktor" }
