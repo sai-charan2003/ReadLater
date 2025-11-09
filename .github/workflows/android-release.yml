@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
 
 env:
-  main_project_module: app
+  main_project_module: composeApp
   SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
   SUPABASE_ANONKEY: ${{ secrets.SUPABASE_ANONKEY }}
   GOOGLE_SERVER_ID: ${{ secrets.GOOGLE_SERVER_ID }}
