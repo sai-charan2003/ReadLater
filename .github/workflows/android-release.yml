@@ -1,24 +1,25 @@
+# This name will appear in the GitHub Actions UI
 name: Build and Release Android App
 
+# Triggers the workflow on pushes to tags (e.g., "v1.0")
+# and also allows for manual triggering from the Actions tab
 on:
   push:
     tags:
-      - "v*"
+      - "v*" # Matches tags like v1.0, v2.0.1, etc.
   workflow_dispatch:
 
 jobs:
   build:
     runs-on: ubuntu-latest
+
+    # These permissions are required for the release action
+    # to create a new release and upload assets.
     permissions:
       contents: write
 
-    env:
-      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-      SUPABASE_ANONKEY: ${{ secrets.SUPABASE_ANONKEY }}
-      GOOGLE_SERVER_ID: ${{ secrets.GOOGLE_SERVER_ID }}
-
     steps:
-      - name: Checkout
+      - name: Checkout code
         uses: actions/checkout@v4
 
       - name: Set up JDK 17
@@ -27,17 +28,22 @@ jobs:
           distribution: "temurin"
           java-version: "17"
 
-      - name: Decode Keystore
-        run: echo "$KEYSTORE_BASE64" | base64 --decode > my-release-key.jks
-
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v3
 
-      - name: Build Release
-        run: |
-          ./gradlew :composeApp:assembleRelease
-          ./gradlew :composeApp:bundleRelease
+      - name: Build with Gradle
+        env:
+          # Make secrets available as environment variables for the build
+          # Your build.gradle must be configured to read these (e.g., System.getenv("..."))
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANONKEY: ${{ secrets.SUPABASE_ANONKEY }}
+          GOOGLE_SERVER_ID: ${{ secrets.GOOGLE_SERVER_ID }}
+        # Only run assembleRelease to build the APK
+        run: ./gradlew :composeApp:assembleRelease
 
+      # The r0adkll/sign-android-release action can use the base64-encoded
+      # keystore directly, so the "Decode Keystore" step is not needed.
+      # This action signs the APK file *in-place*.
       - name: Sign APK
         uses: r0adkll/sign-android-release@v1
         with:
@@ -46,28 +52,24 @@ jobs:
           alias: ${{ secrets.KEY_ALIAS }}
           keyStorePassword: ${{ secrets.KEYSTORE_PASSWORD }}
           keyPassword: ${{ secrets.KEY_PASSWORD }}
-          buildToolsVersion: "34.0.0"
 
-      - name: Sign AAB
-        uses: r0adkll/sign-android-release@v1
-        with:
-          releaseDirectory: composeApp/build/outputs/bundle/release/
-          signingKeyBase64: ${{ secrets.KEYSTORE_BASE64 }}
-          alias: ${{ secrets.KEY_ALIAS }}
-          keyStorePassword: ${{ secrets.KEYSTORE_PASSWORD }}
-          keyPassword: ${{ secrets.KEY_PASSWORD }}
-          buildToolsVersion: "34.0.0"
+      # Removed the "Sign AAB" step
 
-      - name: Rename outputs
+      - name: Rename Release File
         run: |
-          mv composeApp/build/outputs/apk/release/*-signed.apk composeApp-release.apk || true
-          mv composeApp/build/outputs/bundle/release/*-signed.aab composeApp-release.aab || true
+          # The signing action signs files in-place (e.g., composeApp-release.apk)
+          # It does *not* create a "-signed.apk" file.
+          # We move the (now signed) file to the root for easy uploading.
+          mv composeApp/build/outputs/apk/release/composeApp-release.apk composeApp-release.apk
 
       - name: Create GitHub Release
+        # This action automatically detects the tag, creates a release for it,
+        # and uploads the specified files.
         uses: softprops/action-gh-release@v2
         with:
-          files: |
-            composeApp-release.apk
-            composeApp-release.aab
+          # Only upload the APK file
+          files: composeApp-release.apk
         env:
+          # The GITHUB_TOKEN is automatically provided by GitHub Actions
+          # and is required by this action.
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
