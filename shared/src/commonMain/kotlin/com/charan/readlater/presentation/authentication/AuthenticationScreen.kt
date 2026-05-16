@@ -47,6 +47,7 @@ fun AuthenticationScreen(
                 }
 
                 is AuthenticationScreenEffect.ShowError -> {
+                    println(effect.message)
 
                 }
 
@@ -98,12 +99,12 @@ fun AuthenticationScreen(
             Spacer(modifier = Modifier.height(40.dp))
             GoogleButtonUiContainer(onGoogleSignInResult = { googleUser ->
                 val idToken = googleUser?.idToken
+                println(idToken)
                 viewModel.onEvent(AuthenticationEvent.OnGoogleSignInKey(idToken ?: ""))
 
             }) {
                 Button(
                     onClick = {
-                        println("Button clicked")
                         this.onClick()
                     },
                     modifier = Modifier.fillMaxWidth(),

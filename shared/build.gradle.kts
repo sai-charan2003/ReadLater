@@ -173,6 +173,21 @@ buildkonfig {
             ?: gradleLocalProperties(rootDir, providers).getProperty("GOOGLE_SERVER_ID")
         buildConfigField(FieldSpec.Type.STRING, "GOOGLE_SERVER_ID", googleServerId)
     }
+
+    defaultConfigs("dev"){
+        val supabaseUrl: String =
+            gradleLocalProperties(rootDir, providers).getProperty("SUPABASE_URL_DEBUG")
+        buildConfigField(FieldSpec.Type.STRING, "SUPABASE_URL", supabaseUrl)
+
+        val supabaseAnonKey: String =  gradleLocalProperties(rootDir, providers).getProperty("SUPABASE_ANONKEY_DEBUG")
+        buildConfigField(FieldSpec.Type.STRING, "SUPABASE_ANONKEY", supabaseAnonKey)
+
+    }
 }
 
+tasks.configureEach {
+    if (name == "prepareAndroidMainArtProfile") {
+        dependsOn(tasks.named("generateBuildKonfig"))
+    }
+}
 
