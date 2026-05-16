@@ -20,3 +20,5 @@ captures
 # Ignore Google/Firebase service config
 **/google-services.json
 /composeApp/src/androidMain/release/
+/shared/release/
+.hotswan/

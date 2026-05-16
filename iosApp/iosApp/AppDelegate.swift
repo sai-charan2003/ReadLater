@@ -7,7 +7,7 @@
 
 import UIKit
 import GoogleSignIn
-import ComposeApp
+import Shared
 
 
 class AppDelegate: NSObject, UIApplicationDelegate {

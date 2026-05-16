@@ -1,106 +1,86 @@
 [versions]
-agp = "8.9.1"
-android-compileSdk = "36"
+agp = "9.2.1"
+android-compileSdk = "37"
 android-minSdk = "26"
-android-targetSdk = "36"
-androidDriver = "2.1.0"
-androidx-activity = "1.10.1"
-androidx-appcompat = "1.7.1"
-androidx-core = "1.16.0"
-androidx-espresso = "3.6.1"
-androidx-lifecycle = "2.9.1"
-androidx-testExt = "1.2.1"
-coilCompose = "3.3.0"
-datastorePreferences = "1.1.7"
-filekitDialogsCompose = "0.12.0"
-kmpauthGoogle = "2.4.0-alpha05"
-kotlinCsvJvm = "1.10.0"
-kotlinxSerializationCsv = "3.1.0"
-kotlinxSerializationFlf = "0.0.23"
-kotlinxSerializationJson = "1.7.3"
-ksoup = "0.2.5"
-material3 = "1.10.0-alpha02"
+android-targetSdk = "37"
+materialIconsExtended = "1.7.3"
+sqlite = "2.3.2"
+androidx-activity = "1.13.0"
+androidx-lifecycle = "2.10.0"
+animation = "1.11.1"
+coilCompose = "3.4.0"
+datastore = "1.2.1"
+filekitDialogsCompose = "0.14.1"
+kotlinxSerializationCsv = "3.2.1"
+kotlinxSerializationJson = "1.11.0"
+ksoup = "0.2.6"
+material3 = "1.10.0-alpha05"
 materialIconsCore = "1.7.3"
-materialKolor = "3.0.1"
-navigationCompose = "2.9.0-beta05"
-supabase = "3.2.2"
-composeHotReload ="1.0.0-beta05"
-composeMultiplatform = "1.10.0-alpha02"
-firebaseAuth = "2.2.0"
-firebaseConfig = "23.0.0"
-junit = "4.13.2"
-kotlin = "2.2.0"
-kotlinx-coroutines = "1.10.2"
-koin = "4.1.1"
-googleServices = "4.4.3"
-buildKonfig = "0.15.2"
-ktor = "3.2.3"
-ktorClientApache5 = "3.2.3"
-ktorClientCio = "3.2.3"
-csv = "1.1"
-sqliteAndroid = "3.45.0"
-sqliteFramework = "2.6.1"
-workRuntimeKtx = "2.11.0"
+materialKolor = "4.1.1"
+navigationCompose = "2.9.2"
+supabase = "3.6.0"
+composeHotReload ="1.1.1"
+composeMultiplatform = "1.11.0"
+kotlin = "2.3.21"
+kotlinx-coroutines = "1.11.0"
+koin = "4.2.1"
+buildKonfig = "0.21.0"
+ktor = "3.5.0"
+sqliteFramework = "2.6.2"
+workRuntimeKtx = "2.11.2"
+kmpauthGoogle = "2.4.0-alpha05"
 
 
 [libraries]
-android-driver = { module = "app.cash.sqldelight:android-driver", version.ref = "androidDriver" }
-androidx-datastore = { module = "androidx.datastore:datastore", version.ref = "datastorePreferences" }
-androidx-datastore-preferences = { module = "androidx.datastore:datastore-preferences", version.ref = "datastorePreferences" }
-androidx-sqlite-bundled = { module = "androidx.sqlite:sqlite-bundled", version.ref = "sqliteFramework" }
+androidx-datastore = { module = "androidx.datastore:datastore", version.ref = "datastore" }
+androidx-datastore-preferences = { module = "androidx.datastore:datastore-preferences", version.ref = "datastore" }
 androidx-work-runtime-ktx = { module = "androidx.work:work-runtime-ktx", version.ref = "workRuntimeKtx" }
-auth-kt = { module = "io.github.jan-tennert.supabase:auth-kt",version.ref = "supabase" }
+material-icons-extended = { module = "org.jetbrains.compose.material:material-icons-extended", version.ref = "materialIconsExtended" }
+supabase-bom = { module = "io.github.jan-tennert.supabase:bom", version.ref = "supabase" }
+auth-kt = { module = "io.github.jan-tennert.supabase:auth-kt"}
+postgrest-kt = { module = "io.github.jan-tennert.supabase:postgrest-kt" }
+compose-auth-kt = { module = "io.github.jan-tennert.supabase:compose-auth" }
 coil-compose = { module = "io.coil-kt.coil3:coil-compose", version.ref = "coilCompose" }
-coil-network-ktor3 = { module = "io.coil-kt.coil3:coil-network-ktor3", version.ref = "coilCompose" }
-coroutines-extensions = { module = "app.cash.sqldelight:coroutines-extensions", version.ref = "androidDriver" }
 filekit-dialogs = { module = "io.github.vinceglb:filekit-dialogs", version.ref = "filekitDialogsCompose" }
 filekit-dialogs-compose = { module = "io.github.vinceglb:filekit-dialogs-compose", version.ref = "filekitDialogsCompose" }
-firebase-auth = { module = "dev.gitlive:firebase-auth", version.ref = "firebaseAuth" }
-firebase-config = { module = "com.google.firebase:firebase-config", version.ref = "firebaseConfig" }
-firebase-firestore = { module = "dev.gitlive:firebase-firestore", version.ref = "firebaseAuth" }
-kmpauth-google = { module = "io.github.mirzemehdi:kmpauth-google", version.ref = "kmpauthGoogle" }
-kmpauth-uihelper = { module = "io.github.mirzemehdi:kmpauth-uihelper", version.ref = "kmpauthGoogle" }
-koin-androidx-workmanager = { module = "io.insert-koin:koin-androidx-workmanager", version.ref = "koin" }
-kotlin-csv-jvm = { module = "com.jsoizo:kotlin-csv-jvm", version.ref = "kotlinCsvJvm" }
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
-kotlin-testJunit = { module = "org.jetbrains.kotlin:kotlin-test-junit", version.ref = "kotlin" }
-junit = { module = "junit:junit", version.ref = "junit" }
-androidx-core-ktx = { module = "androidx.core:core-ktx", version.ref = "androidx-core" }
-androidx-testExt-junit = { module = "androidx.test.ext:junit", version.ref = "androidx-testExt" }
-androidx-espresso-core = { module = "androidx.test.espresso:espresso-core", version.ref = "androidx-espresso" }
-androidx-appcompat = { module = "androidx.appcompat:appcompat", version.ref = "androidx-appcompat" }
 androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "androidx-activity" }
 androidx-lifecycle-viewmodelCompose = { module = "org.jetbrains.androidx.lifecycle:lifecycle-viewmodel-compose", version.ref = "androidx-lifecycle" }
 androidx-lifecycle-runtimeCompose = { module = "org.jetbrains.androidx.lifecycle:lifecycle-runtime-compose", version.ref = "androidx-lifecycle" }
 kotlinx-coroutinesSwing = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-swing", version.ref = "kotlinx-coroutines" }
-koin-core = { group = "io.insert-koin", name = "koin-core", version.ref = "koin" }
-koin-android = { group = "io.insert-koin", name = "koin-android", version.ref = "koin" }
-koin-compose = { group = "io.insert-koin", name = "koin-androidx-compose", version.ref = "koin" }
-koin-compose-viewModel = { module = "io.insert-koin:koin-compose-viewmodel", version.ref = "koin" }
-kotlinx-serialization-csv = { module = "app.softwork:kotlinx-serialization-csv", version.ref = "kotlinxSerializationFlf" }
-kotlinx-serialization-flf = { module = "app.softwork:kotlinx-serialization-flf", version.ref = "kotlinxSerializationFlf" }
+koin-bom = { module = "io.insert-koin:koin-bom", version.ref = "koin" }
+koin-core = { group = "io.insert-koin", name = "koin-core"}
+koin-android = { group = "io.insert-koin", name = "koin-android" }
+koin-compose = { group = "io.insert-koin", name = "koin-androidx-compose" }
+koin-compose-viewModel = { module = "io.insert-koin:koin-compose-viewmodel" }
+koin-androidx-workmanager = { module = "io.insert-koin:koin-androidx-workmanager"}
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinxSerializationJson" }
 ksoup = { module = "com.fleeksoft.ksoup:ksoup", version.ref = "ksoup" }
 ksoup-network = { module = "com.fleeksoft.ksoup:ksoup-network", version.ref = "ksoup" }
-ktor-client-apache5 = { module = "io.ktor:ktor-client-apache5", version.ref = "ktorClientApache5" }
-ktor-client-cio = { module = "io.ktor:ktor-client-cio", version.ref = "ktorClientCio" }
 material-icons-core = { module = "org.jetbrains.compose.material:material-icons-core", version.ref = "materialIconsCore" }
 material-kolor = { module = "com.materialkolor:material-kolor", version.ref = "materialKolor" }
 material3 = { module = "org.jetbrains.compose.material3:material3", version.ref = "material3" }
-native-driver = { module = "app.cash.sqldelight:native-driver", version.ref = "androidDriver" }
 navigation-compose = { module = "org.jetbrains.androidx.navigation:navigation-compose", version.ref = "navigationCompose" }
-postgrest-kt = { module = "io.github.jan-tennert.supabase:postgrest-kt",version.ref = "supabase" }
-compose-auth-kt = { module = "io.github.jan-tennert.supabase:compose-auth",version.ref = "supabase" }
 serialization-kotlinx-serialization-csv = { module = "de.brudaswen.kotlinx.serialization:kotlinx-serialization-csv", version.ref = "kotlinxSerializationCsv" }
-sqlite-driver = { module = "app.cash.sqldelight:sqlite-driver", version.ref = "androidDriver" }
-web-worker-driver = { module = "app.cash.sqldelight:web-worker-driver", version.ref = "androidDriver" }
-ktor-client-core = { module = "io.ktor:ktor-client-core", version.ref = "ktor" }
-ktor-client-okhttp = { module = "io.ktor:ktor-client-okhttp", version.ref = "ktor" }
-ktor-client-darwin = { module = "io.ktor:ktor-client-darwin", version.ref = "ktor" }
-ktor-serialization-kotlinx-json = { module = "io.ktor:ktor-serialization-kotlinx-json", version.ref = "ktor" }
-csv = { module = "de.halfbit:csv", version.ref = "csv" }
-sqlite-android = { module = "com.github.requery:sqlite-android", version.ref = "sqliteAndroid" }
-androidx-sqlite-framework = { group = "androidx.sqlite", name = "sqlite-framework", version.ref = "sqliteFramework" }
+sqlite-driver = { module = "app.cash.sqldelight:sqlite-driver", version.ref = "sqlite" }
+native-driver = { module = "app.cash.sqldelight:native-driver", version.ref = "sqlite" }
+coroutines-extensions = { module = "app.cash.sqldelight:coroutines-extensions", version.ref = "sqlite" }
+android-driver = { module = "app.cash.sqldelight:android-driver", version.ref = "sqlite" }
+ktor-bom = { module = "io.ktor:ktor-bom", version.ref = "ktor" }
+ktor-client-core = { module = "io.ktor:ktor-client-core"}
+ktor-client-okhttp = { module = "io.ktor:ktor-client-okhttp"}
+ktor-client-darwin = { module = "io.ktor:ktor-client-darwin" }
+ktor-serialization-kotlinx-json = { module = "io.ktor:ktor-serialization-kotlinx-json" }
+ktor-client-cio = { module = "io.ktor:ktor-client-cio"}
+androidx-sqlite-framework = { module = "androidx.sqlite:sqlite-framework", version.ref = "sqliteFramework" }
+androidx-sqlite-bundled = { module = "androidx.sqlite:sqlite-bundled", version.ref = "sqliteFramework" }
+jetbrains-ui = { module = "org.jetbrains.compose.ui:ui", version.ref = "composeMultiplatform" }
+ui-tooling-preview = { module = "org.jetbrains.compose.ui:ui-tooling-preview", version.ref = "composeMultiplatform" }
+runtime = { module = "org.jetbrains.compose.runtime:runtime", version.ref = "composeMultiplatform" }
+components-resources = { module = "org.jetbrains.compose.components:components-resources", version.ref = "composeMultiplatform" }
+jetbrains-foundation = { module = "org.jetbrains.compose.foundation:foundation", version.ref = "composeMultiplatform" }
+kmpauth-google = { module = "io.github.mirzemehdi:kmpauth-google", version.ref = "kmpauthGoogle" }
+kmpauth-uihelper = { module = "io.github.mirzemehdi:kmpauth-uihelper", version.ref = "kmpauthGoogle" }
 
 
 [plugins]
@@ -110,7 +90,7 @@ composeHotReload = { id = "org.jetbrains.compose.hot-reload", version.ref = "com
 composeMultiplatform = { id = "org.jetbrains.compose", version.ref = "composeMultiplatform" }
 composeCompiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 kotlinMultiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
-sqlDelight = { id = "app.cash.sqldelight", version = "2.1.0" }
-googleServices = {id = "com.google.gms.google-services",version.ref = "googleServices" }
+sqlDelight = { id = "app.cash.sqldelight", version.ref = "sqlite" }
 buildKonfig = { id = "com.codingfeline.buildkonfig", version.ref = "buildKonfig" }
 kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
+androidKmpLibrary = { id = "com.android.kotlin.multiplatform.library", version.ref = "agp" }
