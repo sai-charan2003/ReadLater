@@ -10,7 +10,7 @@ permissions:
   contents: write
 
 env:
-  main_project_module: composeApp
+  main_project_module: androidApp
   SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
   SUPABASE_ANONKEY: ${{ secrets.SUPABASE_ANONKEY }}
   GOOGLE_SERVER_ID: ${{ secrets.GOOGLE_SERVER_ID }}
@@ -38,24 +38,64 @@ jobs:
       - name: Decode Keystore
         run: echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > keystore.jks
 
+      - name: Remove BuildKonfig flavor
+        run: |
+          sed -i '/^buildkonfig\.flavor/d' gradle.properties
+          grep buildkonfig.flavor gradle.properties || echo "flavor removed"
+
+      # ✅ Build APK
       - name: Build Signed Release APK
         run: |
           ./gradlew clean
           ./gradlew :${{ env.main_project_module }}:assembleRelease \
+            -Pbuildkonfig.flavor=release \
+            -Dorg.gradle.project.buildkonfig.flavor=release \
             -Pandroid.injected.signing.store.file=${{ github.workspace }}/keystore.jks \
             -Pandroid.injected.signing.store.password=${{ secrets.KEYSTORE_PASSWORD }} \
             -Pandroid.injected.signing.key.alias=${{ secrets.KEY_ALIAS }} \
             -Pandroid.injected.signing.key.password=${{ secrets.KEY_PASSWORD }}
 
+      # ✅ Build AAB
+      - name: Build Signed Release AAB
+        run: |
+          ./gradlew :${{ env.main_project_module }}:bundleRelease \
+            -Pbuildkonfig.flavor=release \
+            -Dorg.gradle.project.buildkonfig.flavor=release \
+            -Pandroid.injected.signing.store.file=${{ github.workspace }}/keystore.jks \
+            -Pandroid.injected.signing.store.password=${{ secrets.KEYSTORE_PASSWORD }} \
+            -Pandroid.injected.signing.key.alias=${{ secrets.KEY_ALIAS }} \
+            -Pandroid.injected.signing.key.password=${{ secrets.KEY_PASSWORD }}
+
+      # ✅ Rename APK
       - name: Rename APK with version
         run: |
           VERSION=${GITHUB_REF#refs/tags/}
           mv ${{ env.main_project_module }}/build/outputs/apk/release/*.apk \
              ${{ env.main_project_module }}/build/outputs/apk/release/readlater_${VERSION}.apk
 
-      - name: Verify APK
-        run: ls -lh ${{ env.main_project_module }}/build/outputs/apk/release/
+      # ✅ Rename AAB
+      - name: Rename AAB with version
+        run: |
+          VERSION=${GITHUB_REF#refs/tags/}
+          mv ${{ env.main_project_module }}/build/outputs/bundle/release/*.aab \
+             ${{ env.main_project_module }}/build/outputs/bundle/release/readlater_${VERSION}.aab
 
+      # ✅ Verify outputs
+      - name: Verify outputs
+        run: |
+          echo "APK:"
+          ls -lh ${{ env.main_project_module }}/build/outputs/apk/release/
+          echo "AAB:"
+          ls -lh ${{ env.main_project_module }}/build/outputs/bundle/release/
+
+      # ✅ Upload AAB to Actions (NOT release)
+      - name: Upload AAB Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: aab-release
+          path: ${{ env.main_project_module }}/build/outputs/bundle/release/readlater_${{ github.ref_name }}.aab
+
+      # ✅ Upload ONLY APK to GitHub Release
       - name: Upload Signed APK to GitHub Release
         uses: softprops/action-gh-release@v2
         with:
