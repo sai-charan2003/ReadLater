@@ -16,14 +16,13 @@ CREATE TABLE readLaterEntity (
     host_url TEXT DEFAULT NULL
     );
 
-CREATE VIRTUAL TABLE readLaterSearchFTS USING fts5(
+CREATE VIRTUAL TABLE readLaterSearchFTS USING fts4(
     title,
     description,
     url,
     content='readLaterEntity',
-    content_rowid='id',
     tokenize = 'unicode61'
-    );
+);
 
 CREATE TABLE categoryEntity (
     id INTEGER  PRIMARY KEY AUTOINCREMENT,

@@ -163,23 +163,29 @@ buildkonfig {
     defaultConfigs {
         val supabaseUrl: String = System.getenv("SUPABASE_URL")
             ?: gradleLocalProperties(rootDir, providers).getProperty("SUPABASE_URL")
+            ?: ""
         buildConfigField(FieldSpec.Type.STRING, "SUPABASE_URL", supabaseUrl)
 
         val supabaseAnonKey: String = System.getenv("SUPABASE_ANONKEY")
             ?: gradleLocalProperties(rootDir, providers).getProperty("SUPABASE_ANONKEY")
+            ?: ""
         buildConfigField(FieldSpec.Type.STRING, "SUPABASE_ANONKEY", supabaseAnonKey)
 
         val googleServerId: String = System.getenv("GOOGLE_SERVER_ID")
             ?: gradleLocalProperties(rootDir, providers).getProperty("GOOGLE_SERVER_ID")
+            ?: ""
         buildConfigField(FieldSpec.Type.STRING, "GOOGLE_SERVER_ID", googleServerId)
     }
 
     defaultConfigs("dev"){
-        val supabaseUrl: String =
-            gradleLocalProperties(rootDir, providers).getProperty("SUPABASE_URL_DEBUG")
+        val supabaseUrl: String = System.getenv("SUPABASE_URL_DEBUG")
+            ?: gradleLocalProperties(rootDir, providers).getProperty("SUPABASE_URL_DEBUG")
+            ?: ""
         buildConfigField(FieldSpec.Type.STRING, "SUPABASE_URL", supabaseUrl)
 
-        val supabaseAnonKey: String =  gradleLocalProperties(rootDir, providers).getProperty("SUPABASE_ANONKEY_DEBUG")
+        val supabaseAnonKey: String = System.getenv("SUPABASE_ANONKEY_DEBUG")
+            ?: gradleLocalProperties(rootDir, providers).getProperty("SUPABASE_ANONKEY_DEBUG")
+            ?: ""
         buildConfigField(FieldSpec.Type.STRING, "SUPABASE_ANONKEY", supabaseAnonKey)
 
     }
