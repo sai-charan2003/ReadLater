@@ -1,42 +1,40 @@
 package com.charan.readlater.data.mappers
 
-import com.charan.readlater.ReadLaterEntity
-import com.charan.readlater.data.remote.model.ReadLaterDTO
+import com.charan.readlater.Bookmark
+import com.charan.readlater.data.remote.model.BookmarkDTO
 
-fun List<ReadLaterEntity>.toReadLaterDTO(emailId : String) : List<ReadLaterDTO> {
+fun List<Bookmark>.toBookmarkDTO(emailId : String) : List<BookmarkDTO> {
     return this.map {
-        ReadLaterDTO(
+        BookmarkDTO(
             id = it.id,
             title = it.title ?: "",
             url = it.url,
             description = it.description ?: "",
-            image_url = it.image_url?: "",
-            created_at = it.created_at,
-            is_due = it.is_due,
-            is_deleted = it.isDeleted,
+            imageUrl = it.imageUrl ?: "",
+            createdAt = it.createdAt,
+            isDue = it.isDue,
+            isDeleted = it.isDeleted,
             email = emailId,
-            uuid = it.uuid,
-            category_uuid = it.category_uuid,
-            hostURL = it.host_url ?: ""
-
+            categoryUuid = it.categoryId,
+            hostUrl = it.hostURL ?: "",
+            isMetaDataFetched = it.isMetaDataFetched
         )
     }
 }
-fun List<ReadLaterDTO>.toReadLaterEntity() : List<ReadLaterEntity> {
+fun List<BookmarkDTO>.toBookmarkList() : List<Bookmark> {
     return this.map {
-        ReadLaterEntity(
+        Bookmark(
             id = it.id,
             title = it.title,
             url = it.url,
             description = it.description,
-            image_url = it.image_url,
-            created_at = it.created_at,
-            is_due = it.is_due,
+            imageUrl = it.imageUrl,
+            createdAt = it.createdAt,
+            isDue = it.isDue,
             isSynced = true,
-            uuid = it.uuid,
-            isDeleted = it.is_deleted,
-            category_uuid = it.category_uuid,
-            host_url = it.hostURL
+            isDeleted = it.isDeleted,
+            categoryUUID = it.categoryUuid,
+            hostURL = it.hostUrl
         )
     }
 }

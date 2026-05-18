@@ -1,62 +1,60 @@
 package com.charan.readlater.data.mappers
 
-import com.charan.readlater.ReadLaterEntity
+import com.charan.readlater.Bookmark
 import com.charan.readlater.data.local.model.WebMetaData
 import com.charan.readlater.presentation.home.ReadLaterUiItem
 import com.charan.readlater.utils.DateUtils
-import kotlin.time.Clock
+import kotlinx.datetime.Clock
 import kotlin.time.ExperimentalTime
 import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 
-@OptIn(ExperimentalTime::class, ExperimentalUuidApi::class)
-fun WebMetaData.toReadLaterItem(url : String,isDue : Boolean,createdAt : String = "",categoryUUID : String = "") : ReadLaterEntity {
-    return ReadLaterEntity(
-        id = 0,
+@OptIn(ExperimentalUuidApi::class)
+fun WebMetaData.toBookmark(url : String,isDue : Boolean,createdAt : String = "",categoryUUID : String = "") : Bookmark {
+    val uuid = Uuid.random().toString()
+    return Bookmark(
+        id = uuid,
         url = url,
         title = this.title,
         description = this.description,
-        created_at = createdAt.ifEmpty { Clock.System.now().toString() },
-        is_due =  isDue ,
+        createdAt = createdAt.ifEmpty { Clock.System.now().toString() },
+        isDue =  isDue ,
         isSynced = false,
-        image_url = this.imageUrl,
-        uuid = Uuid.random().toString(),
+        imageUrl = this.imageUrl,
         isDeleted = false,
-        category_uuid = categoryUUID,
-        host_url = this.hostURL
+        categoryUUID = categoryUUID,
+        hostURL = this.hostURL
     )
 }
 
-fun ReadLaterEntity.toReadLaterUiItem(categoryName : String) : ReadLaterUiItem {
+fun Bookmark.toReadLaterUiItem(categoryName : String) : ReadLaterUiItem {
     return ReadLaterUiItem(
-        uuid = this.uuid,
+        uuid = this.id,
         title = this.title ?: "",
         description = this.description ?: "",
         url = this.url,
-        isDue = this.is_due as Boolean,
-        imageUrl = this.image_url ?: "",
-        categoryUUID = this.category_uuid ?: "",
-        hostURL = this.host_url ?: "",
-        formatedDate = DateUtils.formatReadableDateFromIso(this.created_at),
-        createdAt = this.created_at,
+        isDue = this.isDue,
+        imageUrl = this.imageUrl ?: "",
+        categoryUuid = this.categoryUUID ?: "",
+        hostUrl = this.hostURL ?: "",
+        formattedDate = DateUtils.formatReadableDateFromIso(this.createdAt),
+        createdAt = this.createdAt,
         categoryName = categoryName
     )
 }
 
-fun List<ReadLaterEntity>.toReadLaterUiItem() : List<ReadLaterUiItem> {
+fun List<Bookmark>.toReadLaterUiItem() : List<ReadLaterUiItem> {
     return this.map {
         ReadLaterUiItem(
-            uuid = it.uuid,
+            uuid = it.id,
             title = it.title ?: "",
             description = it.description ?: "",
             url = it.url,
-            isDue = it.is_due as Boolean,
-            imageUrl = it.image_url ?: "",
-            categoryUUID = it.category_uuid ?: "",
-            hostURL = it.host_url ?: "",
-            createdAt = it.created_at,
-
-
+            isDue = it.isDue,
+            imageUrl = it.imageUrl ?: "",
+            categoryUuid = it.categoryUUID ?: "",
+            hostUrl = it.hostURL ?: "",
+            createdAt = it.createdAt,
         )
     }
 

@@ -6,7 +6,6 @@ import com.charan.readlater.data.local.enums.LoginTypeEnum
 import com.charan.readlater.data.mappers.toCategoryUIList
 import com.charan.readlater.data.mappers.toReadLaterUiItem
 import com.charan.readlater.data.repository.BookmarkManagerRepo
-import com.charan.readlater.data.repository.ReadLaterDataSourceRepo
 import com.charan.readlater.data.repository.SettingsDataStoreRepo
 import com.charan.readlater.data.repository.SupabaseRepo
 import com.charan.readlater.data.repository.SyncManager
@@ -64,7 +63,7 @@ class HomeScreenViewModel(
     private fun getAllBookmarks()= viewModelScope.launch{
         readLaterDataSourceRepo.getAllActiveItems().collectLatest { items->
             val readLaterUiItems = items.map {
-                it.toReadLaterUiItem(readLaterDataSourceRepo.getCategoryByUUID(it.category_uuid ?: "")?.name ?: "")
+                it.toReadLaterUiItem(readLaterDataSourceRepo.getCategoryById(it.categoryUUID ?: "")?.name ?: "")
             }
                 .sortedByDescending { item -> DateUtils.isoStringToMillis(item.createdAt) }
 
@@ -226,7 +225,7 @@ class HomeScreenViewModel(
             HomeScreenEvent.OnDeleteCategory -> {
                 val categoryUUID = _state.value.editCategoryState.categoryUUID
                 println(categoryUUID)
-                    readLaterDataSourceRepo.deleteCategoryByUUID(categoryUUID)
+                    readLaterDataSourceRepo.deleteCategoryById(categoryUUID)
 
                 _state.update {
                     it.copy(
@@ -240,7 +239,7 @@ class HomeScreenViewModel(
                 val currentState = _state.value.editCategoryState
 
                     readLaterDataSourceRepo.updateCategory(
-                        uuid = currentState.categoryUUID,
+                        id = currentState.categoryUUID,
                         categoryName = currentState.categoryName
                     )
 
@@ -283,13 +282,13 @@ class HomeScreenViewModel(
     }
 
     private fun loadEditCategoryData(categoryUUID : String) = viewModelScope.launch {
-        val categoryEntity = readLaterDataSourceRepo.getCategoryByUUID(categoryUUID)
-        categoryEntity?.let {
+        val category = readLaterDataSourceRepo.getCategoryById(categoryUUID)
+        category?.let {
             _state.update {
                 it.copy(
                     editCategoryState = it.editCategoryState.copy(
-                        categoryUUID = categoryEntity.uuid,
-                        categoryName = categoryEntity.name
+                        categoryUUID = category.id,
+                        categoryName = category.name
                     )
                 )
             }
@@ -424,9 +423,9 @@ class HomeScreenViewModel(
     }
 
     private fun getAllCategories() = viewModelScope.launch {
-        readLaterDataSourceRepo.getAllCategories().collectLatest { categoryEntities ->
+        readLaterDataSourceRepo.getAllCategories().collectLatest { categories ->
             _state.update {
-                val newCategoryItems = categoryEntities.toCategoryUIList()
+                val newCategoryItems = categories.toCategoryUIList()
                 val nonCategoryDrawerItems = it.navigationDrawerState.drawerItems
                     .filterNot { item -> item is DrawerItems.Category }
 

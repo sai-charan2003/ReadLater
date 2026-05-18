@@ -1,15 +1,20 @@
 package com.charan.readlater.presentation.add_url
 
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.charan.readlater.CategoryEntity
+import androidx.navigation.toRoute
+import com.charan.readlater.Category
 import com.charan.readlater.data.mappers.toCategoryUIList
 import com.charan.readlater.data.repository.BookmarkManagerRepo
-import com.charan.readlater.data.repository.ReadLaterDataSourceRepo
 import com.charan.readlater.data.repository.SettingsDataStoreRepo
 import com.charan.readlater.data.repository.SupabaseRepo
 import com.charan.readlater.data.repository.SyncManager
-import com.charan.readlater.presentation.home.CategoryItem
+import com.charan.readlater.presentation.mapper.toBookmark
+import com.charan.readlater.presentation.mapper.toBookmarkUiModel
+import com.charan.readlater.presentation.mapper.toCategoryUiModel
+import com.charan.readlater.presentation.models.CategoryUiModel
+import com.charan.readlater.presentation.navigation.AddURLScreenNav
 import com.charan.readlater.utils.ProcessState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
@@ -17,15 +22,11 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import kotlin.uuid.ExperimentalUuidApi
-import kotlin.uuid.Uuid
 
 class AddURLViewModel(
     private val readLaterDataSourceRepo: ReadLaterDataSourceRepo,
-    private val supabaseRepoImpl: SupabaseRepo,
     private val bookmarkManagerRepo: BookmarkManagerRepo,
-    private val syncManager: SyncManager,
-    private val settingsDataSourceRepo: SettingsDataStoreRepo
+    private val savedState : SavedStateHandle
 ) : ViewModel() {
     private val _state = MutableStateFlow(AddURLState())
     val state = _state.asStateFlow()
@@ -33,7 +34,17 @@ class AddURLViewModel(
     private val _effects = MutableStateFlow<AddURLEffects?>(null)
     val effects = _effects.asSharedFlow()
 
+    private val arguments = savedState.toRoute<AddURLScreenNav>()
+
     init {
+        if(arguments.id.isNotEmpty()){
+            loadDataForEdit(arguments.id)
+        }
+
+        if(arguments.url.isNotEmpty()){
+            handleUrlChange(arguments.url)
+
+        }
         fetchCategories()
     }
 
@@ -41,50 +52,24 @@ class AddURLViewModel(
     fun onEvent(event : AddURLEvents){
         when(event) {
             is AddURLEvents.OnDueButtonClick -> {
-                _state.update { state->
-                    state.copy(
-                        bookmarkData = state.bookmarkData.copy(
-                            isDue = !state.bookmarkData.isDue
-                        )
-                    )
-                }
+                handleDueChange(event.isDue)
 
             }
             is AddURLEvents.OnSaveURLClick -> {
-                if(event.isEdit){
-                    updateBookmark()
-                } else{
-                    saveURL()
-                }
+                handleSaveClick(event.isEdit)
             }
             is AddURLEvents.OnURLChange ->{
-                _state.update { state->
-                    state.copy(
-                        bookmarkData = state.bookmarkData.copy(
-                            url = event.url
-                        )
-                    )
-                }
+                handleUrlChange(event.url)
             }
 
-            AddURLEvents.OnCategorySheetOpen -> {
-                _state.update { state->
-                    state.copy(
-                        categorySelectBottomSheet = true
-                    )
-                }
+            AddURLEvents.OnCategorySheetToggle -> {
+                handleCategorySheetToggle()
+
             }
 
             is AddURLEvents.OnCategorySelect -> {
-                onCategorySelected(event.category)
+                handleCategorySelection(event.category)
 
-            }
-            AddURLEvents.OnCategorySheetDismiss -> {
-                _state.update { state->
-                    state.copy(
-                        categorySelectBottomSheet = false
-                    )
-                }
             }
 
             AddURLEvents.OnCreateCategoryClick -> {
@@ -92,121 +77,105 @@ class AddURLViewModel(
 
             }
             is AddURLEvents.OnNewCategoryNameChange -> {
-                _state.update { state->
-                    state.copy(
-                        newCategoryName = event.name
-                    )
-                }
-            }
-
-            is AddURLEvents.LoadDataForEdit -> {
-                loadDataForEdit(event.uuid)
-
+                handleNewCategoryNameChange(event.name)
             }
         }
     }
 
-    private fun loadDataForEdit(id : String ) = viewModelScope.launch {
-        val bookmark = readLaterDataSourceRepo.getBookmarkByUUID(id)
+    private fun handleDueChange(isDue : Boolean){
         _state.update { state->
             state.copy(
                 bookmarkData = state.bookmarkData.copy(
-                    url = bookmark?.url ?: "",
-                    isDue = bookmark?.is_due ?: false,
-                    categoryUUID = bookmark?.category_uuid ?: "",
-                ),
-                selectedCategory = readLaterDataSourceRepo.getCategoryByUUID(bookmark?.category_uuid ?: "")?.name ?: "",
-                editUUID = id
+                    isDue = isDue
+                )
+            )
+        }
+    }
+
+    private fun handleSaveClick(isEdit : Boolean){
+        saveURL()
+    }
+
+    private fun handleCategorySheetToggle(){
+        _state.update { state->
+            state.copy(
+                categorySelectBottomSheet = !state.categorySelectBottomSheet
+            )
+        }
+    }
+
+    private fun handleNewCategoryNameChange(name : String){
+        _state.update { state->
+            state.copy(
+                newCategoryName = name
+            )
+        }
+    }
+
+    private fun loadDataForEdit(id : String ) = viewModelScope.launch {
+        val bookmark = readLaterDataSourceRepo.getBookmarkWithCategoryById(id)
+        _state.update { state->
+            state.copy(
+                bookmarkData = bookmark.toBookmarkUiModel(),
             )
 
         }
     }
 
-    private fun updateBookmark() = viewModelScope.launch {
-        bookmarkManagerRepo.updateBookmark(_state.value.bookmarkData,_state.value.editUUID).collectLatest { state->
-            when(state){
-                is ProcessState.Error -> {
-                    _state.update { state->
-                        state.copy(
-                            isLoading = false,
-                            errorMessage = state.errorMessage
-                        )
-                    }
 
-                }
-                is ProcessState.Loading -> {
-                    _state.update { state->
-                        state.copy(
-                            isLoading = true,
-                            errorMessage = ""
-                        )
-                    }
-                }
-                ProcessState.NotDetermined -> {
-
-                }
-                is ProcessState.Success<*> -> {
-                    _state.update { state->
-                        state.copy(
-                            isLoading = false,
-                            errorMessage = ""
-                        )
-                    }
-                    _effects.emit(AddURLEffects.OnBack)
-                }
-            }
-
-        }
-    }
 
     private fun saveURL()= viewModelScope.launch{
-        bookmarkManagerRepo.addBookmark(_state.value.bookmarkData).collectLatest {
-            when(it){
+        handleLoading(true)
+        val bookmark = _state.value.bookmarkData.toBookmark()
+        bookmarkManagerRepo.saveBookmark(bookmark).apply {
+            when(this) {
                 is ProcessState.Error -> {
-                    _state.update { state->
+                    handleLoading(false)
+                    _state.update { state ->
                         state.copy(
-                            isLoading = false,
-                            errorMessage = it.exception
+                            errorMessage = this.exception
                         )
                     }
 
                 }
+
                 is ProcessState.Loading -> {
-                    _state.update { state->
+                    handleLoading(true)
+                    _state.update { state ->
                         state.copy(
-                            isLoading = true,
                             errorMessage = ""
                         )
                     }
                 }
+
                 ProcessState.NotDetermined -> {
 
                 }
+
                 is ProcessState.Success<*> -> {
-                    _state.update { state->
-                        state.copy(
-                            isLoading = false,
-                            errorMessage = ""
-                        )
-                    }
+                    handleLoading(false)
                     _effects.emit(AddURLEffects.OnBack)
                 }
             }
+
+        }
+
+    }
+
+    private fun handleLoading(isLoading : Boolean){
+        _state.update { state->
+            state.copy(
+                isLoading = isLoading
+            )
         }
     }
 
-    private fun onCategorySelected( categoryItem: CategoryItem) {
+    private fun handleCategorySelection(categoryItem: CategoryUiModel) {
         _state.update {
             it.copy(
-                selectedCategory = categoryItem.name,
-                categorySelectBottomSheet = false,
-                categoryItems = it.categoryItems.map { item->
-                    item.copy(
-                        isSelected = item.uuid == categoryItem.uuid
-                    )
-                },
                 bookmarkData = it.bookmarkData.copy(
-                    categoryUUID = categoryItem.uuid
+                    categoryName = categoryItem.name,
+                    categoryId = categoryItem.id
                 )
             )
         }
@@ -223,42 +192,46 @@ class AddURLViewModel(
         }
     }
 
-    @OptIn(ExperimentalUuidApi::class)
+
     private fun createCategory(name : String) = viewModelScope.launch {
-        val uuid = Uuid.random().toString()
-        bookmarkManagerRepo.createCategory(name,uuid).collectLatest { state->
-            println(state)
-            when(state){
+        bookmarkManagerRepo.createCategory(name).apply {
+            when(this) {
                 is ProcessState.Error -> {
-                    _state.update {
-                        it.copy(
-                            errorMessage = state.exception ?: "An unexpected error occurred"
+                    _state.update { state ->
+                        state.copy(
+                            errorMessage = this.exception
                         )
                     }
+
                 }
+
                 is ProcessState.Loading -> {
-                    _state.update {
-                        it.copy(
+                    _state.update { state ->
+                        state.copy(
                             errorMessage = ""
                         )
                     }
                 }
-                ProcessState.NotDetermined -> TODO()
-                is ProcessState.Success<*> -> {
-                    _state.update {
-                        it.copy(
-                            newCategoryName = "",
-                            categorySelectBottomSheet = false,
-                            selectedCategory = name,
-                            bookmarkData = it.bookmarkData.copy(
-                                categoryUUID = uuid
-                            )
-                        )
-                    }
 
+                ProcessState.NotDetermined -> {
+
+                }
+
+                is ProcessState.Success<Category> -> {
+                    handleCategorySelection(this.data.toCategoryUiModel())
                 }
             }
         }
 
+    }
+
+    private fun handleUrlChange(url : String){
+        _state.update { state->
+            state.copy(
+                bookmarkData = state.bookmarkData.copy(
+                    url = url
+                )
+            )
+        }
     }
 }

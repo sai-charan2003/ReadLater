@@ -12,7 +12,7 @@ data class HomeScreenState (
     val navigationDrawerState: NavigationDrawerState = NavigationDrawerState(),
     val categoryItems: List<CategoryItem> = emptyList(),
     val showMoreOptionBottomSheet : Boolean = false,
-    val selectedBookmarkUUID : String = "",
+    val selectedBookmarkUuid : String = "",
     val showDeleteCategoryDialog : Boolean = false,
     val showEditCategoryDialog : Boolean = false,
     val editCategoryState : EditCategoryState = EditCategoryState(),
@@ -29,7 +29,7 @@ data class EditCategoryState(
     val categoryName : String = "",
     val isSaving : Boolean = false,
     val errorMessage : String = "",
-    val categoryUUID : String =""
+    val categoryUuid : String =""
 )
 
 data class ReadLaterUiItem(
@@ -39,11 +39,11 @@ data class ReadLaterUiItem(
     val imageUrl : String = "",
     val url : String = "",
     val isDue : Boolean = false,
-    val categoryUUID : String = "",
-    val hostURL : String = "",
+    val categoryUuid : String = "",
+    val hostUrl : String = "",
     val categoryName : String = "",
     val createdAt : String = "",
-    val formatedDate : String = ""
+    val formattedDate : String = ""
 )
 
 

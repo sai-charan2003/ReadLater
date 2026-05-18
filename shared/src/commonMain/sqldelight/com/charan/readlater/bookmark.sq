@@ -1,0 +1,151 @@
+import kotlin.Boolean;
+
+CREATE TABLE bookmark (
+    id TEXT NOT NULL PRIMARY KEY,
+    url TEXT NOT NULL,
+    title TEXT,
+    description TEXT,
+    createdAt TEXT NOT NULL,
+    imageUrl TEXT,
+    isDue INTEGER AS Boolean NOT NULL DEFAULT 0,
+    isSynced INTEGER AS Boolean NOT NULL DEFAULT 0,
+    isDeleted INTEGER AS Boolean NOT NULL DEFAULT 0,
+    categoryId TEXT DEFAULT NULL,
+    hostURL TEXT DEFAULT NULL,
+    isMetaDataFetched INTEGER AS Boolean NOT NULL DEFAULT 0
+);
+
+CREATE VIRTUAL TABLE BookmarkSearchFTS USING fts4(
+    title,
+    description,
+    url,
+    content='bookmark',
+    tokenize = 'unicode61'
+);
+
+-- Trigger for INSERT operations
+CREATE TRIGGER bookmark_ai AFTER INSERT ON bookmark BEGIN
+    INSERT INTO BookmarkSearchFTS(docid, title, description, url)
+    VALUES (new.rowid, new.title, new.description, new.url);
+END;
+
+-- Trigger for UPDATE operations
+CREATE TRIGGER bookmark_au AFTER UPDATE ON bookmark BEGIN
+    DELETE FROM BookmarkSearchFTS WHERE docid = old.rowid;
+    INSERT INTO BookmarkSearchFTS(docid, title, description, url)
+    VALUES (new.rowid, new.title, new.description, new.url);
+END;
+
+-- Trigger for DELETE operations
+CREATE TRIGGER bookmark_bd BEFORE DELETE ON bookmark BEGIN
+    DELETE FROM BookmarkSearchFTS WHERE docid = old.rowid;
+END;
+
+insertBookmarkItem:
+INSERT OR REPLACE INTO bookmark (
+    id,
+    url,
+    title,
+    description,
+    createdAt,
+    imageUrl,
+    isDue,
+    isSynced,
+    isDeleted,
+    categoryId,
+    hostURL
+)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+
+getAllBookmarkItems:
+SELECT * FROM bookmark;
+
+getAllPendingSyncItems:
+SELECT * FROM bookmark WHERE isSynced = 0;
+
+delteAllBookmarkItems:
+DELETE FROM bookmark;
+
+getActiveBookmarkItems:
+SELECT * FROM bookmark WHERE isDeleted = 0;
+
+deleteBookmarkById:
+UPDATE bookmark SET isDeleted = 1, isSynced = 0 WHERE id = ?;
+
+updateDueStatus :
+UPDATE bookmark SET isDue = ?, isSynced = 0 WHERE id = ?;
+
+getDueItems :
+SELECT * FROM bookmark WHERE isDue = 1 AND isDeleted = 0;
+
+searchFromBookmark :
+SELECT r.*
+FROM bookmark AS r
+JOIN BookmarkSearchFTS AS fts ON r.rowid = fts.docid
+WHERE BookmarkSearchFTS MATCH ? AND r.isDeleted = 0;
+
+updateCategoryId:
+UPDATE bookmark SET id = ? WHERE categoryId = ?;
+
+getBookmarkItemBycategoryId :
+SELECT * FROM bookmark WHERE categoryId = ? AND isDeleted = 0;
+
+updateSyncStatus:
+UPDATE bookmark SET isSynced = 1 WHERE id = ?;
+
+getBookmarkById:
+SELECT * FROM bookmark WHERE id = ? LIMIT 1;
+
+updateDueStatusById:
+UPDATE bookmark SET isDue = ?, isSynced = 0 WHERE id = ?;
+
+getUnsyncedItemCount :
+SELECT
+    (SELECT COUNT(*) FROM bookmark WHERE isSynced = 0) +
+    (SELECT COUNT(*) FROM category WHERE isSynced = 0) AS total_unsynced;
+
+insertBookmark:
+INSERT OR REPLACE INTO bookmark(
+    id,
+    url,
+    title,
+    description,
+    createdAt,
+    imageUrl,
+    isDue,
+    isSynced,
+    isDeleted,
+    categoryId,
+    hostURL,
+    isMetaDataFetched
+) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?);
+
+
+
+getBookmarkWithCategoryById:
+SELECT 
+    b.id,
+    b.url,
+    b.title,
+    b.description,
+    b.createdAt,
+    b.imageUrl,
+    b.isDue,
+    b.isSynced,
+    b.isDeleted,
+    b.categoryId,
+    b.hostURL,
+    b.isMetaDataFetched,
+
+
+    c.name AS categoryName,
+    c.createdAt AS categoryCreatedAt,
+    c.isSynced AS categoryIsSynced,
+    c.isDeleted AS categoryIsDeleted
+
+FROM bookmark b
+LEFT JOIN category c
+ON b.categoryId = c.id
+
+WHERE b.id = ?
+LIMIT 1;

@@ -14,18 +14,18 @@ class WebScrapperRepoImpl : WebScrapperRepo {
             val title = doc.title()
             val imageUrl = doc.getMetaImage(url)
             val description = doc.select("meta[name=description]").attr("content")
-            val hostURL = Url(url).host
+            val hostUrl = Url(url).host
             return WebMetaData(
                 title = title,
                 description = description,
                 imageUrl = imageUrl,
-                hostURL = hostURL
+                hostUrl = hostUrl
             )
         } catch (e: Exception){
-            val hostURL = Url(url).host
+            val hostUrl = Url(url).host
             return WebMetaData(
                 title = url,
-                hostURL = hostURL.ifEmpty { url }
+                hostUrl = hostUrl.ifEmpty { url }
             )
         }
 

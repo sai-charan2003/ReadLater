@@ -4,5 +4,5 @@ data class WebMetaData(
     val title : String = "",
     val description : String = "",
     val imageUrl : String = "",
-    val hostURL : String = ""
+    val hostUrl : String = ""
 )

@@ -37,9 +37,9 @@ sealed interface HomeScreenEvent {
 
     data class OnEdit(val uuid : String) : HomeScreenEvent
 
-    data class OnToggleDeleteConfirmationDialog(val categoryUUID: String) : HomeScreenEvent
+    data class OnToggleDeleteConfirmationDialog(val categoryUuid: String) : HomeScreenEvent
 
-    data class ToggleEditCategoryDialog(val categoryUUID: String) : HomeScreenEvent
+    data class ToggleEditCategoryDialog(val categoryUuid: String) : HomeScreenEvent
 
     data object OnEditCategory : HomeScreenEvent
 

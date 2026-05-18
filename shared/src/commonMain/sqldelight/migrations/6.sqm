@@ -1,0 +1,72 @@
+import kotlin.Boolean;
+
+-- Migrate category table
+ALTER TABLE categoryEntity RENAME TO old_category;
+
+CREATE TABLE category (
+    id TEXT NOT NULL PRIMARY KEY,
+    name TEXT NOT NULL,
+    createdAt TEXT NOT NULL DEFAULT '',
+    isSynced INTEGER AS Boolean NOT NULL DEFAULT 0,
+    isDeleted INTEGER AS Boolean NOT NULL DEFAULT 0
+);
+
+INSERT INTO category (id, name, createdAt, isSynced, isDeleted)
+SELECT uuid, name, createdAt, isSynced, isDeleted FROM old_category;
+
+DROP TABLE old_category;
+
+-- Migrate bookmark table
+ALTER TABLE readLaterEntity RENAME TO old_bookmark;
+
+CREATE TABLE bookmark (
+    id TEXT NOT NULL PRIMARY KEY,
+    url TEXT NOT NULL,
+    title TEXT,
+    description TEXT,
+    createdAt TEXT NOT NULL,
+    imageUrl TEXT,
+    isDue INTEGER AS Boolean NOT NULL DEFAULT 0,
+    isSynced INTEGER AS Boolean NOT NULL DEFAULT 0,
+    isDeleted INTEGER AS Boolean NOT NULL DEFAULT 0,
+    categoryId TEXT DEFAULT NULL,
+    hostURL TEXT DEFAULT NULL
+);
+
+INSERT INTO bookmark (id, url, title, description, createdAt, imageUrl, isDue, isSynced, isDeleted, categoryId, hostURL)
+SELECT uuid, url, title, description, created_at, image_url, is_due, isSynced, isDeleted, category_uuid, host_url FROM old_bookmark;
+
+DROP TABLE old_bookmark;
+
+-- Recreate FTS
+DROP TABLE IF EXISTS readLaterSearchFTS;
+
+CREATE VIRTUAL TABLE readLaterSearchFTS USING fts4(
+    title,
+    description,
+    url,
+    content='bookmark',
+    tokenize = 'unicode61'
+);
+
+-- Recreate triggers
+DROP TRIGGER IF EXISTS readLaterEntity_ai;
+DROP TRIGGER IF EXISTS readLaterEntity_au;
+DROP TRIGGER IF EXISTS readLaterEntity_bd;
+
+CREATE TRIGGER bookmark_ai AFTER INSERT ON bookmark BEGIN
+    INSERT INTO readLaterSearchFTS(docid, title, description, url)
+    VALUES (new.rowid, new.title, new.description, new.url);
+END;
+
+CREATE TRIGGER bookmark_au AFTER UPDATE ON bookmark BEGIN
+    DELETE FROM readLaterSearchFTS WHERE docid = old.rowid;
+    INSERT INTO readLaterSearchFTS(docid, title, description, url)
+    VALUES (new.rowid, new.title, new.description, new.url);
+END;
+
+CREATE TRIGGER bookmark_bd BEFORE DELETE ON bookmark BEGIN
+    DELETE FROM readLaterSearchFTS WHERE docid = old.rowid;
+END;
+
+ALTER TABLE bookmark ADD COLUMN isMetaDataFetched INTEGER NOT NULL DEFAULT 0;

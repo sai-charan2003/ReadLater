@@ -1,12 +1,8 @@
 package com.charan.readlater.data.repository.impl
 
-import com.charan.readlater.CategoryEntity
-import com.charan.readlater.ReadLaterDatabase
-import com.charan.readlater.data.remote.ReadLaterSupabaseClient
 import com.charan.readlater.data.remote.model.CategoryDTO
-import com.charan.readlater.data.remote.model.ReadLaterDTO
+import com.charan.readlater.data.remote.model.BookmarkDTO
 import com.charan.readlater.data.remote.model.UserDetails
-import com.charan.readlater.data.repository.ReadLaterDataSourceRepo
 import com.charan.readlater.data.repository.SupabaseRepo
 import com.charan.readlater.utils.ProcessState
 import com.charan.readlater.utils.SupabaseAppConstatnts
@@ -113,15 +109,15 @@ class SupabaseRepoImpl(
 
     }
 
-    override suspend fun syncAllBookmarks(syncItems: List<ReadLaterDTO>): Flow<ProcessState<List<ReadLaterDTO>>> =flow{
+    override suspend fun syncAllBookmarks(syncItems: List<BookmarkDTO>): Flow<ProcessState<List<BookmarkDTO>>> =flow{
         emit(ProcessState.Loading())
         try {
             val insertedData = readLaterSupabaseClient
                 .from(SupabaseAppConstatnts.READ_LATER_TABLE_NAME)
                 .upsert(values = syncItems){
-                    onConflict = "uuid"
+                    onConflict = "id"
                 select()
-            }.decodeList<ReadLaterDTO>()
+            }.decodeList<BookmarkDTO>()
             emit(ProcessState.Success(insertedData))
         } catch (e: Exception){
             println(e)
@@ -134,13 +130,13 @@ class SupabaseRepoImpl(
         return readLaterSupabaseClient.auth.currentUserOrNull()?.email
     }
 
-    override suspend fun getAllBookmarks(): Flow<ProcessState<List<ReadLaterDTO>>> =flow{
+    override suspend fun getAllBookmarks(): Flow<ProcessState<List<BookmarkDTO>>> =flow{
         emit(ProcessState.Loading())
         try {
             val emailId = getEmailId()
             if(emailId != null){
                 val bookmarks = readLaterSupabaseClient.from(SupabaseAppConstatnts.READ_LATER_TABLE_NAME)
-                    .select().decodeList<ReadLaterDTO>()
+                    .select().decodeList<BookmarkDTO>()
                 emit(ProcessState.Success(bookmarks.ifEmpty { emptyList() }))
             } else {
                 emit(ProcessState.Error("User not logged in"))
@@ -157,7 +153,7 @@ class SupabaseRepoImpl(
             emit(ProcessState.Loading())
             try {
                 val syncedCategories = readLaterSupabaseClient.from(SupabaseAppConstatnts.CATEGORY_TABLE_NAME).upsert(categoryList){
-                    onConflict = "uuid"
+                    onConflict = "id"
                     select()
                 }.decodeList<CategoryDTO>()
                 emit(ProcessState.Success(syncedCategories))

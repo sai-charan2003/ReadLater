@@ -50,15 +50,6 @@ fun AddURLScreen(
     val viewModel : AddURLViewModel = koinViewModel<AddURLViewModel>()
     val state by viewModel.state.collectAsStateWithLifecycle()
     val categorySheetState = rememberModalBottomSheetState()
-    LaunchedEffect(Unit){
-        viewModel.onEvent(AddURLEvents.OnURLChange(sharedURL))
-    }
-    LaunchedEffect(Unit){
-        if(isEdit){
-            viewModel.onEvent(AddURLEvents.LoadDataForEdit(uuid))
-        }
-    }
-
 
     LaunchedEffect(Unit){
         viewModel.effects.collectLatest { effects ->
@@ -73,7 +64,7 @@ fun AddURLScreen(
     if(state.categorySelectBottomSheet){
         SelectCategoryBottomSheet(
             onDismiss = {
-                viewModel.onEvent(AddURLEvents.OnCategorySheetDismiss)
+                viewModel.onEvent(AddURLEvents.OnCategorySheetToggle)
             },
             onSelect = { category ->
                 viewModel.onEvent(AddURLEvents.OnCategorySelect(category))

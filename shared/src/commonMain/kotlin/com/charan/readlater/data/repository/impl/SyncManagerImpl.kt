@@ -1,13 +1,17 @@
 package com.charan.readlater.data.repository.impl
 
+import com.charan.readlater.BookmarkQueries
+import com.charan.readlater.CategoryQueries
 import com.charan.readlater.data.local.enums.LoginTypeEnum
 import com.charan.readlater.data.mappers.toCategoryDTO
-import com.charan.readlater.data.mappers.toCategoryEntityList
-import com.charan.readlater.data.mappers.toReadLaterDTO
-import com.charan.readlater.data.mappers.toReadLaterEntity
+import com.charan.readlater.data.mappers.toCategoryList
+import com.charan.readlater.data.mappers.toBookmarkDTO
+import com.charan.readlater.data.mappers.toBookmarkList
+
 import com.charan.readlater.data.remote.model.CategoryDTO
-import com.charan.readlater.data.remote.model.ReadLaterDTO
-import com.charan.readlater.data.repository.ReadLaterDataSourceRepo
+import com.charan.readlater.data.remote.model.BookmarkDTO
+import com.charan.readlater.data.repository.BookmarkRepository
+import com.charan.readlater.data.repository.CategoryRepository
 import com.charan.readlater.data.repository.SettingsDataStoreRepo
 import com.charan.readlater.data.repository.SupabaseRepo
 import com.charan.readlater.data.repository.SyncManager
@@ -18,21 +22,19 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.channelFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.firstOrNull
-import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.supervisorScope
 
 class SyncManagerImpl(
-    private val readLaterDataSourceRepo: ReadLaterDataSourceRepo,
+    private val bookmarkRepository: BookmarkRepository,
+    private val categoryRepository: CategoryRepository,
     private val settingsDataStoreRepo: SettingsDataStoreRepo,
     private val supabaseRepo: SupabaseRepo
 ) : SyncManager {
     override suspend fun sync() = coroutineScope{
-        val unSyncedItem = readLaterDataSourceRepo.getUnSyncedItems()
+        val unSyncedItem = bookmarkRepository.getUnSyncedBookmarks()
         val isSyncEnabled = settingsDataStoreRepo.getLoginType().first() == LoginTypeEnum.GOOGLE
         if(isSyncEnabled){
-            val syncItems = unSyncedItem.toReadLaterDTO(emailId = supabaseRepo.getEmailId() ?: "")
+            val syncItems = unSyncedItem.toBookmarkDTO(emailId = supabaseRepo.getEmailId() ?: "")
+            val
             val bookmarksJob = async {
                 supabaseRepo.syncAllBookmarks(syncItems).collectLatest {
                     when (it) {
@@ -48,14 +50,12 @@ class SyncManagerImpl(
                             println("Sync NotDetermined")
                         }
 
-                        is ProcessState.Success<List<ReadLaterDTO>> -> {
+                        is ProcessState.Success<List<BookmarkDTO>> -> {
                             println("Sync Success")
                             val syncedItems = it.data
-                            syncedItems.forEach { readLaterDTO ->
+                            syncedItems.forEach { bookmarkDTO ->
                                 readLaterDataSourceRepo.updateSyncStatusForBookmark(
-                                    id = readLaterDTO.id,
-                                    uuid = readLaterDTO.uuid
-
+                                    id = bookmarkDTO.id
                                 )
                             }
                         }
@@ -84,8 +84,7 @@ class SyncManagerImpl(
                             val categoriesSynced = it.data
                             categoriesSynced.forEach { categoryDTO ->
                                 readLaterDataSourceRepo.updateSyncStatusForCategory(
-                                    id = categoryDTO.id,
-                                    uuid = categoryDTO.uuid
+                                    id = categoryDTO.id
                                 )
 
                             }
@@ -110,7 +109,7 @@ class SyncManagerImpl(
                     supabaseRepo.getAllBookmarks().collectLatest {
                         when(it){
                             is ProcessState.Success<*> -> {
-                                val data = (it.data as List<ReadLaterDTO>).toReadLaterEntity()
+                                val data = (it.data as List<BookmarkDTO>).toBookmarkList()
                                 readLaterDataSourceRepo.insertItems(data)
                             }
                             is ProcessState.Error -> {
@@ -125,7 +124,7 @@ class SyncManagerImpl(
                         when(it){
                             is ProcessState.Success<*> -> {
                                 val data = (it.data as List<CategoryDTO>)
-                                readLaterDataSourceRepo.insertCategories(data.toCategoryEntityList())
+                                readLaterDataSourceRepo.insertCategories(data.toCategoryList())
                             }
                             is ProcessState.Error -> {
                                 send(ProcessState.Error(it.exception))

@@ -1,18 +1,18 @@
 package com.charan.readlater.data.repository.impl
 
-import com.charan.readlater.CategoryEntity
-import com.charan.readlater.ReadLaterEntity
+import com.charan.readlater.Category
+import com.charan.readlater.Bookmark
 import com.charan.readlater.data.local.model.ImportData
 import com.charan.readlater.data.local.model.WebMetaData
+import com.charan.readlater.data.mappers.toBookmark
 import com.charan.readlater.data.repository.BookmarkManagerRepo
-import com.charan.readlater.data.repository.ReadLaterDataSourceRepo
 import com.charan.readlater.data.repository.SettingsDataStoreRepo
 import com.charan.readlater.data.repository.SupabaseRepo
 import com.charan.readlater.data.repository.WebScrapperRepo
-import com.charan.readlater.data.mappers.toReadLaterItem
 import com.charan.readlater.data.repository.SyncManager
-import com.charan.readlater.presentation.add_url.BookmarkDataUIState
 import com.charan.readlater.utils.ProcessState
+import com.charan.readlater.utils.generateUuid
+import com.charan.readlater.utils.getCurrentIsoDate
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
@@ -21,10 +21,9 @@ import kotlinx.coroutines.flow.channelFlow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
-import kotlin.time.Clock
-import kotlin.time.ExperimentalTime
 import kotlin.uuid.ExperimentalUuidApi
-
+import kotlin.uuid.Uuid
+@OptIn(ExperimentalUuidApi::class)
 class BookmarkManagerRepoImpl(
     private val readLaterDataSourceRepo: ReadLaterDataSourceRepo,
     private val readLaterSupabaseRepo: SupabaseRepo,
@@ -32,53 +31,31 @@ class BookmarkManagerRepoImpl(
     private val syncManager: SyncManager,
     private val webScrapperRepo: WebScrapperRepo,
 ) : BookmarkManagerRepo {
-    override suspend fun addBookmark(bookmarkData : BookmarkDataUIState): Flow<ProcessState<Boolean>> =flow{
-        emit(ProcessState.Loading())
-        try {
+
+    override suspend fun saveBookmark(bookmarkData : Bookmark): ProcessState<Boolean>{
+        return try {
             val metaData = webScrapperRepo.getWebMetaData(bookmarkData.url)
-            val readLaterItem = metaData.toReadLaterItem(bookmarkData.url,bookmarkData.isDue, categoryUUID = bookmarkData.categoryUUID)
-            readLaterDataSourceRepo.insertItem(readLaterItem)
-            emit(ProcessState.Success(true))
+            val bookmark = bookmarkData.copy(
+                title = metaData.title.ifEmpty { bookmarkData.title },
+                description = metaData.description.ifEmpty { bookmarkData.description },
+                imageUrl = metaData.imageUrl.ifEmpty { bookmarkData.imageUrl },
+                hostURL = metaData.hostUrl.ifEmpty { bookmarkData.hostURL },
+                id = bookmarkData.id.ifEmpty { generateUuid() },
+                createdAt = if(bookmarkData.id.isNotEmpty()) bookmarkData.createdAt else getCurrentIsoDate(),
+                isSynced = false,
+            )
+            readLaterDataSourceRepo.upsetBookmark(bookmark)
             syncManager.sync()
+            ProcessState.Success(true)
         } catch (e: Exception) {
             println(e)
-            emit(ProcessState.Error(e.message.toString()))
+            ProcessState.Error(e.message.toString())
         }
     }
-
-    override suspend fun updateBookmark(bookmarkData: BookmarkDataUIState, bookmarkUUID : String) : Flow<ProcessState<Boolean>> = flow{
-        emit(ProcessState.Loading())
-        try {
-            val existingItem = readLaterDataSourceRepo.getBookmarkByUUID(bookmarkUUID)
-            val metaData = webScrapperRepo.getWebMetaData(bookmarkData.url)
-            val updatedItem = ReadLaterEntity(
-                id = existingItem?.id ?: 0,
-                title = metaData.title,
-                url = bookmarkData.url,
-                description = metaData.description,
-                created_at = existingItem?.created_at ?: "",
-                is_due = bookmarkData.isDue,
-                image_url = metaData.imageUrl,
-                isSynced = false,
-                uuid = existingItem?.uuid ?: "",
-                isDeleted = false,
-                category_uuid = bookmarkData.categoryUUID,
-                host_url = metaData.hostURL
-            )
-            readLaterDataSourceRepo.insertItem(updatedItem)
-            emit(ProcessState.Success(true))
-        } catch (e: Exception){
-            println(e)
-            emit(ProcessState.Error(e.message.toString()))
-
-        }
-
-    }
-
     override suspend fun deleteBookmark(uuid: String): Flow<ProcessState<Boolean>> = flow {
         emit(ProcessState.Loading())
         try {
-            readLaterDataSourceRepo.deleteBookmarkByUUID(uuid)
+            readLaterDataSourceRepo.deleteItem(uuid)
             emit(ProcessState.Success(true))
             syncManager.sync()
         } catch (e: Exception) {
@@ -93,7 +70,7 @@ class BookmarkManagerRepoImpl(
     ): Flow<ProcessState<Boolean>> = flow{
         emit(ProcessState.Loading())
         try {
-            readLaterDataSourceRepo.updateDueStatusByUUID(uuid, isDue)
+            readLaterDataSourceRepo.updateDueStatusById(uuid, isDue)
             emit(ProcessState.Success(true))
             syncManager.sync()
         } catch (e: Exception) {
@@ -120,14 +97,14 @@ class BookmarkManagerRepoImpl(
                                 title = data.title ?: metaData.title,
                                 description = metaData.description,
                                 imageUrl = metaData.imageUrl,
-                                hostURL = metaData.hostURL
+                                hostUrl = metaData.hostUrl
                             )
-                            val readLaterItem = item.toReadLaterItem(
+                            val readLaterItem = item.toBookmark(
                                 data.url ?: "",
                                 false,
                                 data.created ?: ""
                             )
-                            readLaterDataSourceRepo.insertItem(readLaterItem)
+                            readLaterDataSourceRepo.upsetBookmark(readLaterItem)
 
                             completed++
                             send(
@@ -152,25 +129,24 @@ class BookmarkManagerRepoImpl(
         }
     }
 
-    @OptIn(ExperimentalUuidApi::class, ExperimentalTime::class)
-    override suspend fun createCategory(name: String,uuid : String): Flow<ProcessState<Boolean>> = flow{
-        emit(ProcessState.Loading())
-        readLaterDataSourceRepo.createCategory(
-            CategoryEntity(
-                name = name,
-                uuid = uuid,
-                id = 0,
-                isSynced = false,
-                isDeleted = false,
-                createdAt = Clock.System.now().toString()
-
-            )
-        )
-
-        emit(ProcessState.Success(true))
-        syncManager.sync()
-
-
+    @OptIn(ExperimentalUuidApi::class)
+    override suspend fun createCategory(name: String): ProcessState<Category> {
+        return try {
+            readLaterDataSourceRepo.createCategory(
+                Category(
+                    id = generateUuid(),
+                    name = name,
+                    isSynced = false,
+                    isDeleted = false,
+                    createdAt = getCurrentIsoDate()
+                )
+            ).let {
+                    ProcessState.Success(it)
+            }
+        } catch (e: Exception) {
+            println(e)
+            ProcessState.Error(e.message.toString())
+        }
     }
 
     override suspend fun deleteCategory(categoryUUID: String): Flow<ProcessState<Boolean>> =flow{

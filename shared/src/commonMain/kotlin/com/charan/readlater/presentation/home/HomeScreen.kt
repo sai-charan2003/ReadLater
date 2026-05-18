@@ -95,14 +95,14 @@ fun HomeScreen(
 
             },
             onEdit = {
-                viewModel.onEvent(HomeScreenEvent.OnEdit(state.selectedBookmarkUUID))
+                viewModel.onEvent(HomeScreenEvent.OnEdit(state.selectedBookmarkUuid))
 
             },
             onShare = {
 
             },
             onDelete = {
-                viewModel.onEvent(HomeScreenEvent.OnDeleteBookmark(state.selectedBookmarkUUID))
+                viewModel.onEvent(HomeScreenEvent.OnDeleteBookmark(state.selectedBookmarkUuid))
 
             },
             sheetState = moreOptionsBottomSheetState
@@ -117,7 +117,7 @@ fun HomeScreen(
                 viewModel.onEvent(HomeScreenEvent.OnDeleteCategory)
             },
             onDismissRequest = {
-                viewModel.onEvent(HomeScreenEvent.OnToggleDeleteConfirmationDialog(categoryUUID = ""))
+                viewModel.onEvent(HomeScreenEvent.OnToggleDeleteConfirmationDialog(categoryUuid = ""))
             }
         )
     }
@@ -129,7 +129,7 @@ fun HomeScreen(
                 viewModel.onEvent(HomeScreenEvent.OnCategoryNameChange(newName))
             },
             onDismissRequest = {
-                viewModel.onEvent(HomeScreenEvent.ToggleEditCategoryDialog(categoryUUID = ""))
+                viewModel.onEvent(HomeScreenEvent.ToggleEditCategoryDialog(categoryUuid = ""))
             },
             onConfirmEdit = {
                 viewModel.onEvent(HomeScreenEvent.OnEditCategory)
@@ -208,7 +208,7 @@ fun HomeScreen(
                     onEdit = {
                         viewModel.onEvent(
                             HomeScreenEvent.ToggleEditCategoryDialog(
-                                categoryUUID = it.categoryItem.uuid
+                                categoryUuid = it.categoryItem.uuid
                             )
                         )
 
@@ -216,7 +216,7 @@ fun HomeScreen(
                     onDelete = {
                         viewModel.onEvent(
                             HomeScreenEvent.OnToggleDeleteConfirmationDialog(
-                                categoryUUID = it.categoryItem.uuid
+                                categoryUuid = it.categoryItem.uuid
                             )
                         )
 
@@ -305,9 +305,9 @@ fun HomeScreen(
 
                                 },
                                 indexItem = state.searchItems.indexItemFor(it),
-                                hostURL = item.hostURL,
-                                category = item.categoryUUID,
-                                createdAt = item.formatedDate
+                                hostUrl = item.hostUrl,
+                                category = item.categoryUuid,
+                                createdAt = item.formattedDate
 
                             )
                         }
@@ -377,9 +377,9 @@ fun HomeScreen(
 
                             },
                             indexItem = state.readLaterUiItem.indexItemFor(it),
-                            hostURL = item.hostURL,
+                            hostUrl = item.hostUrl,
                             category = item.categoryName,
-                            createdAt = item.formatedDate
+                            createdAt = item.formattedDate
 
 
                         )
