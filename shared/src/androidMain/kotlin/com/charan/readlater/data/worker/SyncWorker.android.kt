@@ -6,7 +6,6 @@ import androidx.work.ExistingWorkPolicy
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.WorkerParameters
-import com.charan.readlater.data.repository.SyncManager
 
 actual class SyncWorker(
     private val context : Context,

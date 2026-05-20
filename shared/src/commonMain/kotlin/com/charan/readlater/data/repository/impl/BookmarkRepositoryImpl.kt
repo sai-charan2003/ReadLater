@@ -6,14 +6,49 @@ import com.charan.readlater.Bookmark
 import com.charan.readlater.BookmarkQueries
 import com.charan.readlater.Category
 import com.charan.readlater.data.local.model.BookmarkWithCategory
+import com.charan.readlater.data.mappers.toBookmark
+import com.charan.readlater.data.mappers.toBookmarkList
+import com.charan.readlater.data.remote.SupabaseRemoteDataSource
+import com.charan.readlater.data.remote.model.BookmarkDTO
 import com.charan.readlater.data.repository.BookmarkRepository
+import com.charan.readlater.utils.ProcessState
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.any
+import kotlinx.coroutines.flow.flowOn
 
 class BookmarkRepositoryImpl(
-    private val bookmarkQueries: BookmarkQueries
+    private val bookmarkQueries: BookmarkQueries,
+    private val supabaseRemoteDataSource: SupabaseRemoteDataSource
 ) : BookmarkRepository {
+
+    override suspend fun fetchBookmarks(): ProcessState<Boolean> {
+        return when (val result = supabaseRemoteDataSource.getAllBookmarks()) {
+
+            is ProcessState.Error -> {
+                ProcessState.Error(result.exception)
+            }
+
+            is ProcessState.Loading -> {
+                ProcessState.Loading()
+            }
+
+            ProcessState.NotDetermined -> {
+                ProcessState.NotDetermined
+            }
+
+            is ProcessState.Success -> {
+                val bookmarks = result.data.toBookmark()
+
+                bookmarks.forEach { bookmark ->
+                    addBookmark(bookmark)
+                }
+
+                ProcessState.Success(true)
+            }
+        }
+    }
 
     override suspend fun addBookmark(bookmark: Bookmark): Bookmark {
         bookmarkQueries.insertBookmark(
@@ -95,5 +130,23 @@ class BookmarkRepositoryImpl(
 
     override suspend fun getUnSyncedBookmarks(): List<Bookmark> {
         return bookmarkQueries.getAllPendingSyncItems().executeAsList()
+    }
+
+    override suspend fun getPendingMetaDataFetchBookmarks(): Flow<List<Bookmark>> {
+        return bookmarkQueries.getAllPendingMetadataFetchItems().asFlow().mapToList(Dispatchers.IO)
+    }
+
+    override suspend fun shouldSyncData(): Flow<List<Boolean>> {
+        return bookmarkQueries.getAllPendingSyncItems().asFlow().mapToList(Dispatchers.IO)
+    }
+
+    override suspend fun updateBookmarkSyncStatus(
+        bookmarkId: String,
+        isSynced: Boolean
+    ) {
+        bookmarkQueries.updateSyncStatus(
+            id = bookmarkId,
+            isSynced = isSynced
+        )
     }
 }

@@ -2,25 +2,14 @@ package com.charan.readlater.di
 
 
 import app.cash.sqldelight.db.SqlDriver
-import com.charan.readlater.BookmarkQueries
 import com.charan.readlater.ReadLaterDatabase
 import com.charan.readlater.data.remote.ReadLaterSupabaseClient
-import com.charan.readlater.data.repository.BackupRepo
-import com.charan.readlater.data.repository.BookmarkManagerRepo
 import com.charan.readlater.data.repository.BookmarkRepository
 import com.charan.readlater.data.repository.CategoryRepository
-import com.charan.readlater.data.repository.SettingsDataStoreRepo
-import com.charan.readlater.data.repository.SupabaseRepo
-import com.charan.readlater.data.repository.SyncManager
-import com.charan.readlater.data.repository.WebScrapperRepo
-import com.charan.readlater.data.repository.impl.BackupRepoImpl
-import com.charan.readlater.data.repository.impl.BookmarkManagerRepoImpl
+import com.charan.readlater.data.repository.SettingsRepository
 import com.charan.readlater.data.repository.impl.BookmarkRepositoryImpl
 import com.charan.readlater.data.repository.impl.CategoryRepositoryImpl
-import com.charan.readlater.data.repository.impl.SettingsDataStoreRepoImpl
-import com.charan.readlater.data.repository.impl.SupabaseRepoImpl
-import com.charan.readlater.data.repository.impl.SyncManagerImpl
-import com.charan.readlater.data.repository.impl.WebScrapperRepoImpl
+import com.charan.readlater.data.repository.impl.SettingsRepositoryImpl
 import com.charan.readlater.presentation.add_url.AddURLViewModel
 import com.charan.readlater.presentation.home.HomeScreenViewModel
 import com.charan.readlater.presentation.authentication.AuthenticationViewModel
@@ -50,7 +39,7 @@ val appModule = module {
     single <CategoryRepository>{ CategoryRepositoryImpl(get()) }
     single <WebScrapperRepo>{ WebScrapperRepoImpl() }
     single <BackupRepo>{ BackupRepoImpl(get()) }
-    single <SettingsDataStoreRepo>{ SettingsDataStoreRepoImpl(get()) }
+    single <SettingsRepository>{ SettingsRepositoryImpl(get()) }
     single <BookmarkManagerRepo>{ BookmarkManagerRepoImpl(get(),get(),get(),get(),get()) }
     single <SyncManager>{ SyncManagerImpl(get(),get(),get()) }
     viewModel { AuthenticationViewModel(get(),get ()) }

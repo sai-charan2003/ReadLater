@@ -53,15 +53,19 @@ INSERT OR REPLACE INTO bookmark (
     isSynced,
     isDeleted,
     categoryId,
+    isMetaDataFetched,
     hostURL
 )
-VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?);
 
 getAllBookmarkItems:
 SELECT * FROM bookmark;
 
 getAllPendingSyncItems:
 SELECT * FROM bookmark WHERE isSynced = 0;
+
+getAllPendingMetadataFetchItems:
+SELECT * FROM bookmark WHERE isMetaDataFetched = 0 AND isDeleted = 0;
 
 delteAllBookmarkItems:
 DELETE FROM bookmark;
@@ -91,7 +95,7 @@ getBookmarkItemBycategoryId :
 SELECT * FROM bookmark WHERE categoryId = ? AND isDeleted = 0;
 
 updateSyncStatus:
-UPDATE bookmark SET isSynced = 1 WHERE id = ?;
+UPDATE bookmark SET isSynced = ? WHERE id = ?;
 
 getBookmarkById:
 SELECT * FROM bookmark WHERE id = ? LIMIT 1;

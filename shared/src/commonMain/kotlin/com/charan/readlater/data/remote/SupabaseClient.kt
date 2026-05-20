@@ -7,6 +7,7 @@ import io.github.jan.supabase.compose.auth.ComposeAuth
 import io.github.jan.supabase.compose.auth.appleNativeLogin
 import io.github.jan.supabase.compose.auth.googleNativeLogin
 import io.github.jan.supabase.createSupabaseClient
+import io.github.jan.supabase.functions.Functions
 import io.github.jan.supabase.postgrest.Postgrest
 
 class ReadLaterSupabaseClient {
@@ -19,5 +20,6 @@ class ReadLaterSupabaseClient {
         install(ComposeAuth){
             googleNativeLogin("757664231200-54035m1vk2l54bt0vvmkiugufj2nrco4.apps.googleusercontent.com")
         }
+        install(Functions)
     }
 }

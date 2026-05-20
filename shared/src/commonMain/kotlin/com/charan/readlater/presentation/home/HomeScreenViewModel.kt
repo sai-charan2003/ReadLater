@@ -5,15 +5,11 @@ import androidx.lifecycle.viewModelScope
 import com.charan.readlater.data.local.enums.LoginTypeEnum
 import com.charan.readlater.data.mappers.toCategoryUIList
 import com.charan.readlater.data.mappers.toReadLaterUiItem
-import com.charan.readlater.data.repository.BookmarkManagerRepo
-import com.charan.readlater.data.repository.SettingsDataStoreRepo
-import com.charan.readlater.data.repository.SupabaseRepo
-import com.charan.readlater.data.repository.SyncManager
+import com.charan.readlater.data.repository.SettingsRepository
 import com.charan.readlater.presentation.home.HomeScreenEffect.*
 import com.charan.readlater.utils.DateUtils
 import com.charan.readlater.utils.ProcessState
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
@@ -30,7 +26,7 @@ class HomeScreenViewModel(
     private val supabaseRepoImpl: SupabaseRepo,
     private val bookmarkManagerRepo: BookmarkManagerRepo,
     private val syncManager: SyncManager,
-    private val settingsDataSourceRepo: SettingsDataStoreRepo
+    private val settingsDataSourceRepo: SettingsRepository
 ) : ViewModel() {
     private val _state = MutableStateFlow(HomeScreenState())
     val state = _state.asStateFlow()

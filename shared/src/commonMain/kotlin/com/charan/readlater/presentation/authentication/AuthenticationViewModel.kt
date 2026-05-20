@@ -3,9 +3,7 @@ package com.charan.readlater.presentation.authentication
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.charan.readlater.data.local.enums.LoginTypeEnum
-import com.charan.readlater.data.remote.ReadLaterSupabaseClient
-import com.charan.readlater.data.repository.SettingsDataStoreRepo
-import com.charan.readlater.data.repository.SupabaseRepo
+import com.charan.readlater.data.repository.SettingsRepository
 import com.charan.readlater.utils.ProcessState
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
@@ -20,7 +18,7 @@ import kotlinx.coroutines.launch
 
 class AuthenticationViewModel(
     private val supabaseRepo: SupabaseRepo,
-    private val settingsDataStoreRepo: SettingsDataStoreRepo
+    private val settingsRepository: SettingsRepository
 ) : ViewModel() {
     init {
         shouldShowLoginWithNoAccount()
@@ -114,7 +112,7 @@ class AuthenticationViewModel(
             )
         }
         _authenticationScreenEffect.emit(AuthenticationScreenEffect.NavigateToHome)
-        settingsDataStoreRepo.updateLoginType(LoginTypeEnum.GOOGLE)
+        settingsRepository.updateLoginType(LoginTypeEnum.GOOGLE)
     }
 
     private fun noAccountLogin() = viewModelScope.launch {
@@ -125,11 +123,11 @@ class AuthenticationViewModel(
             )
         }
         _authenticationScreenEffect.emit(AuthenticationScreenEffect.NavigateToHome)
-        settingsDataStoreRepo.updateLoginType(LoginTypeEnum.NO_ACCOUNT)
+        settingsRepository.updateLoginType(LoginTypeEnum.NO_ACCOUNT)
     }
 
     private fun shouldShowLoginWithNoAccount() = viewModelScope.launch {
-        val login = settingsDataStoreRepo.getLoginType().first()
+        val login = settingsRepository.getLoginType().first()
         _userAuthenticationStatus.update {
             it.copy(
                 showLoginWithNoAccount = login != LoginTypeEnum.NO_ACCOUNT

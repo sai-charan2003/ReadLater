@@ -18,7 +18,7 @@ getUnSyncedCategories:
 SELECT * FROM category WHERE isSynced = 0;
 
 updateSyncStatusCategory:
-UPDATE category SET isSynced = 1 WHERE id = ?;
+UPDATE category SET isSynced = ? WHERE id = ?;
 
 getCategoryById:
 SELECT * FROM category WHERE id = ? LIMIT 1;

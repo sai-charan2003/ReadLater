@@ -103,6 +103,7 @@ kotlin {
             implementation(libs.compose.auth.kt)
             implementation(libs.auth.kt)
             implementation(libs.postgrest.kt)
+            implementation(libs.functions.kt)
 
             // ktor
             implementation(project.dependencies.platform(libs.ktor.bom))

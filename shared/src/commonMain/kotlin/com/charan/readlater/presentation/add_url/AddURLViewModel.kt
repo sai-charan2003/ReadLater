@@ -6,10 +6,6 @@ import androidx.lifecycle.viewModelScope
 import androidx.navigation.toRoute
 import com.charan.readlater.Category
 import com.charan.readlater.data.mappers.toCategoryUIList
-import com.charan.readlater.data.repository.BookmarkManagerRepo
-import com.charan.readlater.data.repository.SettingsDataStoreRepo
-import com.charan.readlater.data.repository.SupabaseRepo
-import com.charan.readlater.data.repository.SyncManager
 import com.charan.readlater.presentation.mapper.toBookmark
 import com.charan.readlater.presentation.mapper.toBookmarkUiModel
 import com.charan.readlater.presentation.mapper.toCategoryUiModel

@@ -2,9 +2,12 @@ package com.charan.readlater.data.repository
 
 import com.charan.readlater.Bookmark
 import com.charan.readlater.data.local.model.BookmarkWithCategory
+import com.charan.readlater.utils.ProcessState
 import kotlinx.coroutines.flow.Flow
 
 interface BookmarkRepository  {
+
+    suspend fun fetchBookmarks(): ProcessState<Boolean>
     suspend fun addBookmark(bookmark : Bookmark) : Bookmark
 
     suspend fun deleteBookmark(bookmarkId : String) : Boolean
@@ -14,4 +17,11 @@ interface BookmarkRepository  {
     suspend fun getBookmarkWithCategory(bookmarkId : String) : BookmarkWithCategory?
 
     suspend fun getUnSyncedBookmarks() : List<Bookmark>
+
+    suspend fun getPendingMetaDataFetchBookmarks() : Flow<List<Bookmark>>
+
+    suspend fun shouldSyncData() : Flow<List<Boolean>>
+
+    suspend fun updateBookmarkSyncStatus(bookmarkId : String, isSynced : Boolean)
+
 }

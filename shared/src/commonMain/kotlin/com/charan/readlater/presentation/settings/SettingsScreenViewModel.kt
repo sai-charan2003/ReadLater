@@ -3,10 +3,8 @@ package com.charan.readlater.presentation.settings
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.charan.readlater.data.local.enums.LoginTypeEnum
-import com.charan.readlater.data.remote.model.UserDetails
-import com.charan.readlater.data.repository.BackupRepo
-import com.charan.readlater.data.repository.SettingsDataStoreRepo
-import com.charan.readlater.data.repository.SupabaseRepo
+import com.charan.readlater.data.remote.model.AccountInfo
+import com.charan.readlater.data.repository.SettingsRepository
 import com.charan.readlater.utils.ProcessState
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -18,7 +16,7 @@ import kotlinx.coroutines.launch
 
 class SettingsScreenViewModel(
     private val supabaseRepo: SupabaseRepo,
-    private val settingsDataStoreRepo: SettingsDataStoreRepo,
+    private val settingsRepository: SettingsRepository,
     private val readLaterDataSourceRepo: ReadLaterDataSourceRepo,
     private val backupRepo: BackupRepo
 ) : ViewModel() {
@@ -33,7 +31,7 @@ class SettingsScreenViewModel(
     }
 
     private fun isLoggedIn() = viewModelScope.launch {
-        settingsDataStoreRepo.getLoginType().collectLatest {
+        settingsRepository.getLoginType().collectLatest {
             _state.update { state->
                 state.copy(
                     isLoggedIn = it == LoginTypeEnum.GOOGLE
@@ -51,10 +49,10 @@ class SettingsScreenViewModel(
                 is ProcessState.Loading -> {}
                 ProcessState.NotDetermined -> {}
                 is ProcessState.Success<*> -> {
-                    val userDetails = processState.data as UserDetails
+                    val accountInfo = processState.data as AccountInfo
                     _state.update { state->
                         state.copy(
-                            userDetails = userDetails
+                            accountInfo = accountInfo
                         )
                     }
                 }
@@ -144,7 +142,7 @@ class SettingsScreenViewModel(
 
                 is ProcessState.Success<*> -> {
                     _state.update { it.copy(isSignOutLoading = false) }
-                    settingsDataStoreRepo.updateLoginType(LoginTypeEnum.NO_ACCOUNT)
+                    settingsRepository.updateLoginType(LoginTypeEnum.NO_ACCOUNT)
                     readLaterDataSourceRepo.clearAllData()
 
                 }

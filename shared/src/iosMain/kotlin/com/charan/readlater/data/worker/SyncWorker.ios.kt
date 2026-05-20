@@ -1,6 +1,5 @@
 package com.charan.readlater.data.worker
 
-import com.charan.readlater.data.repository.SyncManager
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers

@@ -40,6 +40,7 @@ supabase-bom = { module = "io.github.jan-tennert.supabase:bom", version.ref = "s
 auth-kt = { module = "io.github.jan-tennert.supabase:auth-kt"}
 postgrest-kt = { module = "io.github.jan-tennert.supabase:postgrest-kt" }
 compose-auth-kt = { module = "io.github.jan-tennert.supabase:compose-auth" }
+functions-kt = { module = "io.github.jan-tennert.supabase:functions-kt" }
 coil-compose = { module = "io.coil-kt.coil3:coil-compose", version.ref = "coilCompose" }
 filekit-dialogs = { module = "io.github.vinceglb:filekit-dialogs", version.ref = "filekitDialogsCompose" }
 filekit-dialogs-compose = { module = "io.github.vinceglb:filekit-dialogs-compose", version.ref = "filekitDialogsCompose" }

@@ -3,7 +3,7 @@ package com.charan.readlater.data.repository
 import com.charan.readlater.data.local.enums.LoginTypeEnum
 import kotlinx.coroutines.flow.Flow
 
-interface SettingsDataStoreRepo {
+interface SettingsRepository {
 
     suspend fun getLoginType(): Flow<LoginTypeEnum?>
 
