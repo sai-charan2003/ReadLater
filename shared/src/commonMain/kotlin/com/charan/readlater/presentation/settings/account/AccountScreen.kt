@@ -77,7 +77,7 @@ fun AccountScreen(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 AsyncImage(
-                    model = state.accountInfo.imageURL,
+                    model = state.accountInfo.profilePicUrl,
                     contentDescription = "Profile Picture",
                     modifier = Modifier
                         .size(100.dp)
@@ -87,12 +87,12 @@ fun AccountScreen(
                 Spacer(modifier = Modifier.height(16.dp))
 
                 Text(
-                    text = state.accountInfo.userName,
+                    text = state.accountInfo.name,
                     style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
                 )
 
                 Text(
-                    text = state.accountInfo.userEmail,
+                    text = state.accountInfo.email,
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )

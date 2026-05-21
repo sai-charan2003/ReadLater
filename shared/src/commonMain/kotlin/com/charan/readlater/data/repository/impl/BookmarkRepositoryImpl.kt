@@ -11,6 +11,7 @@ import com.charan.readlater.data.mappers.toBookmarkList
 import com.charan.readlater.data.remote.SupabaseRemoteDataSource
 import com.charan.readlater.data.remote.model.BookmarkDTO
 import com.charan.readlater.data.repository.BookmarkRepository
+import com.charan.readlater.data.sync.SyncManager
 import com.charan.readlater.utils.ProcessState
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
@@ -20,7 +21,8 @@ import kotlinx.coroutines.flow.flowOn
 
 class BookmarkRepositoryImpl(
     private val bookmarkQueries: BookmarkQueries,
-    private val supabaseRemoteDataSource: SupabaseRemoteDataSource
+    private val supabaseRemoteDataSource: SupabaseRemoteDataSource,
+    private val syncManager: SyncManager
 ) : BookmarkRepository {
 
     override suspend fun fetchBookmarks(): ProcessState<Boolean> {
@@ -42,7 +44,7 @@ class BookmarkRepositoryImpl(
                 val bookmarks = result.data.toBookmark()
 
                 bookmarks.forEach { bookmark ->
-                    addBookmark(bookmark)
+                    insertBookmark(bookmark, triggerSync = false)
                 }
 
                 ProcessState.Success(true)
@@ -51,6 +53,11 @@ class BookmarkRepositoryImpl(
     }
 
     override suspend fun addBookmark(bookmark: Bookmark): Bookmark {
+        insertBookmark(bookmark, triggerSync = true)
+        return bookmark
+    }
+
+    private suspend fun insertBookmark(bookmark: Bookmark, triggerSync: Boolean) {
         bookmarkQueries.insertBookmark(
             id = bookmark.id,
             url = bookmark.url,
@@ -65,12 +72,14 @@ class BookmarkRepositoryImpl(
             hostURL = bookmark.hostURL,
             isMetaDataFetched = bookmark.isMetaDataFetched
         )
-        return bookmark
-
+        if (triggerSync) {
+            syncManager.syncNow()
+        }
     }
 
     override suspend fun deleteBookmark(bookmarkId: String): Boolean {
-        bookmarkQueries.getBookmarkById(bookmarkId)
+        bookmarkQueries.deleteBookmarkById(bookmarkId)
+        syncManager.syncNow()
         return true
     }
 
@@ -136,9 +145,6 @@ class BookmarkRepositoryImpl(
         return bookmarkQueries.getAllPendingMetadataFetchItems().asFlow().mapToList(Dispatchers.IO)
     }
 
-    override suspend fun shouldSyncData(): Flow<List<Boolean>> {
-        return bookmarkQueries.getAllPendingSyncItems().asFlow().mapToList(Dispatchers.IO)
-    }
 
     override suspend fun updateBookmarkSyncStatus(
         bookmarkId: String,
@@ -148,5 +154,21 @@ class BookmarkRepositoryImpl(
             id = bookmarkId,
             isSynced = isSynced
         )
+    }
+
+    override suspend fun updateDueStatus(bookmarkId: String, isDue: Boolean) {
+        bookmarkQueries.updateDueStatus(
+            isDue = isDue,
+            id = bookmarkId
+        )
+        syncManager.syncNow()
+    }
+
+    override suspend fun clearAllBookmarks() {
+        bookmarkQueries.delteAllBookmarkItems()
+    }
+
+    override suspend fun getAllActiveBookmarksWithCategory(): Flow<List<BookmarkWithCategory>> {
+        return bookmarkQueries.getAllBookmarksWithCategory(::mapBookmarkWithCategory).asFlow().mapToList(Dispatchers.IO)
     }
 }

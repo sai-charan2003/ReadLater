@@ -3,10 +3,14 @@ package com.charan.readlater.di
 
 import app.cash.sqldelight.db.SqlDriver
 import com.charan.readlater.ReadLaterDatabase
+import com.charan.readlater.data.backup.BackupManager
+import com.charan.readlater.data.remote.SupabaseRemoteDataSource
 import com.charan.readlater.data.remote.ReadLaterSupabaseClient
+import com.charan.readlater.data.repository.AuthenticationRepository
 import com.charan.readlater.data.repository.BookmarkRepository
 import com.charan.readlater.data.repository.CategoryRepository
 import com.charan.readlater.data.repository.SettingsRepository
+import com.charan.readlater.data.repository.impl.AuthenticationRepositoryImpl
 import com.charan.readlater.data.repository.impl.BookmarkRepositoryImpl
 import com.charan.readlater.data.repository.impl.CategoryRepositoryImpl
 import com.charan.readlater.data.repository.impl.SettingsRepositoryImpl
@@ -25,28 +29,26 @@ val appModule = module {
         driver = get<SqlDriver>(),
     ) }
 
-
-    single<ReadLaterDataSourceRepo> {
-        ReadLaterDataSourceImpl(db = get())
-    }
     single <SupabaseClient>{
         ReadLaterSupabaseClient().client
     }
-    single <SupabaseRepo>{
-        SupabaseRepoImpl(get())
-    }
 
-    single <CategoryRepository>{ CategoryRepositoryImpl(get()) }
-    single <WebScrapperRepo>{ WebScrapperRepoImpl() }
-    single <BackupRepo>{ BackupRepoImpl(get()) }
+    single { SupabaseRemoteDataSource(get()) }
+
+    single <AuthenticationRepository>{ AuthenticationRepositoryImpl(get()) }
+
+    single <CategoryRepository>{ CategoryRepositoryImpl(get<ReadLaterDatabase>().categoryQueries,get(),get()) }
+
+    single <BookmarkRepository>{  BookmarkRepositoryImpl(get<ReadLaterDatabase>().bookmarkQueries,get(),get()) }
+
     single <SettingsRepository>{ SettingsRepositoryImpl(get()) }
-    single <BookmarkManagerRepo>{ BookmarkManagerRepoImpl(get(),get(),get(),get(),get()) }
-    single <SyncManager>{ SyncManagerImpl(get(),get(),get()) }
+
+    single { BackupManager(get()) }
+
     viewModel { AuthenticationViewModel(get(),get ()) }
     viewModel { HomeScreenViewModel(get(),get(),get(),get(),get()) }
-    viewModel { SettingsScreenViewModel(get(),get(),get(),get()) }
+    viewModel { SettingsScreenViewModel(get(),get(),get(),get(),get()) }
     viewModel { AddURLViewModel(get(),get(),get()) }
-    single <BookmarkRepository>{  BookmarkRepositoryImpl(get()) }
 }
 @Volatile
 private var koinInitialized = false

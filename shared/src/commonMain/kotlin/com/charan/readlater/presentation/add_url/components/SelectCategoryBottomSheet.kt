@@ -17,9 +17,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
-import com.charan.readlater.presentation.home.CategoryItem
 import com.charan.readlater.presentation.models.CategoryUiModel
-import com.charan.readlater.ui.theme.IndexItem
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable

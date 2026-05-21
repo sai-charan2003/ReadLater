@@ -71,10 +71,15 @@ class SupabaseRemoteDataSource (
 
     suspend fun getAllBookmarks() : ProcessState<List<BookmarkDTO>>{
         return try {
-            val emailId = getUserDetails()?.email
+            val emailId = getUserDetails()?.email?.takeIf { it.isNotBlank() }
             if(emailId != null){
                 val bookmarks = supabaseClient.from(BOOKMARK_TABLE)
-                    .select().decodeList<BookmarkDTO>()
+                    .select {
+                        filter {
+                            eq("email", emailId)
+                        }
+                    }
+                    .decodeList<BookmarkDTO>()
                ProcessState.Success(bookmarks.ifEmpty { emptyList() })
             } else {
                 ProcessState.Error("User not logged in")
@@ -110,8 +115,19 @@ class SupabaseRemoteDataSource (
 
     suspend fun getAllCategories() : ProcessState<List<CategoryDTO>>{
         return try {
-            val allCategories = supabaseClient.from(CATEGORY_TABLE).select().decodeList<CategoryDTO>()
-            ProcessState.Success(allCategories.ifEmpty { emptyList() })
+            val emailId = getUserDetails()?.email?.takeIf { it.isNotBlank() }
+            if (emailId != null) {
+                val allCategories = supabaseClient.from(CATEGORY_TABLE)
+                    .select {
+                        filter {
+                            eq("email", emailId)
+                        }
+                    }
+                    .decodeList<CategoryDTO>()
+                ProcessState.Success(allCategories.ifEmpty { emptyList() })
+            } else {
+                ProcessState.Error("User not logged in")
+            }
         } catch (e: Exception){
             ProcessState.Error(e.message.toString())
         }

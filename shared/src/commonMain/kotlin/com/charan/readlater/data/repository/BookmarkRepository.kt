@@ -14,14 +14,18 @@ interface BookmarkRepository  {
 
     suspend fun getAllActiveBookmarks() : Flow<List<Bookmark>>
 
+    suspend fun getAllActiveBookmarksWithCategory() : Flow<List<BookmarkWithCategory>>
+
     suspend fun getBookmarkWithCategory(bookmarkId : String) : BookmarkWithCategory?
 
     suspend fun getUnSyncedBookmarks() : List<Bookmark>
 
     suspend fun getPendingMetaDataFetchBookmarks() : Flow<List<Bookmark>>
 
-    suspend fun shouldSyncData() : Flow<List<Boolean>>
-
     suspend fun updateBookmarkSyncStatus(bookmarkId : String, isSynced : Boolean)
+
+    suspend fun updateDueStatus(bookmarkId: String, isDue: Boolean)
+
+    suspend fun clearAllBookmarks()
 
 }

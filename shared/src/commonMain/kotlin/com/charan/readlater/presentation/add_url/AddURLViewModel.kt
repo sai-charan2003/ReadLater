@@ -5,14 +5,18 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.toRoute
 import com.charan.readlater.Category
-import com.charan.readlater.data.mappers.toCategoryUIList
+import com.charan.readlater.data.repository.BookmarkRepository
+import com.charan.readlater.data.repository.CategoryRepository
 import com.charan.readlater.presentation.mapper.toBookmark
 import com.charan.readlater.presentation.mapper.toBookmarkUiModel
 import com.charan.readlater.presentation.mapper.toCategoryUiModel
+import com.charan.readlater.presentation.mapper.toCategoryUiModelList
 import com.charan.readlater.presentation.models.CategoryUiModel
 import com.charan.readlater.presentation.navigation.AddURLScreenNav
-import com.charan.readlater.utils.ProcessState
+import com.charan.readlater.utils.generateUuid
+import com.charan.readlater.utils.getCurrentIsoDate
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
@@ -20,14 +24,14 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 class AddURLViewModel(
-    private val readLaterDataSourceRepo: ReadLaterDataSourceRepo,
-    private val bookmarkManagerRepo: BookmarkManagerRepo,
+    private val bookmarkRepository: BookmarkRepository,
+    private val categoryRepository: CategoryRepository,
     private val savedState : SavedStateHandle
 ) : ViewModel() {
     private val _state = MutableStateFlow(AddURLState())
     val state = _state.asStateFlow()
 
-    private val _effects = MutableStateFlow<AddURLEffects?>(null)
+    private val _effects = MutableSharedFlow<AddURLEffects>()
     val effects = _effects.asSharedFlow()
 
     private val arguments = savedState.toRoute<AddURLScreenNav>()
@@ -109,53 +113,38 @@ class AddURLViewModel(
     }
 
     private fun loadDataForEdit(id : String ) = viewModelScope.launch {
-        val bookmark = readLaterDataSourceRepo.getBookmarkWithCategoryById(id)
-        _state.update { state->
-            state.copy(
-                bookmarkData = bookmark.toBookmarkUiModel(),
-            )
-
+        val bookmark = bookmarkRepository.getBookmarkWithCategory(id)
+        bookmark?.let {
+            _state.update { state->
+                state.copy(
+                    bookmarkData = it.toBookmarkUiModel(),
+                )
+            }
         }
     }
 
 
 
     private fun saveURL()= viewModelScope.launch{
-        handleLoading(true)
-        val bookmark = _state.value.bookmarkData.toBookmark()
-        bookmarkManagerRepo.saveBookmark(bookmark).apply {
-            when(this) {
-                is ProcessState.Error -> {
-                    handleLoading(false)
-                    _state.update { state ->
-                        state.copy(
-                            errorMessage = this.exception
-                        )
-                    }
-
-                }
-
-                is ProcessState.Loading -> {
-                    handleLoading(true)
-                    _state.update { state ->
-                        state.copy(
-                            errorMessage = ""
-                        )
-                    }
-                }
-
-                ProcessState.NotDetermined -> {
-
-                }
-
-                is ProcessState.Success<*> -> {
-                    handleLoading(false)
-                    _effects.emit(AddURLEffects.OnBack)
-                }
-            }
-
+        if (_state.value.bookmarkData.url.isBlank()) {
+            _state.update { it.copy(errorMessage = "URL cannot be empty") }
+            return@launch
         }
-
+        handleLoading(true)
+        _state.update { it.copy(errorMessage = "") }
+        try {
+            val bookmark = _state.value.bookmarkData.toBookmark()
+            bookmarkRepository.addBookmark(bookmark)
+            handleLoading(false)
+            _effects.emit(AddURLEffects.OnBack)
+        } catch (exception: Exception) {
+            handleLoading(false)
+            _state.update { state ->
+                state.copy(
+                    errorMessage = exception.message ?: "Failed to save bookmark"
+                )
+            }
+        }
     }
 
     private fun handleLoading(isLoading : Boolean){
@@ -172,17 +161,18 @@ class AddURLViewModel(
                 bookmarkData = it.bookmarkData.copy(
                     categoryName = categoryItem.name,
                     categoryId = categoryItem.id
-                )
+                ),
+                categorySelectBottomSheet = false
             )
         }
 
     }
 
     private fun fetchCategories() = viewModelScope.launch {
-        readLaterDataSourceRepo.getAllCategories().collectLatest { categoryEntities ->
+        categoryRepository.getAllActiveCategories().collectLatest { categoryEntities ->
             _state.update {
                 it.copy(
-                    categoryItems = categoryEntities.toCategoryUIList()
+                    categoryItems = categoryEntities.toCategoryUiModelList()
                 )
             }
         }
@@ -190,35 +180,27 @@ class AddURLViewModel(
 
 
     private fun createCategory(name : String) = viewModelScope.launch {
-        bookmarkManagerRepo.createCategory(name).apply {
-            when(this) {
-                is ProcessState.Error -> {
-                    _state.update { state ->
-                        state.copy(
-                            errorMessage = this.exception
-                        )
-                    }
-
-                }
-
-                is ProcessState.Loading -> {
-                    _state.update { state ->
-                        state.copy(
-                            errorMessage = ""
-                        )
-                    }
-                }
-
-                ProcessState.NotDetermined -> {
-
-                }
-
-                is ProcessState.Success<Category> -> {
-                    handleCategorySelection(this.data.toCategoryUiModel())
-                }
+        if (name.isBlank()) {
+            _state.update { it.copy(errorMessage = "Category name cannot be empty") }
+            return@launch
+        }
+        _state.update { it.copy(errorMessage = "") }
+        try {
+            val category = Category(
+                id = generateUuid(),
+                name = name,
+                createdAt = getCurrentIsoDate(),
+                isSynced = false,
+                isDeleted = false
+            )
+            val savedCategory = categoryRepository.addCategory(category)
+            handleCategorySelection(savedCategory.toCategoryUiModel())
+            _state.update { it.copy(newCategoryName = "", categorySelectBottomSheet = false) }
+        } catch (exception: Exception) {
+            _state.update {
+                it.copy(errorMessage = exception.message ?: "Failed to create category")
             }
         }
-
     }
 
     private fun handleUrlChange(url : String){

@@ -3,85 +3,74 @@ package com.charan.readlater.data.sync
 import com.charan.readlater.data.mappers.toBookmarkDTO
 import com.charan.readlater.data.mappers.toCategoryDTO
 import com.charan.readlater.data.remote.SupabaseRemoteDataSource
-import com.charan.readlater.data.remote.model.BookmarkDTO
 import com.charan.readlater.data.repository.BookmarkRepository
 import com.charan.readlater.data.repository.CategoryRepository
 import com.charan.readlater.utils.ProcessState
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.IO
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.launch
 
-class SyncManager(
+expect class SyncManager {
+    suspend fun syncNow()
+    suspend fun scheduleSync()
+    suspend fun syncListener()
+    internal suspend fun performSync(): SyncOutcome
+}
+
+internal enum class SyncOutcome {
+    Success,
+    Skipped,
+    Retry
+}
+
+internal class SyncCoordinator(
     private val bookmarkRepository: BookmarkRepository,
     private val categoryRepository: CategoryRepository,
-    private val supabaseRemoteDataSource: SupabaseRemoteDataSource,
+    private val supabaseRemoteDataSource: SupabaseRemoteDataSource
 ) {
-    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+    suspend fun performSync(): SyncOutcome {
+        supabaseRemoteDataSource.loadSession()
+        val email = supabaseRemoteDataSource.getUserDetails()?.email?.takeIf { it.isNotBlank() }
+            ?: return SyncOutcome.Skipped
 
+        var didWork = false
+        var shouldRetry = false
 
-    fun doSync() = scope.launch{
-        bookmarkRepository.shouldSyncData().
-
-    }
-
-
-    fun syncData() = scope.launch {
-        val email = supabaseRemoteDataSource.getUserDetails()?.email ?: return@launch
-        val bookmarks = bookmarkRepository.getUnSyncedBookmarks().toBookmarkDTO(email)
-        val categories = categoryRepository.getAllUnSyncedCategories().toCategoryDTO(email)
-        val bookmarkJob = launch {
-            supabaseRemoteDataSource.insertBookmarks(bookmarks).let {
-                when(it){
-                    is ProcessState.Error -> {
-                        // Handle error
-                    }
-                    is ProcessState.Loading -> {
-                        // Handle loading state if needed
-                    }
-                    ProcessState.NotDetermined -> {
-                        // Handle not determined state if needed
-                    }
-                    is ProcessState.Success -> {
-                        // Mark bookmarks as synced in local database
-                        bookmarks.forEach { bookmark ->
-                            bookmarkRepository.updateBookmarkSyncStatus(bookmark.id, true)
-                        }
+        val unSyncedCategories = categoryRepository.getAllUnSyncedCategories()
+        if (unSyncedCategories.isNotEmpty()) {
+            didWork = true
+            val categoryDTOs = unSyncedCategories.toCategoryDTO(email)
+            when (supabaseRemoteDataSource.insertCategories(categoryDTOs)) {
+                is ProcessState.Success -> {
+                    categoryDTOs.forEach { category ->
+                        categoryRepository.updateCategorySyncStatus(category.id, true)
                     }
                 }
-            }
 
-        }
-
-        val categoryJob = launch {
-            supabaseRemoteDataSource.insertCategories(categories).let {
-                when(it){
-                    is ProcessState.Error -> {
-                        // Handle error
-                    }
-                    is ProcessState.Loading -> {
-                        // Handle loading state if needed
-                    }
-                    ProcessState.NotDetermined -> {
-                        // Handle not determined state if needed
-                    }
-                    is ProcessState.Success -> {
-                        // Mark categories as synced in local database
-                        categories.forEach { category ->
-                            categoryRepository.updateCategorySyncStatus(category.id, true)
-                        }
-                    }
-                }
+                ProcessState.NotDetermined,
+                is ProcessState.Error,
+                is ProcessState.Loading -> shouldRetry = true
             }
         }
 
-        bookmarkJob.join()
-        categoryJob.join()
+        val unSyncedBookmarks = bookmarkRepository.getUnSyncedBookmarks()
+        if (unSyncedBookmarks.isNotEmpty()) {
+            didWork = true
+            val bookmarkDTOs = unSyncedBookmarks.toBookmarkDTO(email)
+            when (supabaseRemoteDataSource.insertBookmarks(bookmarkDTOs)) {
+                is ProcessState.Success -> {
+                    bookmarkDTOs.forEach { bookmark ->
+                        bookmarkRepository.updateBookmarkSyncStatus(bookmark.id, true)
+                    }
+                }
 
+                ProcessState.NotDetermined,
+                is ProcessState.Error,
+                is ProcessState.Loading -> shouldRetry = true
+            }
+        }
+
+        return when {
+            shouldRetry -> SyncOutcome.Retry
+            didWork -> SyncOutcome.Success
+            else -> SyncOutcome.Skipped
+        }
     }
-
-
-
 }

@@ -92,7 +92,7 @@ fun NavAppHost(
                     navHostController.navigate(AddURLScreenNav(
                         url = "",
                         isEdit = isEdit,
-                        uuid = id
+                        id = id
                     ))
                 }
             )
@@ -129,7 +129,7 @@ fun NavAppHost(
                 },
                 sharedURL = arguments.url,
                 isEdit = arguments.isEdit,
-                uuid = arguments.uuid
+                id = arguments.id
             )
         }
     }

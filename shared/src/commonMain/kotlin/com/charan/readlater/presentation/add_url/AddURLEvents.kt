@@ -1,6 +1,5 @@
 package com.charan.readlater.presentation.add_url
 
-import com.charan.readlater.presentation.home.CategoryItem
 import com.charan.readlater.presentation.models.CategoryUiModel
 
 sealed interface AddURLEvents {

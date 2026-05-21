@@ -6,6 +6,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.navigation.compose.rememberNavController
+import com.charan.readlater.data.sync.SyncManager
 import com.charan.readlater.data.repository.SettingsRepository
 import com.charan.readlater.presentation.navigation.NavAppHost
 import com.charan.readlater.ui.theme.ReadLaterTheme
@@ -41,5 +42,4 @@ fun App(
 
     }
 }
-
 

@@ -3,30 +3,31 @@ package com.charan.readlater.presentation.home
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.charan.readlater.data.local.enums.LoginTypeEnum
-import com.charan.readlater.data.mappers.toCategoryUIList
-import com.charan.readlater.data.mappers.toReadLaterUiItem
+import com.charan.readlater.data.repository.AuthenticationRepository
+import com.charan.readlater.data.repository.BookmarkRepository
+import com.charan.readlater.data.repository.CategoryRepository
 import com.charan.readlater.data.repository.SettingsRepository
+import com.charan.readlater.data.sync.SyncManager
 import com.charan.readlater.presentation.home.HomeScreenEffect.*
-import com.charan.readlater.utils.DateUtils
+import com.charan.readlater.presentation.mapper.toBookmarkUiModelList
+import com.charan.readlater.presentation.mapper.toCategoryItemList
+import com.charan.readlater.presentation.models.BookmarkUiModel
 import com.charan.readlater.utils.ProcessState
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 class HomeScreenViewModel(
-    private val readLaterDataSourceRepo: ReadLaterDataSourceRepo,
-    private val supabaseRepoImpl: SupabaseRepo,
-    private val bookmarkManagerRepo: BookmarkManagerRepo,
+    private val authenticationRepository: AuthenticationRepository,
+    private val bookmarkRepository: BookmarkRepository,
+    private val categoryRepository: CategoryRepository,
     private val syncManager: SyncManager,
-    private val settingsDataSourceRepo: SettingsRepository
+    private val settingsRepository: SettingsRepository
 ) : ViewModel() {
     private val _state = MutableStateFlow(HomeScreenState())
     val state = _state.asStateFlow()
@@ -34,41 +35,37 @@ class HomeScreenViewModel(
     private val _effect = MutableSharedFlow<HomeScreenEffect>()
     val effect = _effect.asSharedFlow()
 
+    private var allBookmarks = emptyList<BookmarkUiModel>()
+
     init {
-        getAllBookmarks()
-        supabaseInit()
         drawerItemsList()
-        getAllCategories()
+        observeBookmarks()
+        observeCategories()
+        viewModelScope.launch { fetchData() }
     }
 
-    private fun supabaseInit() = viewModelScope.launch{
-        loadSession()
-        syncData()
-        fetchData()
-
+    private fun observeBookmarks() = viewModelScope.launch {
+        bookmarkRepository.getAllActiveBookmarksWithCategory().collectLatest { items ->
+            allBookmarks = items.toBookmarkUiModelList()
+            updateCategoryCounts()
+            applyFilters()
+        }
     }
 
-
-    private suspend fun loadSession() {
-        supabaseRepoImpl.loadSession()
-    }
-    private suspend fun syncData() {
-        syncManager.sync()
-    }
-
-    private fun getAllBookmarks()= viewModelScope.launch{
-        readLaterDataSourceRepo.getAllActiveItems().collectLatest { items->
-            val readLaterUiItems = items.map {
-                it.toReadLaterUiItem(readLaterDataSourceRepo.getCategoryById(it.categoryUUID ?: "")?.name ?: "")
-            }
-                .sortedByDescending { item -> DateUtils.isoStringToMillis(item.createdAt) }
-
-            _state.update { state->
-                state.copy(
-                    readLaterUiItem = readLaterUiItems
+    private fun observeCategories() = viewModelScope.launch {
+        categoryRepository.getAllActiveCategories().collectLatest { categories ->
+            val categoryItems = categories.toCategoryItemList(allBookmarks)
+            _state.update { current ->
+                val nonCategoryItems = current.navigationDrawerState.drawerItems
+                    .filterNot { it is DrawerItems.Category }
+                current.copy(
+                    categoryItems = categoryItems,
+                    navigationDrawerState = current.navigationDrawerState.copy(
+                        drawerItems = nonCategoryItems + categoryItems.map { DrawerItems.Category(it) }
+                    )
                 )
             }
-
+            applyFilters()
         }
     }
 
@@ -78,28 +75,9 @@ class HomeScreenViewModel(
             HomeScreenEvent.OnAddURLClick -> {
                 _effect.emit(NavigateToAddURLScreen(false,""))
             }
-            HomeScreenEvent.OnSaveURLClick -> {
-//                val url = state.value.newUrlState
-//                saveNewURL(url)
-            }
-            is HomeScreenEvent.OnURLChange -> {
-                _state.update { state->
-                    state.copy(
-                        newUrlState = state.newUrlState.copy(url = event.url, error = "")
-                    )
-                }
-            }
 
             is HomeScreenEvent.OnURLOpen -> {
                 _effect.emit(OpenURLInBrowser(event.url))
-            }
-
-            is HomeScreenEvent.OnDueButtonClick -> {
-                _state.update { state->
-                    state.copy(
-                        newUrlState = state.newUrlState.copy(isDue = event.isDue)
-                    )
-                }
             }
 
             HomeScreenEvent.OnDropDownClick -> {
@@ -125,11 +103,10 @@ class HomeScreenViewModel(
             }
 
             is HomeScreenEvent.OnDeleteBookmark -> {
-                deleteBookmark(event.uuid)
+                deleteBookmark(event.id)
                 _state.update {
                     it.copy(
                         showMoreOptionBottomSheet = false,
-                        selectedBookmarkUUID = ""
                     )
                 }
 
@@ -144,7 +121,7 @@ class HomeScreenViewModel(
             }
 
             is HomeScreenEvent.OnDueStatusChange -> {
-                updateDueStatus(event.uuid,!event.isDue)
+                updateDueStatus(event.id,!event.isDue)
             }
 
             HomeScreenEvent.NavigateToLoginScreen -> {
@@ -163,7 +140,7 @@ class HomeScreenViewModel(
                         showUserNotAuthenticatedPop = false
                     )
                 }
-                settingsDataSourceRepo.updateLoginType(LoginTypeEnum.NO_ACCOUNT)
+                settingsRepository.updateLoginType(LoginTypeEnum.NO_ACCOUNT)
 
             }
 
@@ -187,7 +164,7 @@ class HomeScreenViewModel(
                         )
                     )
                 }
-                filterBookmarksByIndex(event.index)
+                applyFilters()
                 _effect.emit(ToggleNavigationDrawer)
             }
 
@@ -195,7 +172,7 @@ class HomeScreenViewModel(
                 _state.update {
                     it.copy(
                         showMoreOptionBottomSheet = !it.showMoreOptionBottomSheet,
-                        selectedBookmarkUUID = event.uuid
+                        selectedBookmarkId = event.id
                     )
                 }
             }
@@ -203,25 +180,26 @@ class HomeScreenViewModel(
                 _state.update {
                     it.copy(
                         showMoreOptionBottomSheet = false,
-                        selectedBookmarkUUID = ""
+                        selectedBookmarkId = ""
                     )
                 }
             }
 
             is HomeScreenEvent.OnEdit -> {
-                _effect.emit(NavigateToAddURLScreen(true,event.uuid))
+                _effect.emit(NavigateToAddURLScreen(true,event.id))
                 _state.update {
                     it.copy(
                         showMoreOptionBottomSheet = false,
-                        selectedBookmarkUUID = ""
+                        selectedBookmarkId = ""
                     )
                 }
             }
 
             HomeScreenEvent.OnDeleteCategory -> {
                 val categoryUUID = _state.value.editCategoryState.categoryUUID
-                println(categoryUUID)
-                    readLaterDataSourceRepo.deleteCategoryById(categoryUUID)
+                if (categoryUUID.isNotBlank()) {
+                    categoryRepository.deleteCategory(categoryUUID)
+                }
 
                 _state.update {
                     it.copy(
@@ -233,11 +211,20 @@ class HomeScreenViewModel(
             }
             HomeScreenEvent.OnEditCategory -> {
                 val currentState = _state.value.editCategoryState
-
-                    readLaterDataSourceRepo.updateCategory(
-                        id = currentState.categoryUUID,
-                        categoryName = currentState.categoryName
-                    )
+                if (currentState.categoryName.isBlank()) {
+                    _state.update {
+                        it.copy(
+                            editCategoryState = currentState.copy(
+                                errorMessage = "Category name cannot be empty"
+                            )
+                        )
+                    }
+                    return@launch
+                }
+                categoryRepository.updateCategory(
+                    categoryId = currentState.categoryUUID,
+                    categoryName = currentState.categoryName
+                )
 
                 _state.update {
                     it.copy(
@@ -252,7 +239,7 @@ class HomeScreenViewModel(
                         showDeleteCategoryDialog = !it.showDeleteCategoryDialog
                     )
                 }
-                loadEditCategoryData(event.categoryUUID)
+                loadEditCategoryData(event.categoryUuid)
             }
             is HomeScreenEvent.ToggleEditCategoryDialog -> {
                 _state.update {
@@ -260,7 +247,7 @@ class HomeScreenViewModel(
                         showEditCategoryDialog = !it.showEditCategoryDialog
                     )
                 }
-                loadEditCategoryData(event.categoryUUID)
+                loadEditCategoryData(event.categoryUuid)
             }
 
             is HomeScreenEvent.OnCategoryNameChange -> {
@@ -274,17 +261,22 @@ class HomeScreenViewModel(
                 }
             }
 
+            is HomeScreenEvent.OnDueButtonClick,
+            is HomeScreenEvent.OnSaveURLClick,
+            is HomeScreenEvent.OnURLChange -> Unit
         }
     }
 
     private fun loadEditCategoryData(categoryUUID : String) = viewModelScope.launch {
-        val category = readLaterDataSourceRepo.getCategoryById(categoryUUID)
-        category?.let {
+        if (categoryUUID.isBlank()) return@launch
+        val category = categoryRepository.getCategoryById(categoryUUID)
+        category?.let { data ->
             _state.update {
                 it.copy(
                     editCategoryState = it.editCategoryState.copy(
-                        categoryUUID = category.id,
-                        categoryName = category.name
+                        categoryUUID = data.id,
+                        categoryName = data.name,
+                        errorMessage = ""
                     )
                 )
             }
@@ -292,76 +284,53 @@ class HomeScreenViewModel(
     }
 
     private fun search(text : String) = viewModelScope.launch{
-        if(text.isEmpty().not()) {
-            readLaterDataSourceRepo.searchBookmarks(text).collectLatest { items ->
-                _state.update {
-                    it.copy(searchItems = items.toReadLaterUiItem())
-                }
-
-
-            }
+        if (text.isBlank()) {
+            _state.update { it.copy(searchItems = emptyList()) }
+            return@launch
         }
-
+        val query = text.lowercase()
+        val filtered = allBookmarks.filter { item ->
+            item.title.lowercase().contains(query) ||
+                item.url.lowercase().contains(query) ||
+                item.description.lowercase().contains(query)
+        }
+        _state.update { it.copy(searchItems = filtered) }
     }
 
-
-    private fun resetNewURLState()= viewModelScope.launch {
-        _state.update {
-            it.copy(
-                newUrlState = NewUrlState()
-            )
-        }
-    }
-
-    @OptIn(ExperimentalCoroutinesApi::class)
     private fun fetchData() = viewModelScope.launch {
-        supabaseRepoImpl.authenticationStatus()
-            .flatMapLatest { authenticationStatus ->
-                when (authenticationStatus) {
-                    is ProcessState.Error -> {
-                        _effect.tryEmit(ShowError(authenticationStatus.exception))
-                        if(settingsDataSourceRepo.getLoginType().first() == LoginTypeEnum.GOOGLE){
-                            _state.update { it.copy(showUserNotAuthenticatedPop = true) }
-                        }
-                        emptyFlow()
-                    }
+        _state.update { it.copy(isFetchingData = true) }
+        authenticationRepository.loadSession()
+        syncManager.syncNow()
 
-                    is ProcessState.Loading -> {
-                        _state.update { it.copy(isFetchingData = true) }
-                        emptyFlow()
-                    }
+        val loginType = settingsRepository.getLoginType().first()
+        if (loginType != LoginTypeEnum.GOOGLE) {
+            _state.update { it.copy(isFetchingData = false) }
+            return@launch
+        }
 
-                    is ProcessState.Success<*> -> syncManager.fetchAndUpdate()
+        val categoryResult = categoryRepository.fetchCategories()
+        val bookmarkResult = bookmarkRepository.fetchBookmarks()
 
-                    else -> emptyFlow()
-                }
-            }
-            .collectLatest { syncState ->
-                when (syncState) {
-                    is ProcessState.Error -> {
-                        _state.update { it.copy(isFetchingData = false) }
-                        _effect.tryEmit(ShowError(syncState.exception))
-                    }
+        val errorMessage = when {
+            categoryResult is ProcessState.Error -> categoryResult.exception
+            bookmarkResult is ProcessState.Error -> bookmarkResult.exception
+            else -> null
+        }
 
-                    is ProcessState.Loading -> {
-                        _state.update { it.copy(isFetchingData = true) }
-                    }
+        if (errorMessage != null) {
+            _effect.emit(ShowError(errorMessage))
+            _state.update { it.copy(showUserNotAuthenticatedPop = true) }
+        }
 
-                    is ProcessState.Success<*> -> {
-                        _state.update { it.copy(isFetchingData = false) }
-                    }
-
-                    ProcessState.NotDetermined -> {}
-                }
-            }
+        _state.update { it.copy(isFetchingData = false) }
     }
 
-    private fun deleteBookmark(uuid : String) = viewModelScope.launch {
-        bookmarkManagerRepo.deleteBookmark(uuid).collectLatest {  }
+    private fun deleteBookmark(id : String) = viewModelScope.launch {
+        bookmarkRepository.deleteBookmark(id)
     }
 
-    private fun updateDueStatus(uuid : String , isDue : Boolean) = viewModelScope.launch {
-        bookmarkManagerRepo.updateDueStatus(uuid, isDue).collectLatest { }
+    private fun updateDueStatus(id : String , isDue : Boolean) = viewModelScope.launch {
+        bookmarkRepository.updateDueStatus(id, isDue)
     }
 
     private fun drawerItemsList() {
@@ -377,61 +346,37 @@ class HomeScreenViewModel(
         }
     }
 
-    private fun filterBookmarksByIndex(index : Int) = viewModelScope.launch {
-        when(index){
-            0 -> {
-                readLaterDataSourceRepo.getAllActiveItems().collectLatest { items->
-                    _state.update { state->
-                        state.copy(
-                            readLaterUiItem = items.toReadLaterUiItem()
-                        )
-                    }
-
-                }
-            }
-            1 -> {
-                readLaterDataSourceRepo.getDueItems().collectLatest { items->
-                    _state.update { state->
-                        state.copy(
-                            readLaterUiItem = items.toReadLaterUiItem()
-                        )
-                    }
-
-                }
-            }
-            else ->  {
-                val category = _state.value.categoryItems.getOrNull(index-2)
-                println(category)
-                category?.let {
-                    println(it.uuid)
-                    readLaterDataSourceRepo.getBookmarkItemsByCategoryUUID(it.uuid).collectLatest { items->
-                        _state.update { state->
-                            println(items)
-                            state.copy(
-                                readLaterUiItem = items.toReadLaterUiItem()
-                            )
-                        }
-
-                    }
+    private fun applyFilters() {
+        val selectedIndex = _state.value.navigationDrawerState.selectedItemIndex
+        val filtered = when (selectedIndex) {
+            0 -> allBookmarks
+            1 -> allBookmarks.filter { it.isDue }
+            else -> {
+                val category = _state.value.categoryItems.getOrNull(selectedIndex - 2)
+                if (category != null) {
+                    allBookmarks.filter { it.categoryId == category.uuid }
+                } else {
+                    allBookmarks
                 }
             }
         }
+        _state.update { it.copy(bookmarks = filtered) }
     }
 
-    private fun getAllCategories() = viewModelScope.launch {
-        readLaterDataSourceRepo.getAllCategories().collectLatest { categories ->
-            _state.update {
-                val newCategoryItems = categories.toCategoryUIList()
-                val nonCategoryDrawerItems = it.navigationDrawerState.drawerItems
-                    .filterNot { item -> item is DrawerItems.Category }
-
-                it.copy(
-                    categoryItems = newCategoryItems,
-                    navigationDrawerState = it.navigationDrawerState.copy(
-                        drawerItems = nonCategoryDrawerItems + newCategoryItems.map { DrawerItems.Category(it) }
-                    )
+    private fun updateCategoryCounts() {
+        if (_state.value.categoryItems.isEmpty()) return
+        val updatedCategories = _state.value.categoryItems.map { item ->
+            item.copy(itemCount = allBookmarks.count { it.categoryId == item.uuid })
+        }
+        _state.update { current ->
+            val nonCategoryItems = current.navigationDrawerState.drawerItems
+                .filterNot { it is DrawerItems.Category }
+            current.copy(
+                categoryItems = updatedCategories,
+                navigationDrawerState = current.navigationDrawerState.copy(
+                    drawerItems = nonCategoryItems + updatedCategories.map { DrawerItems.Category(it) }
                 )
-            }
+            )
         }
     }
 

@@ -3,7 +3,10 @@ package com.charan.readlater.presentation.settings
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.charan.readlater.data.local.enums.LoginTypeEnum
-import com.charan.readlater.data.remote.model.AccountInfo
+import com.charan.readlater.data.backup.BackupManager
+import com.charan.readlater.data.repository.AuthenticationRepository
+import com.charan.readlater.data.repository.BookmarkRepository
+import com.charan.readlater.data.repository.CategoryRepository
 import com.charan.readlater.data.repository.SettingsRepository
 import com.charan.readlater.utils.ProcessState
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -15,10 +18,11 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 class SettingsScreenViewModel(
-    private val supabaseRepo: SupabaseRepo,
+    private val authenticationRepository: AuthenticationRepository,
     private val settingsRepository: SettingsRepository,
-    private val readLaterDataSourceRepo: ReadLaterDataSourceRepo,
-    private val backupRepo: BackupRepo
+    private val bookmarkRepository: BookmarkRepository,
+    private val categoryRepository: CategoryRepository,
+    private val backupManager: BackupManager
 ) : ViewModel() {
     private val _state = MutableStateFlow(SettingsScreenState())
     val state = _state.asStateFlow()
@@ -42,26 +46,12 @@ class SettingsScreenViewModel(
     }
 
     private fun getUserDetails() = viewModelScope.launch{
-        supabaseRepo.getAuthorizedUserDetails().collectLatest { processState->
-            when(processState){
-                is ProcessState.Error -> {}
-
-                is ProcessState.Loading -> {}
-                ProcessState.NotDetermined -> {}
-                is ProcessState.Success<*> -> {
-                    val accountInfo = processState.data as AccountInfo
-                    _state.update { state->
-                        state.copy(
-                            accountInfo = accountInfo
-                        )
-                    }
-                }
+        val accountInfo = authenticationRepository.getUserDetails()
+        accountInfo?.let {
+            _state.update { state ->
+                state.copy(accountInfo = it)
             }
-
         }
-
-
-
     }
 
     fun onEvent(event : SettingsScreenEvents) = viewModelScope.launch {
@@ -100,7 +90,7 @@ class SettingsScreenViewModel(
 
     private fun importFromFile(path : String) =viewModelScope.launch{
 
-        backupRepo.importFromFile(path).collectLatest { state->
+        backupManager.importFromFile(path).collectLatest { state->
             when(state){
                 is ProcessState.Error -> {
                     _state.update { it.copy(importProgress = ImportProgress(error = state.exception), showProgressDialog = false) }
@@ -126,26 +116,20 @@ class SettingsScreenViewModel(
     }
 
     private fun signOutUser() = viewModelScope.launch {
-        supabaseRepo.signOutUser().collectLatest { state ->
-            when(state){
-                is ProcessState.Error -> {
-                    _state.update { it.copy(isSignOutLoading = false) }
-
-                }
-                is ProcessState.Loading -> {
-                    _state.update { it.copy(isSignOutLoading = true) }
-
-                }
-                ProcessState.NotDetermined ->{
-
-                }
-
-                is ProcessState.Success<*> -> {
-                    _state.update { it.copy(isSignOutLoading = false) }
-                    settingsRepository.updateLoginType(LoginTypeEnum.NO_ACCOUNT)
-                    readLaterDataSourceRepo.clearAllData()
-
-                }
+        when (val state = authenticationRepository.signOutUser()) {
+            is ProcessState.Error -> {
+                _state.update { it.copy(isSignOutLoading = false) }
+                _effect.emit(SettingsScreenEffeect.ShowError(state.exception))
+            }
+            is ProcessState.Loading -> {
+                _state.update { it.copy(isSignOutLoading = true) }
+            }
+            ProcessState.NotDetermined -> Unit
+            is ProcessState.Success<*> -> {
+                _state.update { it.copy(isSignOutLoading = false) }
+                settingsRepository.updateLoginType(LoginTypeEnum.NO_ACCOUNT)
+                bookmarkRepository.clearAllBookmarks()
+                categoryRepository.clearAllCategories()
             }
         }
     }

@@ -14,7 +14,13 @@ interface CategoryRepository {
 
     suspend fun getAllActiveCategories() : Flow<List<Category>>
 
+    suspend fun getCategoryById(categoryId: String): Category?
+
+    suspend fun updateCategory(categoryId: String, categoryName: String): Boolean
+
     suspend fun getAllUnSyncedCategories() : List<Category>
 
      suspend fun updateCategorySyncStatus(categoryId : String, isSynced : Boolean)
+
+    suspend fun clearAllCategories()
 }

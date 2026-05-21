@@ -1,7 +1,7 @@
 package com.charan.readlater.presentation.add_url
 
 import com.charan.readlater.presentation.models.BookmarkUiModel
-import com.charan.readlater.presentation.models.CategoryUiState
+import com.charan.readlater.presentation.models.CategoryUiModel
 import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 
@@ -10,7 +10,7 @@ data class AddURLState(
     val isLoading : Boolean = false,
     val errorMessage : String = "",
     val categorySelectBottomSheet : Boolean = false,
-    val categoryItems : List<CategoryUiState> = emptyList(),
+    val categoryItems : List<CategoryUiModel> = emptyList(),
     val newCategoryName : String = "",
 )
 @OptIn(ExperimentalUuidApi::class)
