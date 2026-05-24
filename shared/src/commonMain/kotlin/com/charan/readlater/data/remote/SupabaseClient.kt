@@ -9,7 +9,9 @@ import io.github.jan.supabase.compose.auth.googleNativeLogin
 import io.github.jan.supabase.createSupabaseClient
 import io.github.jan.supabase.functions.Functions
 import io.github.jan.supabase.postgrest.Postgrest
+import org.koin.core.annotation.Singleton
 
+@Singleton
 class ReadLaterSupabaseClient {
     val client = createSupabaseClient(
         supabaseUrl = BuildKonfig.SUPABASE_URL ,

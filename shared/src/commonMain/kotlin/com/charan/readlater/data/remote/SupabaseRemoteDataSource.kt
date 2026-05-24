@@ -14,9 +14,10 @@ import io.github.jan.supabase.postgrest.from
 import io.ktor.client.call.body
 import kotlinx.coroutines.flow.Flow
 import kotlinx.serialization.json.Json
+import org.koin.core.annotation.Singleton
 import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
-
+@Singleton
 class SupabaseRemoteDataSource (
     private val supabaseClient: SupabaseClient
 ){

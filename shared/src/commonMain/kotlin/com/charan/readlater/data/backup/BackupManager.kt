@@ -11,11 +11,12 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.builtins.ListSerializer
 import kotlinx.serialization.csv.Csv
+import org.koin.core.annotation.Singleton
 
-
-    class BackupManager(
-        private val bookmarkRepository: BookmarkRepository
-    ) {
+@Singleton
+class BackupManager(
+    private val bookmarkRepository: BookmarkRepository
+) {
 
         @OptIn(ExperimentalSerializationApi::class)
         suspend fun importFromFile(uri: String): Flow<ProcessState<Boolean>> = flow {
@@ -69,4 +70,4 @@ import kotlinx.serialization.csv.Csv
                 emit(ProcessState.Error(e.message ?: "Import failed"))
             }
         }
-    }
+}

@@ -14,11 +14,13 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import org.koin.core.annotation.Singleton
 
+@Singleton(binds = [CategoryRepository::class])
 class CategoryRepositoryImpl(
     private val categoryQueries: CategoryQueries,
     private val supabaseRemoteDataSource: SupabaseRemoteDataSource,
-    private val syncManager: SyncManager
+    private val syncManager: Lazy<SyncManager>
 ) : CategoryRepository {
 
     override suspend fun fetchCategories(): ProcessState<Boolean> {
@@ -58,13 +60,13 @@ class CategoryRepositoryImpl(
             isDeleted = category.isDeleted
         )
         if (triggerSync) {
-            syncManager.syncNow()
+            syncManager.value.syncNow()
         }
     }
 
     override suspend fun deleteCategory(categoryId: String): Boolean {
         categoryQueries.deleteCategoryById(categoryId)
-        syncManager.syncNow()
+        syncManager.value.syncNow()
         return true
     }
 
@@ -77,7 +79,7 @@ class CategoryRepositoryImpl(
             name = categoryName,
             id = categoryId
         )
-        syncManager.syncNow()
+        syncManager.value.syncNow()
         return true
     }
 

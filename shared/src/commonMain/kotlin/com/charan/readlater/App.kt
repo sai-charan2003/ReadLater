@@ -21,7 +21,7 @@ fun App(
     sharedURL : String = ""
 
 ) {
-    val settingsRepository: SettingsRepository = koinInject()
+    val settingsRepository: SettingsRepository = koinInject<SettingsRepository>()
     val syncManager : SyncManager = koinInject()
     var isLoggedIn by rememberSaveable{
         mutableStateOf(true)

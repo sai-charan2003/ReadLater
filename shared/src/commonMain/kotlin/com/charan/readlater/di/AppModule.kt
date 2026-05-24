@@ -1,63 +1,40 @@
 package com.charan.readlater.di
 
-
 import app.cash.sqldelight.db.SqlDriver
 import com.charan.readlater.ReadLaterDatabase
-import com.charan.readlater.data.backup.BackupManager
-import com.charan.readlater.data.remote.SupabaseRemoteDataSource
 import com.charan.readlater.data.remote.ReadLaterSupabaseClient
-import com.charan.readlater.data.repository.AuthenticationRepository
-import com.charan.readlater.data.repository.BookmarkRepository
-import com.charan.readlater.data.repository.CategoryRepository
-import com.charan.readlater.data.repository.SettingsRepository
-import com.charan.readlater.data.repository.impl.AuthenticationRepositoryImpl
-import com.charan.readlater.data.repository.impl.BookmarkRepositoryImpl
-import com.charan.readlater.data.repository.impl.CategoryRepositoryImpl
-import com.charan.readlater.data.repository.impl.SettingsRepositoryImpl
-import com.charan.readlater.presentation.add_url.AddURLViewModel
-import com.charan.readlater.presentation.home.HomeScreenViewModel
-import com.charan.readlater.presentation.authentication.AuthenticationViewModel
-import com.charan.readlater.presentation.settings.SettingsScreenViewModel
 import io.github.jan.supabase.SupabaseClient
-import org.koin.core.context.startKoin
-import org.koin.core.module.dsl.viewModel
+import org.koin.core.annotation.ComponentScan
+import org.koin.core.annotation.Configuration
+import org.koin.core.annotation.KoinApplication
+import org.koin.core.annotation.Module
+import org.koin.core.annotation.Single
 import org.koin.dsl.KoinAppDeclaration
-import org.koin.dsl.module
-import kotlin.concurrent.Volatile
-val appModule = module {
-    single { ReadLaterDatabase(
-        driver = get<SqlDriver>(),
-    ) }
 
-    single <SupabaseClient>{
-        ReadLaterSupabaseClient().client
-    }
+@Module
+@Configuration("app")
+@ComponentScan("com.charan.readlater")
+class AppModule {
 
-    single { SupabaseRemoteDataSource(get()) }
+    @Single
+    fun provideDatabase(driver: SqlDriver): ReadLaterDatabase = ReadLaterDatabase(driver = driver)
 
-    single <AuthenticationRepository>{ AuthenticationRepositoryImpl(get()) }
+    @Single
+    fun provideSupabaseClient(
+        readLaterSupabaseClient: ReadLaterSupabaseClient
+    ): SupabaseClient = readLaterSupabaseClient.client
 
-    single <CategoryRepository>{ CategoryRepositoryImpl(get<ReadLaterDatabase>().categoryQueries,get(),get()) }
+    @Single
+    fun provideBookmarkQueries(database: ReadLaterDatabase) = database.bookmarkQueries
 
-    single <BookmarkRepository>{  BookmarkRepositoryImpl(get<ReadLaterDatabase>().bookmarkQueries,get(),get()) }
-
-    single <SettingsRepository>{ SettingsRepositoryImpl(get()) }
-
-    single { BackupManager(get()) }
-
-    viewModel { AuthenticationViewModel(get(),get ()) }
-    viewModel { HomeScreenViewModel(get(),get(),get(),get(),get()) }
-    viewModel { SettingsScreenViewModel(get(),get(),get(),get(),get()) }
-    viewModel { AddURLViewModel(get(),get(),get()) }
+    @Single
+    fun provideCategoryQueries(database: ReadLaterDatabase) = database.categoryQueries
 }
-@Volatile
-private var koinInitialized = false
 
-fun initKoin(appDeclaration: KoinAppDeclaration = {}) {
-    if (koinInitialized) return
-    startKoin {
-        modules(appModule)
-        appDeclaration()
-    }
-    koinInitialized = true
-}
+@Module
+@Configuration("app")
+expect class PlatformModule()
+
+
+@KoinApplication(modules = [AppModule::class, PlatformModule::class])
+class App

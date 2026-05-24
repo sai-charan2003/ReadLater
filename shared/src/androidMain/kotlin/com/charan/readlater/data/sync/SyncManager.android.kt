@@ -7,7 +7,9 @@ import androidx.work.WorkManager
 import com.charan.readlater.data.remote.SupabaseRemoteDataSource
 import com.charan.readlater.data.repository.BookmarkRepository
 import com.charan.readlater.data.repository.CategoryRepository
+import org.koin.core.annotation.Singleton
 
+@Singleton
 actual class SyncManager(
     context: Context,
     private val bookmarkRepository: BookmarkRepository,

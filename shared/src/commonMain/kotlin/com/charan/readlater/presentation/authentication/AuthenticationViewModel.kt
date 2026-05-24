@@ -7,6 +7,7 @@ import com.charan.readlater.data.repository.AuthenticationRepository
 import com.charan.readlater.data.repository.SettingsRepository
 import com.charan.readlater.utils.ProcessState
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.IO
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
@@ -14,7 +15,9 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import org.koin.core.annotation.KoinViewModel
 
+@KoinViewModel
 class AuthenticationViewModel(
     private val authenticationRepository: AuthenticationRepository,
     private val settingsRepository: SettingsRepository

@@ -7,7 +7,9 @@ import com.charan.readlater.data.local.enums.LoginTypeEnum
 import com.charan.readlater.data.repository.SettingsRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import org.koin.core.annotation.Singleton
 
+@Singleton(binds = [SettingsRepository::class])
 class SettingsRepositoryImpl(
     private val dataStore : DataStore<Preferences>
 ) : SettingsRepository {

@@ -21,7 +21,9 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import org.koin.core.annotation.KoinViewModel
 
+@KoinViewModel
 class HomeScreenViewModel(
     private val authenticationRepository: AuthenticationRepository,
     private val bookmarkRepository: BookmarkRepository,

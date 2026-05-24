@@ -18,11 +18,13 @@ import kotlinx.coroutines.IO
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.any
 import kotlinx.coroutines.flow.flowOn
+import org.koin.core.annotation.Singleton
 
+@Singleton(binds = [BookmarkRepository::class])
 class BookmarkRepositoryImpl(
     private val bookmarkQueries: BookmarkQueries,
     private val supabaseRemoteDataSource: SupabaseRemoteDataSource,
-    private val syncManager: SyncManager
+    private val syncManager: Lazy<SyncManager>
 ) : BookmarkRepository {
 
     override suspend fun fetchBookmarks(): ProcessState<Boolean> {
@@ -73,13 +75,13 @@ class BookmarkRepositoryImpl(
             isMetaDataFetched = bookmark.isMetaDataFetched
         )
         if (triggerSync) {
-            syncManager.syncNow()
+            syncManager.value.syncNow()
         }
     }
 
     override suspend fun deleteBookmark(bookmarkId: String): Boolean {
         bookmarkQueries.deleteBookmarkById(bookmarkId)
-        syncManager.syncNow()
+        syncManager.value.syncNow()
         return true
     }
 
@@ -161,7 +163,7 @@ class BookmarkRepositoryImpl(
             isDue = isDue,
             id = bookmarkId
         )
-        syncManager.syncNow()
+        syncManager.value.syncNow()
     }
 
     override suspend fun clearAllBookmarks() {

@@ -1,18 +1,21 @@
 package com.charan.readlater.di
 
+import android.content.Context
+import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.Preferences
 import app.cash.sqldelight.db.SqlDriver
 import com.charan.readlater.createDataStore
 import com.charan.readlater.data.local.DatabaseFactory
-import com.charan.readlater.data.remote.SupabaseRemoteDataSource
-import com.charan.readlater.data.repository.BookmarkRepository
-import com.charan.readlater.data.repository.CategoryRepository
 import com.charan.readlater.data.sync.SyncManager
+import com.charan.readlater.data.sync.SyncWork
 import kotlinx.coroutines.runBlocking
+import org.koin.androidx.workmanager.dsl.workerOf
 import org.koin.core.annotation.Configuration
 import org.koin.core.annotation.Module
 import org.koin.core.annotation.Single
 import org.koin.core.context.startKoin
 import org.koin.dsl.KoinAppDeclaration
+import org.koin.dsl.module
 import kotlin.concurrent.Volatile
 
 @Module
@@ -23,12 +26,14 @@ actual class PlatformModule {
         runBlocking { databaseFactory.createDriver() }
 
     @Single
-    fun provideDataStore() = createDataStore()
+    fun provideDataStore(context: Context): DataStore<Preferences> = createDataStore(context = context)
 
     @Single
     fun provideSyncManager(
-        bookmarkRepository: BookmarkRepository,
-        categoryRepository: CategoryRepository,
-        supabaseRemoteDataSource: SupabaseRemoteDataSource
-    ): SyncManager = SyncManager(bookmarkRepository, categoryRepository, supabaseRemoteDataSource)
+        context: Context,
+        bookmarkRepository: com.charan.readlater.data.repository.BookmarkRepository,
+        categoryRepository: com.charan.readlater.data.repository.CategoryRepository,
+        supabaseRemoteDataSource: com.charan.readlater.data.remote.SupabaseRemoteDataSource
+    ): SyncManager = SyncManager(context, bookmarkRepository, categoryRepository, supabaseRemoteDataSource)
 }
+

@@ -10,8 +10,10 @@ import io.github.jan.supabase.auth.auth
 import io.github.jan.supabase.auth.providers.Google
 import io.github.jan.supabase.auth.providers.builtin.IDToken
 import kotlinx.serialization.json.Json
+import org.koin.core.annotation.Singleton
 import kotlin.uuid.Uuid
 
+@Singleton(binds = [AuthenticationRepository::class])
 class AuthenticationRepositoryImpl(
     private val supabaseRemoteDataSource: SupabaseRemoteDataSource
 ) : AuthenticationRepository {
