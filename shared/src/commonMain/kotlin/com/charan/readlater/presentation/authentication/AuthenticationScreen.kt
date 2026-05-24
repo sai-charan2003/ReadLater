@@ -29,7 +29,7 @@ import org.koin.compose.viewmodel.koinViewModel
 import readlater.shared.generated.resources.Res
 import readlater.shared.generated.resources.google_signin
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun AuthenticationScreen(
     navigateToHome: () -> Unit,
@@ -108,6 +108,7 @@ fun AuthenticationScreen(
                         this.onClick()
                     },
                     modifier = Modifier.fillMaxWidth(),
+                    shapes = ButtonDefaults.shapes(),
                     enabled = !state.isAuthenticating
                 ) {
                     Image(

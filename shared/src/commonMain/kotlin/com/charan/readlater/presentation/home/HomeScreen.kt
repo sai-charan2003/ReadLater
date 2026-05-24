@@ -56,6 +56,7 @@ import com.charan.readlater.presentation.home.components.EditCategoryDialog
 import com.charan.readlater.presentation.home.components.MoreOptionsBottomSheet
 import com.charan.readlater.presentation.home.components.SearchInputField
 import com.charan.readlater.presentation.home.components.UserAuthenticationAlert
+import com.charan.readlater.utils.DateUtils
 import com.charan.readlater.ui.theme.indexItemFor
 import kotlinx.coroutines.flow.collectLatest
 import org.koin.compose.viewmodel.koinViewModel
@@ -95,14 +96,14 @@ fun HomeScreen(
 
             },
             onEdit = {
-                viewModel.onEvent(HomeScreenEvent.OnEdit(state.selectedBookmarkUUID))
+                viewModel.onEvent(HomeScreenEvent.OnEdit(state.selectedBookmarkId))
 
             },
             onShare = {
 
             },
             onDelete = {
-                viewModel.onEvent(HomeScreenEvent.OnDeleteBookmark(state.selectedBookmarkUUID))
+                viewModel.onEvent(HomeScreenEvent.OnDeleteBookmark(state.selectedBookmarkId))
 
             },
             sheetState = moreOptionsBottomSheetState
@@ -117,7 +118,7 @@ fun HomeScreen(
                 viewModel.onEvent(HomeScreenEvent.OnDeleteCategory)
             },
             onDismissRequest = {
-                viewModel.onEvent(HomeScreenEvent.OnToggleDeleteConfirmationDialog(categoryUUID = ""))
+                viewModel.onEvent(HomeScreenEvent.OnToggleDeleteConfirmationDialog(categoryUuid = ""))
             }
         )
     }
@@ -129,7 +130,7 @@ fun HomeScreen(
                 viewModel.onEvent(HomeScreenEvent.OnCategoryNameChange(newName))
             },
             onDismissRequest = {
-                viewModel.onEvent(HomeScreenEvent.ToggleEditCategoryDialog(categoryUUID = ""))
+                viewModel.onEvent(HomeScreenEvent.ToggleEditCategoryDialog(categoryUuid = ""))
             },
             onConfirmEdit = {
                 viewModel.onEvent(HomeScreenEvent.OnEditCategory)
@@ -170,7 +171,7 @@ fun HomeScreen(
                 }
 
                 is HomeScreenEffect.NavigateToAddURLScreen -> {
-                    navigateToAddURLScreen(effect.isEdit,effect.uuid)
+                    navigateToAddURLScreen(effect.isEdit,effect.id)
 
                 }
             }
@@ -208,7 +209,7 @@ fun HomeScreen(
                     onEdit = {
                         viewModel.onEvent(
                             HomeScreenEvent.ToggleEditCategoryDialog(
-                                categoryUUID = it.categoryItem.uuid
+                                categoryUuid = it.categoryItem.uuid
                             )
                         )
 
@@ -216,7 +217,7 @@ fun HomeScreen(
                     onDelete = {
                         viewModel.onEvent(
                             HomeScreenEvent.OnToggleDeleteConfirmationDialog(
-                                categoryUUID = it.categoryItem.uuid
+                                categoryUuid = it.categoryItem.uuid
                             )
                         )
 
@@ -290,24 +291,28 @@ fun HomeScreen(
                                 onLeftToRightSwipe = {
                                     viewModel.onEvent(
                                         HomeScreenEvent.OnDueStatusChange(
-                                            item.uuid,
+                                            item.id,
                                             item.isDue
                                         )
                                     )
 
                                 },
                                 onRightToLeftSwipe = {
-                                    viewModel.onEvent(HomeScreenEvent.OnDeleteBookmark(item.uuid))
+                                    viewModel.onEvent(HomeScreenEvent.OnDeleteBookmark(item.id))
 
                                 },
                                 onContextMenuOpen = {
-                                    viewModel.onEvent(HomeScreenEvent.OnMoreItemButtonClick(uuid = item.uuid))
+                                    viewModel.onEvent(HomeScreenEvent.OnMoreItemButtonClick(id = item.id))
 
                                 },
                                 indexItem = state.searchItems.indexItemFor(it),
-                                hostURL = item.hostURL,
-                                category = item.categoryUUID,
-                                createdAt = item.formatedDate
+                                hostUrl = item.hostUrl,
+                                category = item.categoryName,
+                                createdAt = if (item.createdAt.isNotBlank()) {
+                                    DateUtils.formatReadableDateFromIso(item.createdAt)
+                                } else {
+                                    ""
+                                }
 
                             )
                         }
@@ -346,10 +351,10 @@ fun HomeScreen(
 
                 ) {
                     items(
-                        state.readLaterUiItem.size,
-                        key = { state.readLaterUiItem[it].uuid }
+                        state.bookmarks.size,
+                        key = { state.bookmarks[it].id }
                     ) {
-                        val item = state.readLaterUiItem[it]
+                        val item = state.bookmarks[it]
                         BookmarkItem(
                             title = item.title,
                             description = item.description,
@@ -362,24 +367,28 @@ fun HomeScreen(
                             onLeftToRightSwipe = {
                                 viewModel.onEvent(
                                     HomeScreenEvent.OnDueStatusChange(
-                                        item.uuid,
+                                        item.id,
                                         item.isDue
                                     )
                                 )
 
                             },
                             onRightToLeftSwipe = {
-                                viewModel.onEvent(HomeScreenEvent.OnDeleteBookmark(item.uuid))
+                                viewModel.onEvent(HomeScreenEvent.OnDeleteBookmark(item.id))
 
                             },
                             onContextMenuOpen = {
-                                viewModel.onEvent(HomeScreenEvent.OnMoreItemButtonClick(item.uuid))
+                                viewModel.onEvent(HomeScreenEvent.OnMoreItemButtonClick(item.id))
 
                             },
-                            indexItem = state.readLaterUiItem.indexItemFor(it),
-                            hostURL = item.hostURL,
+                            indexItem = state.bookmarks.indexItemFor(it),
+                            hostUrl = item.hostUrl,
                             category = item.categoryName,
-                            createdAt = item.formatedDate
+                            createdAt = if (item.createdAt.isNotBlank()) {
+                                DateUtils.formatReadableDateFromIso(item.createdAt)
+                            } else {
+                                ""
+                            }
 
 
                         )

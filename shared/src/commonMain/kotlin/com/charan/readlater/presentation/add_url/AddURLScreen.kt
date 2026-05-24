@@ -32,8 +32,6 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.charan.readlater.presentation.add_url.components.BookmarkConfigItem
 import com.charan.readlater.presentation.add_url.components.SelectCategoryBottomSheet
-import com.charan.readlater.presentation.home.HomeScreenEvent
-import com.charan.readlater.presentation.home.HomeScreenViewModel
 import com.charan.readlater.ui.theme.IndexItem
 import kotlinx.coroutines.flow.collectLatest
 import org.koin.compose.viewmodel.koinViewModel
@@ -44,36 +42,24 @@ fun AddURLScreen(
     onBackClick: () -> Unit,
     sharedURL : String = "",
     isEdit : Boolean = false,
-    uuid : String = ""
+    id : String = ""
 
 ) {
     val viewModel : AddURLViewModel = koinViewModel<AddURLViewModel>()
     val state by viewModel.state.collectAsStateWithLifecycle()
     val categorySheetState = rememberModalBottomSheetState()
-    LaunchedEffect(Unit){
-        viewModel.onEvent(AddURLEvents.OnURLChange(sharedURL))
-    }
-    LaunchedEffect(Unit){
-        if(isEdit){
-            viewModel.onEvent(AddURLEvents.LoadDataForEdit(uuid))
-        }
-    }
-
 
     LaunchedEffect(Unit){
         viewModel.effects.collectLatest { effects ->
             when(effects){
-                AddURLEffects.OnBack -> {
-                    onBackClick()
-                }
-                null -> {}
+                AddURLEffects.OnBack -> onBackClick()
             }
         }
     }
     if(state.categorySelectBottomSheet){
         SelectCategoryBottomSheet(
             onDismiss = {
-                viewModel.onEvent(AddURLEvents.OnCategorySheetDismiss)
+                viewModel.onEvent(AddURLEvents.OnCategorySheetToggle)
             },
             onSelect = { category ->
                 viewModel.onEvent(AddURLEvents.OnCategorySelect(category))
@@ -171,10 +157,10 @@ fun AddURLScreen(
                 BookmarkConfigItem(
                     title = "Category",
                     trailingContent = {
-                        Text(state.selectedCategory.ifEmpty { "" })
+                        Text(state.bookmarkData.categoryName.ifEmpty { "" })
                     },
                     onClick = {
-                        viewModel.onEvent(AddURLEvents.OnCategorySheetOpen)
+                        viewModel.onEvent(AddURLEvents.OnCategorySheetToggle)
 
                     },
                     index = IndexItem.LAST

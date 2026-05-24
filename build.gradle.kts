@@ -11,4 +11,5 @@ plugins {
     alias (libs.plugins.sqlDelight) apply false
     alias(libs.plugins.buildKonfig) apply false
     alias(libs.plugins.kotlin.serialization) apply false
+    alias(libs.plugins.koin.compiler) apply false
 }

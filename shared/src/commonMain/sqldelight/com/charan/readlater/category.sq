@@ -1,0 +1,36 @@
+import kotlin.Boolean;
+
+CREATE TABLE category (
+    id TEXT NOT NULL PRIMARY KEY,
+    name TEXT NOT NULL,
+    createdAt TEXT NOT NULL DEFAULT '',
+    isSynced INTEGER AS Boolean NOT NULL DEFAULT 0,
+    isDeleted INTEGER AS Boolean NOT NULL DEFAULT 0
+);
+
+insertCategory:
+INSERT OR REPLACE INTO category (id, name, isSynced, isDeleted, createdAt) VALUES (?, ?, ?, ?, ?);
+
+getAllCategories:
+SELECT * FROM category;
+
+getUnSyncedCategories:
+SELECT * FROM category WHERE isSynced = 0;
+
+updateSyncStatusCategory:
+UPDATE category SET isSynced = ? WHERE id = ?;
+
+getCategoryById:
+SELECT * FROM category WHERE id = ? LIMIT 1;
+
+updateCategoryById:
+UPDATE category SET name = ?, isSynced = 0 WHERE id = ?;
+
+deleteCategoryById:
+UPDATE category SET isDeleted = 1, isSynced = 0 WHERE id = ?;
+
+getAllActiveCategories:
+SELECT * FROM category WHERE isDeleted = 0;
+
+deleteAllCategories:
+DELETE FROM category;

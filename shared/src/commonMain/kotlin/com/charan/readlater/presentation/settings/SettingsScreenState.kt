@@ -1,10 +1,10 @@
 package com.charan.readlater.presentation.settings
 
-import com.charan.readlater.data.remote.model.UserDetails
+import com.charan.readlater.data.remote.model.AccountInfo
 
 
 data class SettingsScreenState(
-    val userDetails : UserDetails = UserDetails(),
+    val accountInfo : AccountInfo = AccountInfo(),
     val isLoggedIn: Boolean = false,
     val isSignOutLoading : Boolean = false,
     val showLogoutDialog : Boolean = false,

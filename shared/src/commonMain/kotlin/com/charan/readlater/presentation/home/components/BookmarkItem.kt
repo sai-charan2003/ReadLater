@@ -60,7 +60,7 @@ fun BookmarkItem(
     description: String,
     createdAt: String,
     category : String,
-    hostURL : String,
+    hostUrl : String,
     imageUrl: String,
     onClick: () -> Unit,
     isDue: Boolean = false,
@@ -149,7 +149,7 @@ fun BookmarkItem(
                 content = {
                     BookmarkListItem(
                         title = title,
-                        hostURL = hostURL,
+                        hostUrl = hostUrl,
                         imageUrl = imageUrl,
                         onClick = onClick,
                         isDue = isDue,
@@ -169,7 +169,7 @@ fun BookmarkItem(
 @Composable
 fun BookmarkListItem(
     title: String,
-    hostURL: String,
+    hostUrl: String,
     imageUrl: String,
     onClick: () -> Unit,
     onContextMenuOpen: () -> Unit,
@@ -207,9 +207,9 @@ fun BookmarkListItem(
                     horizontalArrangement = Arrangement.spacedBy(6.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    if(hostURL.isNotEmpty()) {
+                    if(hostUrl.isNotEmpty()) {
                         Text(
-                            text = hostURL,
+                            text = hostUrl,
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             maxLines = 1,

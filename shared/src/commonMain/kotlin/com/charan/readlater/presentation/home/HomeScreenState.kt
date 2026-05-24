@@ -1,49 +1,22 @@
 package com.charan.readlater.presentation.home
 
+import com.charan.readlater.presentation.models.BookmarkUiModel
+
 data class HomeScreenState (
     val isFetchingData : Boolean = false,
-    val readLaterUiItem: List<ReadLaterUiItem> = emptyList(),
+    val bookmarks: List<BookmarkUiModel> = emptyList(),
     val showAddURLBottomSheet : Boolean = false,
     val isDropDownVisible : Boolean = false,
-    val newUrlState: NewUrlState = NewUrlState(),
     val selectedTabIndex : Int = 0,
     val showUserNotAuthenticatedPop : Boolean = false,
-    val searchItems : List<ReadLaterUiItem> = emptyList(),
+    val searchItems : List<BookmarkUiModel> = emptyList(),
     val navigationDrawerState: NavigationDrawerState = NavigationDrawerState(),
     val categoryItems: List<CategoryItem> = emptyList(),
     val showMoreOptionBottomSheet : Boolean = false,
-    val selectedBookmarkUUID : String = "",
+    val selectedBookmarkId : String = "",
     val showDeleteCategoryDialog : Boolean = false,
     val showEditCategoryDialog : Boolean = false,
-    val editCategoryState : EditCategoryState = EditCategoryState(),
-)
-
-data class NewUrlState(
-    val url: String = "",
-    val isDue: Boolean = false,
-    val isSaving : Boolean = false,
-    val error : String = ""
-)
-
-data class EditCategoryState(
-    val categoryName : String = "",
-    val isSaving : Boolean = false,
-    val errorMessage : String = "",
-    val categoryUUID : String =""
-)
-
-data class ReadLaterUiItem(
-    val uuid : String = "",
-    val title : String = "",
-    val description : String = "",
-    val imageUrl : String = "",
-    val url : String = "",
-    val isDue : Boolean = false,
-    val categoryUUID : String = "",
-    val hostURL : String = "",
-    val categoryName : String = "",
-    val createdAt : String = "",
-    val formatedDate : String = ""
+    val editCategoryState: EditCategoryState = EditCategoryState()
 )
 
 
@@ -58,4 +31,10 @@ data class CategoryItem(
     val name : String = "",
     val itemCount : Int = 0,
     val isSelected : Boolean = false
+)
+
+data class EditCategoryState(
+    val categoryUUID: String = "",
+    val categoryName: String = "",
+    val errorMessage: String = ""
 )

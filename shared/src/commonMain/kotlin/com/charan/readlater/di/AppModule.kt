@@ -1,67 +1,40 @@
 package com.charan.readlater.di
 
-
 import app.cash.sqldelight.db.SqlDriver
 import com.charan.readlater.ReadLaterDatabase
 import com.charan.readlater.data.remote.ReadLaterSupabaseClient
-import com.charan.readlater.data.repository.BackupRepo
-import com.charan.readlater.data.repository.BookmarkManagerRepo
-import com.charan.readlater.data.repository.ReadLaterDataSourceRepo
-import com.charan.readlater.data.repository.SettingsDataStoreRepo
-import com.charan.readlater.data.repository.SupabaseRepo
-import com.charan.readlater.data.repository.SyncManager
-import com.charan.readlater.data.repository.WebScrapperRepo
-import com.charan.readlater.data.repository.impl.BackupRepoImpl
-import com.charan.readlater.data.repository.impl.BookmarkManagerRepoImpl
-import com.charan.readlater.data.repository.impl.ReadLaterDataSourceImpl
-import com.charan.readlater.data.repository.impl.SettingsDataStoreRepoImpl
-import com.charan.readlater.data.repository.impl.SupabaseRepoImpl
-import com.charan.readlater.data.repository.impl.SyncManagerImpl
-import com.charan.readlater.data.repository.impl.WebScrapperRepoImpl
-import com.charan.readlater.presentation.add_url.AddURLViewModel
-import com.charan.readlater.presentation.home.HomeScreenViewModel
-import com.charan.readlater.presentation.authentication.AuthenticationViewModel
-import com.charan.readlater.presentation.settings.SettingsScreenViewModel
 import io.github.jan.supabase.SupabaseClient
-import org.koin.core.context.startKoin
-import org.koin.core.module.dsl.viewModel
+import org.koin.core.annotation.ComponentScan
+import org.koin.core.annotation.Configuration
+import org.koin.core.annotation.KoinApplication
+import org.koin.core.annotation.Module
+import org.koin.core.annotation.Single
 import org.koin.dsl.KoinAppDeclaration
-import org.koin.dsl.module
-import kotlin.concurrent.Volatile
-val appModule = module {
-    single { ReadLaterDatabase(
-        driver = get<SqlDriver>(),
-    ) }
 
+@Module
+@Configuration("app")
+@ComponentScan("com.charan.readlater")
+class AppModule {
 
-    single<ReadLaterDataSourceRepo> {
-        ReadLaterDataSourceImpl(db = get())
-    }
-    single <SupabaseClient>{
-        ReadLaterSupabaseClient().client
-    }
-    single <SupabaseRepo>{
-        SupabaseRepoImpl(get())
-    }
-    single <WebScrapperRepo>{ WebScrapperRepoImpl() }
-    single <BackupRepo>{ BackupRepoImpl(get()) }
+    @Single
+    fun provideDatabase(driver: SqlDriver): ReadLaterDatabase = ReadLaterDatabase(driver = driver)
 
-    single <SettingsDataStoreRepo>{ SettingsDataStoreRepoImpl(get()) }
-    single <BookmarkManagerRepo>{ BookmarkManagerRepoImpl(get(),get(),get(),get(),get()) }
-    single <SyncManager>{ SyncManagerImpl(get(),get(),get()) }
-    viewModel { AuthenticationViewModel(get(),get ()) }
-    viewModel { HomeScreenViewModel(get(),get(),get(),get(),get()) }
-    viewModel { SettingsScreenViewModel(get(),get(),get(),get()) }
-    viewModel { AddURLViewModel(get(),get(),get(),get(),get()) }
+    @Single
+    fun provideSupabaseClient(
+        readLaterSupabaseClient: ReadLaterSupabaseClient
+    ): SupabaseClient = readLaterSupabaseClient.client
+
+    @Single
+    fun provideBookmarkQueries(database: ReadLaterDatabase) = database.bookmarkQueries
+
+    @Single
+    fun provideCategoryQueries(database: ReadLaterDatabase) = database.categoryQueries
 }
-@Volatile
-private var koinInitialized = false
 
-fun initKoin(appDeclaration: KoinAppDeclaration = {}) {
-    if (koinInitialized) return
-    startKoin {
-        modules(appModule)
-        appDeclaration()
-    }
-    koinInitialized = true
-}
+@Module
+@Configuration("app")
+expect class PlatformModule()
+
+
+@KoinApplication(modules = [AppModule::class, PlatformModule::class])
+class App

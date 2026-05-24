@@ -4,13 +4,15 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.stringPreferencesKey
 import com.charan.readlater.data.local.enums.LoginTypeEnum
-import com.charan.readlater.data.repository.SettingsDataStoreRepo
+import com.charan.readlater.data.repository.SettingsRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import org.koin.core.annotation.Singleton
 
-class SettingsDataStoreRepoImpl(
+@Singleton(binds = [SettingsRepository::class])
+class SettingsRepositoryImpl(
     private val dataStore : DataStore<Preferences>
-) : SettingsDataStoreRepo {
+) : SettingsRepository {
 
     companion object {
         private val loginType  = stringPreferencesKey("login_type")

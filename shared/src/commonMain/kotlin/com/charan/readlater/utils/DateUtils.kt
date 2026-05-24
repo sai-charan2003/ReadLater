@@ -32,3 +32,9 @@ object DateUtils {
         return instant.toEpochMilliseconds()
     }
 }
+
+
+fun getCurrentIsoDate() : String {
+    return Clock.System.now().toString()
+}
+

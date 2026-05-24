@@ -14,7 +14,7 @@ sealed interface HomeScreenEffect {
 
     object ToggleNavigationDrawer : HomeScreenEffect
 
-    data class NavigateToAddURLScreen (val isEdit : Boolean,val uuid : String): HomeScreenEffect
+    data class NavigateToAddURLScreen (val isEdit : Boolean,val id : String): HomeScreenEffect
 
 
 

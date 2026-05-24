@@ -17,16 +17,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
-import com.charan.readlater.presentation.home.CategoryItem
-import com.charan.readlater.ui.theme.IndexItem
+import com.charan.readlater.presentation.models.CategoryUiModel
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun SelectCategoryBottomSheet(
     onDismiss: () -> Unit,
-    onSelect: (category: CategoryItem) -> Unit,
+    onSelect: (category: CategoryUiModel) -> Unit,
     sheetState: SheetState,
-    allCategories: List<CategoryItem>,
+    allCategories: List<CategoryUiModel>,
     onCreateCategory: () -> Unit,
     newCategoryName: String,
     onCategoryValueChange: (String) -> Unit

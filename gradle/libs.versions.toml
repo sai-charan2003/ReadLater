@@ -29,6 +29,7 @@ ktor = "3.5.0"
 sqliteFramework = "2.6.2"
 workRuntimeKtx = "2.11.2"
 kmpauthGoogle = "2.5.0-alpha01"
+koin-plugin = "1.0.0"
 
 
 [libraries]
@@ -40,6 +41,7 @@ supabase-bom = { module = "io.github.jan-tennert.supabase:bom", version.ref = "s
 auth-kt = { module = "io.github.jan-tennert.supabase:auth-kt"}
 postgrest-kt = { module = "io.github.jan-tennert.supabase:postgrest-kt" }
 compose-auth-kt = { module = "io.github.jan-tennert.supabase:compose-auth" }
+functions-kt = { module = "io.github.jan-tennert.supabase:functions-kt" }
 coil-compose = { module = "io.coil-kt.coil3:coil-compose", version.ref = "coilCompose" }
 filekit-dialogs = { module = "io.github.vinceglb:filekit-dialogs", version.ref = "filekitDialogsCompose" }
 filekit-dialogs-compose = { module = "io.github.vinceglb:filekit-dialogs-compose", version.ref = "filekitDialogsCompose" }
@@ -54,6 +56,7 @@ koin-android = { group = "io.insert-koin", name = "koin-android" }
 koin-compose = { group = "io.insert-koin", name = "koin-androidx-compose" }
 koin-compose-viewModel = { module = "io.insert-koin:koin-compose-viewmodel" }
 koin-androidx-workmanager = { module = "io.insert-koin:koin-androidx-workmanager"}
+koin-annotations = { module = "io.insert-koin:koin-annotations" }
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinxSerializationJson" }
 ksoup = { module = "com.fleeksoft.ksoup:ksoup", version.ref = "ksoup" }
 ksoup-network = { module = "com.fleeksoft.ksoup:ksoup-network", version.ref = "ksoup" }
@@ -94,3 +97,4 @@ sqlDelight = { id = "app.cash.sqldelight", version.ref = "sqlite" }
 buildKonfig = { id = "com.codingfeline.buildkonfig", version.ref = "buildKonfig" }
 kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 androidKmpLibrary = { id = "com.android.kotlin.multiplatform.library", version.ref = "agp" }
+koin-compiler = { id = "io.insert-koin.compiler.plugin", version.ref = "koin-plugin" }

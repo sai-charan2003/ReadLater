@@ -6,8 +6,9 @@ import app.cash.sqldelight.async.coroutines.synchronous
 import app.cash.sqldelight.db.SqlDriver
 import app.cash.sqldelight.driver.android.AndroidSqliteDriver
 import com.charan.readlater.ReadLaterDatabase
+import org.koin.core.annotation.Singleton
 
-
+@Singleton
 actual class DatabaseFactory(private val context : Context) {
     actual suspend fun createDriver(): SqlDriver {
         return AndroidSqliteDriver(

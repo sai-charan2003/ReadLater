@@ -15,8 +15,16 @@ plugins {
     alias(libs.plugins.buildKonfig)
     alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.androidKmpLibrary)
+    alias(libs.plugins.koin.compiler)
 
 }
+
+koinCompiler {
+    compileSafety = true
+    strictSafety = false
+    userLogs = true
+}
+
 sqldelight {
     databases {
         create("ReadLaterDatabase") {
@@ -87,6 +95,7 @@ kotlin {
             // koin
             api(project.dependencies.platform(libs.koin.bom))
             api(libs.koin.core)
+            api(libs.koin.annotations)
             implementation(libs.koin.compose.viewModel)
 
             //SqlDelight
@@ -103,6 +112,7 @@ kotlin {
             implementation(libs.compose.auth.kt)
             implementation(libs.auth.kt)
             implementation(libs.postgrest.kt)
+            implementation(libs.functions.kt)
 
             // ktor
             implementation(project.dependencies.platform(libs.ktor.bom))
@@ -196,4 +206,3 @@ tasks.configureEach {
         dependsOn(tasks.named("generateBuildKonfig"))
     }
 }
-

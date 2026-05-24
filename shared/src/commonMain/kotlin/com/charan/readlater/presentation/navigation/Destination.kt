@@ -15,4 +15,4 @@ data object SettingsScreenNav
 data object AccountScreenNav
 
 @Serializable
-data class AddURLScreenNav(val url: String = "",val isEdit : Boolean = false, val uuid : String = "")
+data class AddURLScreenNav(val url: String = "",val isEdit : Boolean = false, val id : String = "")

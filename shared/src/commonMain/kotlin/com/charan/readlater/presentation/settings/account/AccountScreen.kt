@@ -4,7 +4,6 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.outlined.AccountCircle
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -78,7 +77,7 @@ fun AccountScreen(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 AsyncImage(
-                    model = state.userDetails.imageURL,
+                    model = state.accountInfo.profilePicUrl,
                     contentDescription = "Profile Picture",
                     modifier = Modifier
                         .size(100.dp)
@@ -88,12 +87,12 @@ fun AccountScreen(
                 Spacer(modifier = Modifier.height(16.dp))
 
                 Text(
-                    text = state.userDetails.userName,
+                    text = state.accountInfo.name,
                     style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
                 )
 
                 Text(
-                    text = state.userDetails.userEmail,
+                    text = state.accountInfo.email,
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
